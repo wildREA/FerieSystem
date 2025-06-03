@@ -23,6 +23,19 @@ $routes['GET']['/contact'] = function() {
     return view('contact');
 };
 
+// Login page
+$routes['GET']['/login'] = function() {
+    return view('login');
+};
+
+// Handle login form submission
+$routes['POST']['/login'] = function() {
+    // In a real application, you would validate credentials here
+    // For now, just redirect to home page
+    header('Location: /');
+    exit;
+};
+
 // Example route with parameters
 $routes['GET']['/user/{id}'] = function($id) {
     return "User ID: " . $id;
