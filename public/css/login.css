@@ -50,6 +50,20 @@ footer {
     padding: 15px;
 }
 
+/* Alert styling */
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
 /* Form styling */
 .form-group {
     margin-bottom: 20px;
@@ -62,6 +76,7 @@ footer {
 }
 
 .form-group input[type="text"],
+.form-group input[type="email"],
 .form-group input[type="password"] {
     width: 100%;
     padding: 10px;
