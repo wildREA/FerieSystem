@@ -30,10 +30,9 @@ $routes['GET']['/login'] = function() {
 
 // Handle login form submission
 $routes['POST']['/login'] = function() {
-    // In a real application, you would validate credentials here
-    // For now, just redirect to home page
-    header('Location: /');
-    exit;
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->login();  
 };
 
 // Example route with parameters
