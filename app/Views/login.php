@@ -15,12 +15,12 @@
 
             <div class="content">
                 <?php if (isset($error)): ?>
-                    <div class="alert alert-danger">
+                    <div class="alert alert-danger">dwdadawd zxczxczczxcz
                         <?php echo $error; ?>
-                    </div>
+                    </div>dhh
                 <?php endif; ?>
                 <form action="/login" method="post">
-                    <div class="form-group">
+                    <div class="form-group"> wd aw
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" placeholder="Enter your email" required>
                     </div>
