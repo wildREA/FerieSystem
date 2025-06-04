@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Graphic designer personnel management website" />
+    <title>Personnel Management Dashboard</title>
+    <!-- Frameworks & Tools -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Scripts (deferred) -->
+    <script src="js/dashboard.js" defer></script>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="logo" style="cursor: pointer;">DASHBOARD</div>
+        <ul>
+          <li class="active"><i class="bi bi-house-fill"></i> <span>Dashboard</span></li>
+          <li><i class="bi bi-bar-chart-line"></i> <span>Charts</span></li>
+          <li><i class="bi bi-graph-up"></i> <span>Statistics</span></li>
+          <li><i class="bi bi-calendar3"></i> <span>Calendar</span></li>
+          <li><i class="bi bi-file-earmark-text"></i> <span>Sample Pages</span></li>
+          <li><i class="bi bi-chat-left-text"></i> <span>Messages</span></li>
+          <li><i class="bi bi-gear"></i> <span>Settings</span></li>
+          <li><i class="bi bi-question-circle"></i> <span>Support</span></li>
+        </ul>
+      </div>
+      
+      <!-- Top Header -->
+      <div class="top-header">
+        <div class="search-container">
+          <input type="text" placeholder="Search..." class="form-control form-control-sm">
+        </div>
+        <div class="user-actions d-flex align-items-center">
+          <div class="me-3"><i class="bi bi-search"></i></div>
+          <div class="me-3"><i class="bi bi-envelope"></i></div>
+          <div class="me-3"><i class="bi bi-bell"></i></div>
+          <div class="me-3"><i class="bi bi-gear"></i></div>
+          <div class="d-flex align-items-center">
+            <span class="me-2">JOHN SMITH</span>
+            <div class="avatar bg-primary rounded-circle" style="width: 32px; height: 32px;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Stats Row -->
+        <div class="row mb-4">
+          <div class="col-md-3">
+            <div class="stat-card yellow">
+              <div>
+                <div class="value">98.5%</div>
+                <div class="label">COMPLETION RATE</div>
+              </div>
+              <div class="icon">
+                <i class="bi bi-bar-chart"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card blue">
+              <div>
+                <div class="value">2,481</div>
+                <div class="label">NEW CLIENTS</div>
+              </div>
+              <div class="icon">
+                <i class="bi bi-person"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card green">
+              <div>
+                <div class="value">31,124</div>
+                <div class="label">PAGE VIEWS</div>
+              </div>
+              <div class="icon">
+                <i class="bi bi-eye"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card pink">
+              <div>
+                <div class="value">$2,125</div>
+                <div class="label">TOTAL REVENUE</div>
+              </div>
+              <div class="icon">
+                <i class="bi bi-cart"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Charts Row 1 -->
+        <div class="row mb-4">
+          <!-- Color Chart -->
+          <div class="col-md-6">
+            <div class="chart-card">
+              <div class="card-header">
+                <h5>COLOR</h5>
+                <div class="actions">
+                  <button><i class="bi bi-plus"></i></button>
+                  <button><i class="bi bi-x"></i></button>
+                </div>
+              </div>
+              <div class="chart-content">
+                <div class="w-100">
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                      <span>88.124</span>
+                      <span>95%</span>
+                    </div>
+                    <div style="height: 8px; background-color: #ea4c89; border-radius: 4px; width: 95%;"></div>
+                  </div>
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                      <span>78.214</span>
+                      <span>80%</span>
+                    </div>
+                    <div style="height: 8px; background-color: #4285f4; border-radius: 4px; width: 80%;"></div>
+                  </div>
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                      <span>68.421</span>
+                      <span>70%</span>
+                    </div>
+                    <div style="height: 8px; background-color: #fbbc05; border-radius: 4px; width: 70%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Player Chart -->
+          <div class="col-md-6">
+            <div class="chart-card">
+              <div class="card-header">
+                <h5>PLAYER</h5>
+                <div class="actions">
+                  <button><i class="bi bi-plus"></i></button>
+                  <button><i class="bi bi-x"></i></button>
+                </div>
+              </div>
+              <div class="chart-content">
+                <div class="text-center">
+                  <div class="h4 mb-0">476</div>
+                  <div class="text-muted small">VALUE</div>
+                  <div style="height: 120px; margin-top: 20px;">
+                    <!-- Simulated audio visualization bars -->
+                    <div class="d-flex align-items-end justify-content-center h-100">
+                      <div class="bar bg-info mx-1" style="height: 30%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 80%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 45%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 65%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 40%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 90%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 30%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 70%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 50%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 85%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 45%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 75%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 65%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 35%;"></div>
+                      <div class="bar bg-info mx-1" style="height: 85%;"></div>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between small text-muted mt-2">
+                    <div>START</div>
+                    <div>MID</div>
+                    <div>PEAK</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Charts Row 2 -->
+        <div class="row mb-4">
+          <!-- Lorem Chart -->
+          <div class="col-md-3">
+            <div class="chart-card">
+              <div class="card-header">
+                <h5>LOREM</h5>
+                <div class="actions">
+                  <button><i class="bi bi-three-dots"></i></button>
+                  <button><i class="bi bi-x"></i></button>
+                </div>
+              </div>
+              <div class="chart-content">
+                <div class="text-center">
+                  <div class="donut-chart mx-auto">
+                    <div class="circle"></div>
+                    <div class="value">85%</div>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-around mt-3">
+                  <div>
+                    <div class="dot" style="background-color: #ea4c89;"></div>
+                    <div>$5,120</div>
+                  </div>
+                  <div>
+                    <div class="dot" style="background-color: #fbbc05;"></div>
+                    <div>$3,500</div>
+                  </div>
+                  <div>
+                    <div class="dot" style="background-color: #4285f4;"></div>
+                    <div>$2,800</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Velit Chart -->
+          <div class="col-md-3">
+            <div class="chart-card">
+              <div class="card-header">
+                <h5>VELIT</h5>
+                <div class="actions">
+                  <button><i class="bi bi-arrow-up"></i></button>
+                  <button><i class="bi bi-x"></i></button>
+                </div>
+              </div>
+              <div class="chart-content">
+                <div class="bar-chart h-100 d-flex align-items-end justify-content-between">
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="bar bg-primary" style="height: 40%;"></div>
+                    <small class="mt-1">JAN</small>
+                  </div>
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="bar bg-primary" style="height: 70%;"></div>
+                    <small class="mt-1">FEB</small>
+                  </div>
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="bar bg-primary" style="height: 60%;"></div>
+                    <small class="mt-1">MAR</small>
+                  </div>
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="bar bg-primary" style="height: 80%;"></div>
+                    <small class="mt-1">APR</small>
+                  </div>
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="bar bg-primary" style="height: 50%;"></div>
+                    <small class="mt-1">MAY</small>
+                  </div>
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="bar bg-primary" style="height: 65%;"></div>
+                    <small class="mt-1">JUN</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Nunc Chart -->
+          <div class="col-md-3">
+            <div class="chart-card">
+              <div class="card-header">
+                <h5>NUNC</h5>
+                <div class="actions">
+                  <button><i class="bi bi-arrow-down"></i></button>
+                  <button><i class="bi bi-x"></i></button>
+                </div>
+              </div>
+              <div class="chart-content">
+                <div class="text-center">
+                  <div class="donut-chart">
+                    <div class="circle" style="background: conic-gradient(#fbbc05 0% 100%);"></div>
+                    <div class="value">$80,267</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Velit Chart -->
+          <div class="col-md-3">
+            <div class="chart-card">
+              <div class="card-header">
+                <h5>VELIT</h5>
+                <div class="actions">
+                  <button><i class="bi bi-arrow-up-right"></i></button>
+                  <button><i class="bi bi-x"></i></button>
+                </div>
+              </div>
+              <div class="chart-content">
+                <div style="height: 100%;">
+                  <div style="display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); grid-gap: 2px; height: 100%;">
+                    <div class="bg-warning" style="opacity: 0.2;"></div>
+                    <div class="bg-warning" style="opacity: 0.3;"></div>
+                    <div class="bg-warning" style="opacity: 0.5;"></div>
+                    <div class="bg-warning" style="opacity: 0.4;"></div>
+                    <div class="bg-warning" style="opacity: 0.7;"></div>
+                    <div class="bg-warning" style="opacity: 0.6;"></div>
+                    <div class="bg-warning" style="opacity: 0.2;"></div>
+                    <div class="bg-warning" style="opacity: 0.4;"></div>
+                    <!-- Repeat pattern for grid -->
+                    <!-- More cells would be added here in a real implementation -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Charts Row 3 -->
+        <div class="row mb-4">
+          <!-- Magna Chart -->
+          <div class="col-md-6">
+            <div class="chart-card">
+              <div class="card-header">
+                <h5>MAGNA</h5>
+                <div class="actions">
+                  <button><i class="bi bi-plus"></i></button>
+                  <button><i class="bi bi-x"></i></button>
+                </div>
+              </div>
+              <div class="chart-content">
+                <!-- Simulated area chart -->
+                <div class="area-chart w-100">
+                  <svg width="100%" height="100%" viewBox="0 0 100 50" preserveAspectRatio="none">
+                    <path d="M0,50 L0,45 C10,40 20,42 30,35 C40,28 50,15 60,20 C70,25 80,35 90,30 L100,35 L100,50 Z" fill="#4285f4" opacity="0.5"></path>
+                    <path d="M0,50 L0,48 C10,45 20,48 30,40 C40,33 50,20 60,25 C70,30 80,40 90,35 L100,40 L100,50 Z" fill="#4285f4" opacity="0.3"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Ipsum Chart -->
+          <div class="col-md-6">
+            <div class="chart-card">
+              <div class="card-header">
+                <h5>IPSUM</h5>
+                <div class="actions">
+                  <button><i class="bi bi-plus"></i></button>
+                  <button><i class="bi bi-x"></i></button>
+                </div>
+              </div>
+              <div class="chart-content">
+                <div class="d-flex justify-content-around">
+                  <div class="circle-stat">
+                    <div class="value">68K</div>
+                    <div class="label">ALPHA <i class="bi bi-arrow-up text-success"></i> +0.5</div>
+                  </div>
+                  <div class="circle-stat">
+                    <div class="value">33K</div>
+                    <div class="label">BETA <i class="bi bi-arrow-up text-success"></i> +0.5</div>
+                  </div>
+                  <div class="circle-stat">
+                    <div class="value">21K</div>
+                    <div class="label">CILLI <i class="bi bi-arrow-down text-danger"></i> -0.2</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,269 @@
+/* Custom styles for the dashboard */
+body {
+  background-color: #1a1f2c;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Sidebar styles */
+.sidebar {
+  background-color: #1a1f2c;
+  width: 240px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  padding-top: 20px;
+  border-right: 1px solid #2c3142;
+}
+
+.sidebar .logo {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 0 20px 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #2c3142;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar ul li {
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.sidebar ul li:hover, .sidebar ul li.active {
+  background-color: #222941;
+}
+
+.sidebar ul li i {
+  margin-right: 10px;
+}
+
+/* Header styles */
+.top-header {
+  background-color: #1a1f2c;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  margin-left: 240px;
+  border-bottom: 1px solid #2c3142;
+}
+
+.dashboard-header {
+  padding: 30px 0;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.dashboard-title {
+  color: #343a40;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.dashboard-description {
+  color: #6c757d;
+  font-size: 1.1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.section-divider {
+  height: 2px;
+  background: linear-gradient(to right, transparent, #007bff, transparent);
+  margin: 30px 0;
+  border: none;
+}
+
+/* Main content area */
+.main-content {
+  margin-left: 240px;
+  padding: 20px;
+}
+
+/* Stat cards styles */
+.stat-card {
+  background-color: #222941;
+  border-radius: 10px;
+  padding: 15px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-card.yellow {
+  background-color: #222941;
+  border-top: 2px solid #fbbc05;
+}
+
+.stat-card.blue {
+  background-color: #222941;
+  border-top: 2px solid #4285f4;
+}
+
+.stat-card.green {
+  background-color: #222941;
+  border-top: 2px solid #34a853;
+}
+
+.stat-card.pink {
+  background-color: #222941;
+  border-top: 2px solid #ea4c89;
+}
+
+.stat-card .value {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.stat-card .label {
+  font-size: 12px;
+  color: #a0a7b5;
+}
+
+.stat-card .icon {
+  height: 50px;
+  width: 50px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Chart card styles */
+.chart-card {
+  background-color: #222941;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.chart-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #2c3142;
+  margin-bottom: 10px;
+}
+
+.chart-card .card-header h5 {
+  margin: 0;
+  color: #ffffff;
+}
+
+.chart-card .card-header .actions {
+  display: flex;
+}
+
+.chart-card .card-header .actions button {
+  background: none;
+  border: none;
+  color: #a0a7b5;
+  cursor: pointer;
+}
+
+.chart-content {
+  padding: 10px 0;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Chart types */
+.bar-chart, .line-chart, .donut-chart, .area-chart {
+  width: 100%;
+  height: 100%;
+}
+
+.bar-chart .bar {
+  display: inline-block;
+  width: 8px;
+  margin-right: 6px;
+  border-radius: 2px;
+}
+
+.donut-chart {
+  position: relative;
+}
+
+.donut-chart .circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #ea4c89 0% 35%, 
+    #fbbc05 35% 65%, 
+    #4285f4 65% 100%
+  );
+  position: relative;
+}
+
+.donut-chart .circle::after {
+  content: "";
+  position: absolute;
+  top: 20%;
+  left: 20%;
+  width: 60%;
+  height: 60%;
+  background-color: #222941;
+  border-radius: 50%;
+}
+
+/* The value in center of donut chart */
+.donut-chart .value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Circle stats at bottom */
+.circle-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.circle-stat .value {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.circle-stat .label {
+  font-size: 12px;
+  color: #a0a7b5;
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 70px;
+  }
+  
+  .sidebar .logo, .sidebar ul li span {
+    display: none;
+  }
+  
+  .main-content, .top-header {
+    margin-left: 70px;
+  }
+}
