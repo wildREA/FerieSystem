@@ -71,7 +71,7 @@ class Router
 if (!function_exists('view')) {
     function view($name, $data = [])
     {
-        $viewPath = BASE_PATH . '/views/' . $name . '.php';
+        $viewPath = BASE_PATH . '/app/Views/' . $name . '.php';
 
         if (file_exists($viewPath)) {
             extract($data);
