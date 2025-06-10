@@ -23,6 +23,18 @@ $routes['GET']['/contact'] = function() {
     return view('contact');
 };
 
+// Login page
+$routes['GET']['/login'] = function() {
+    return view('login');
+};
+
+// Handle login form submission
+$routes['POST']['/login'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->login();  
+};
+
 // Example route with parameters
 $routes['GET']['/user/{id}'] = function($id) {
     return "User ID: " . $id;
