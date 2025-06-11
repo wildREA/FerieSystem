@@ -1,84 +1,462 @@
-// Dashboard functionality
+// Dashboard functionality for Student Management System
 document.addEventListener("DOMContentLoaded", function() {
-    // Initialize sidebar interactivity
-    const sidebarItems = document.querySelectorAll('.sidebar ul li');
-    
-    sidebarItems.forEach(item => {
-        item.addEventListener('click', function() {
-            // Remove active class from all items
-            sidebarItems.forEach(i => i.classList.remove('active'));
-            // Add active class to clicked item
-            this.classList.add('active');
-        });
-    });
+    // Hardcoded student data
+    const studentsData = [
+        {
+            id: "STU001",
+            name: "Emma Nielsen",
+            email: "emma.nielsen@student.dk",
+            course: "Computer Science",
+            year: 3,
+            status: "pending",
+            vacationDays: 25,
+            requestDate: "2025-06-01",
+            requestEndDate: "2025-06-06",
+            requestDays: 5,
+            requestReason: "Family vacation",
+            avatar: "EN"
+        },
+        {
+            id: "STU002", 
+            name: "Lars Andersen",
+            email: "lars.andersen@student.dk",
+            course: "Engineering",
+            year: 2,
+            status: "approved",
+            vacationDays: 30,
+            requestDate: "2025-05-28",
+            requestEndDate: "2025-05-31",
+            requestDays: 3,
+            requestReason: "Medical appointment",
+            avatar: "LA"
+        },
+        {
+            id: "STU003",
+            name: "Sofia Larsen",
+            email: "sofia.larsen@student.dk", 
+            course: "Business Administration",
+            year: 1,
+            status: "denied",
+            vacationDays: 20,
+            requestDate: "2025-06-05",
+            requestEndDate: "2025-06-13",
+            requestDays: 8,
+            requestReason: "Summer internship",
+            avatar: "SL"
+        },
+        {
+            id: "STU004",
+            name: "Mikkel Jensen",
+            email: "mikkel.jensen@student.dk",
+            course: "Mathematics",
+            year: 4,
+            status: "pending",
+            vacationDays: 25,
+            requestDate: "2025-06-08",
+            requestEndDate: "2025-06-15",
+            requestDays: 7,
+            requestReason: "Conference attendance",
+            avatar: "MJ"
+        },
+        {
+            id: "STU005",
+            name: "Anna Pedersen",
+            email: "anna.pedersen@student.dk",
+            course: "Psychology",
+            year: 2,
+            status: "approved",
+            vacationDays: 30,
+            requestDate: "2025-05-25",
+            requestEndDate: "2025-05-29",
+            requestDays: 4,
+            requestReason: "Personal leave",
+            avatar: "AP"
+        },
+        {
+            id: "STU006",
+            name: "Frederik Hansen",
+            email: "frederik.hansen@student.dk",
+            course: "Computer Science", 
+            year: 3,
+            status: "pending",
+            vacationDays: 25,
+            requestDate: "2025-06-10",
+            requestEndDate: "2025-06-16",
+            requestDays: 6,
+            requestReason: "Study abroad preparation",
+            avatar: "FH"
+        }
+    ];
 
-    // Animation for bars in charts
-    const animateBars = () => {
-        document.querySelectorAll('.bar').forEach(bar => {
-            const currentHeight = parseInt(bar.style.height);
-            const randomChange = Math.random() * 20 - 10; // Random number between -10 and 10
-            let newHeight = currentHeight + randomChange;
-            
-            // Keep within bounds
-            if (newHeight < 20) newHeight = 20;
-            if (newHeight > 95) newHeight = 95;
-            
-            bar.style.height = `${newHeight}%`;
-            bar.style.transition = 'height 0.5s ease';
-        });
+    // Initialize Fuse.js for fuzzy search
+    const fuseOptions = {
+        keys: ['name', 'email', 'course', 'id'],
+        threshold: 0.4,
+        includeScore: true
     };
-    
-    // Simulate real-time data updates
-    setInterval(animateBars, 2000);
-    
-    // Chart cards interaction
-    const chartCards = document.querySelectorAll('.chart-card');
-    
-    chartCards.forEach(card => {
-        // Add hover effect
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-5px)';
-            this.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.2)';
-            this.style.transition = 'transform 0.3s, box-shadow 0.3s';
+    const fuse = new Fuse(studentsData, fuseOptions);
+
+    // DOM elements
+    const studentsGrid = document.getElementById('studentsGrid');
+    const searchInput = document.getElementById('studentSearch');
+    const searchResults = document.getElementById('searchResults');
+    const noResults = document.getElementById('noResults');
+    const navSections = document.querySelectorAll('.nav-section');
+
+    // Initialize the application
+    init();
+
+    function init() {
+        renderStudents(studentsData);
+        setupEventListeners();
+        setupNavigation();
+    }
+
+    function setupEventListeners() {
+        // Search functionality
+        searchInput.addEventListener('input', handleSearch);
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.trim()) {
+                searchResults.style.display = 'block';
+            }
         });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = 'none';
+
+        // Hide search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-wrapper')) {
+                searchResults.style.display = 'none';
+            }
         });
-        
-        // Close button functionality
-        const closeBtn = card.querySelector('.actions button:last-child');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', function() {
-                card.style.opacity = '0';
-                card.style.transform = 'scale(0.9)';
-                card.style.transition = 'opacity 0.3s, transform 0.3s';
+    }
+
+    function setupNavigation() {
+        navSections.forEach(section => {
+            section.addEventListener('click', function() {
+                // Remove active class from all sections
+                navSections.forEach(s => s.classList.remove('active'));
+                // Add active class to clicked section
+                this.classList.add('active');
                 
-                setTimeout(() => {
-                    card.parentNode.style.display = 'none';
-                }, 300);
+                // Handle navigation based on section
+                const sectionText = this.querySelector('span').textContent;
+                if (sectionText === 'Anmodninger') {
+                    // Filter to show only students with pending requests
+                    const pendingStudents = studentsData.filter(student => student.status === 'pending');
+                    renderStudents(pendingStudents);
+                } else if (sectionText === 'Students') {
+                    // Show all students
+                    renderStudents(studentsData);
+                }
+            });
+        });
+    }
+
+    function handleSearch(e) {
+        const query = e.target.value.trim();
+        
+        if (query === '') {
+            searchResults.style.display = 'none';
+            renderStudents(studentsData);
+            return;
+        }
+
+        // Perform fuzzy search
+        const results = fuse.search(query);
+        const searchResultsData = results.map(result => result.item);
+        
+        // Update search dropdown
+        updateSearchDropdown(searchResultsData, query);
+        
+        // Update main grid
+        renderStudents(searchResultsData);
+    }
+
+    function updateSearchDropdown(results, query) {
+        searchResults.innerHTML = '';
+        
+        if (results.length === 0) {
+            searchResults.innerHTML = '<div class="search-result-item">No students found</div>';
+        } else {
+            results.slice(0, 5).forEach(student => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.innerHTML = `
+                    <div class="student-avatar status-${student.status}" style="width: 30px; height: 30px; font-size: 12px; margin-right: 10px;">
+                        ${student.avatar}
+                    </div>
+                    <div>
+                        <div style="font-weight: 600;">${highlightMatch(student.name, query)}</div>
+                        <div style="font-size: 12px; color: #6c757d;">${student.course} - Year ${student.year}</div>
+                    </div>
+                `;
+                
+                item.addEventListener('click', () => {
+                    searchInput.value = student.name;
+                    searchResults.style.display = 'none';
+                    renderStudents([student]);
+                    highlightStudentCard(student.id);
+                });
+                
+                searchResults.appendChild(item);
             });
         }
-    });
-    
-    // Simulate loading data on page load
-    simulateLoading();
-});
+        
+        searchResults.style.display = 'block';
+    }
 
-// Function to simulate data loading
-function simulateLoading() {
-    const chartContents = document.querySelectorAll('.chart-content');
-    
-    chartContents.forEach(chart => {
-        chart.style.opacity = '0';
-    });
-    
-    // Gradually show charts one by one
-    chartContents.forEach((chart, index) => {
+    function highlightMatch(text, query) {
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.replace(regex, '<strong>$1</strong>');
+    }
+
+    function highlightStudentCard(studentId) {
+        // Remove existing highlights
+        document.querySelectorAll('.student-card.highlighted').forEach(card => {
+            card.classList.remove('highlighted');
+        });
+        
+        // Add highlight to specific card
         setTimeout(() => {
-            chart.style.opacity = '1';
-            chart.style.transition = 'opacity 0.5s ease';
-        }, 300 * index);
+            const targetCard = document.querySelector(`[data-student-id="${studentId}"]`);
+            if (targetCard) {
+                targetCard.classList.add('highlighted');
+                targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+    }
+
+    function renderStudents(students) {
+        if (students.length === 0) {
+            studentsGrid.style.display = 'none';
+            noResults.style.display = 'block';
+            return;
+        }
+
+        studentsGrid.style.display = 'grid';
+        noResults.style.display = 'none';
+        
+        studentsGrid.innerHTML = students.map(student => createStudentCard(student)).join('');
+        
+        // Add event listeners to action buttons
+        setupCardEventListeners();
+    }
+
+    function createStudentCard(student) {
+        const requestDate = new Date(student.requestDate);
+        const requestEndDate = new Date(student.requestEndDate);
+        const today = new Date();
+        const daysSinceRequest = Math.floor((today - requestDate) / (1000 * 60 * 60 * 24));
+        
+        return `
+            <div class="student-card" data-student-id="${student.id}">
+                <div class="student-header">
+                    <div class="student-avatar status-${student.status}">
+                        ${student.avatar}
+                    </div>
+                    <div class="student-info">
+                        <h4>${student.name}</h4>
+                        <p class="student-id">${student.id}</p>
+                    </div>
+                </div>
+                
+                <div class="student-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Course:</span>
+                        <span class="detail-value">${student.course}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Year:</span>
+                        <span class="detail-value">${student.year}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="status-badge status-${student.status}">${student.status}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Request End Date:</span>
+                        <span class="detail-value">${requestEndDate.toLocaleDateString()}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Requested:</span>
+                        <span class="detail-value">${student.requestDays} days</span>
+                    </div>
+                </div>
+                
+                <div class="student-card-footer">
+                    <div class="days-remaining">
+                        ${daysSinceRequest} days ago • Ends: ${requestEndDate.toLocaleDateString()}
+                    </div>
+                    <div class="action-buttons">
+                        ${student.status === 'pending' ? `
+                            <button class="btn btn-success btn-sm" onclick="approveRequest('${student.id}')">
+                                <i class="bi bi-check"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="denyRequest('${student.id}')">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-outline-primary btn-sm" onclick="viewDetails('${student.id}')">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function setupCardEventListeners() {
+        // Add click handlers to student cards
+        document.querySelectorAll('.student-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                // Don't trigger card click if clicking on buttons
+                if (e.target.closest('.action-buttons')) return;
+                
+                const studentId = card.dataset.studentId;
+                viewDetails(studentId);
+            });
+        });
+    }
+
+    // Global functions for button actions
+    window.approveRequest = function(studentId) {
+        const student = studentsData.find(s => s.id === studentId);
+        if (student) {
+            student.status = 'approved';
+            renderStudents(studentsData);
+            showNotification(`Request approved for ${student.name}`, 'success');
+        }
+    };
+
+    window.denyRequest = function(studentId) {
+        const student = studentsData.find(s => s.id === studentId);
+        if (student) {
+            student.status = 'denied';
+            renderStudents(studentsData);
+            showNotification(`Request denied for ${student.name}`, 'warning');
+        }
+    };
+
+    window.viewDetails = function(studentId) {
+        const student = studentsData.find(s => s.id === studentId);
+        if (student) {
+            showStudentModal(student);
+        }
+    };
+
+    function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+
+    function showStudentModal(student) {
+        // Create modal backdrop
+        const modalBackdrop = document.createElement('div');
+        modalBackdrop.className = 'modal-backdrop fade show';
+        modalBackdrop.style.zIndex = '1040';
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'modal fade show';
+        modal.style.display = 'block';
+        modal.style.zIndex = '1050';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Student Details - ${student.name}</h5>
+                        <button type="button" class="btn-close" onclick="closeModal()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <div class="student-avatar status-${student.status}" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 20px;">
+                                    ${student.avatar}
+                                </div>
+                                <h4>${student.name}</h4>
+                                <p class="text-muted">${student.id}</p>
+                            </div>
+                            <div class="col-md-8">
+                                <table class="table table-borderless">
+                                    <tr><td><strong>Email:</strong></td><td>${student.email}</td></tr>
+                                    <tr><td><strong>Year:</strong></td><td>${student.year}</td></tr>
+                                    <tr><td><strong>Status:</strong></td><td><span class="status-badge status-${student.status}">${student.status}</span></td></tr>
+                                    <tr><td><strong>Total Vacation Days:</strong></td><td>${student.vacationDays}</td></tr>
+                                    <tr><td><strong>Request Start Date:</strong></td><td>${new Date(student.requestDate).toLocaleDateString()}</td></tr>
+                                    <tr><td><strong>Request End Date:</strong></td><td>${new Date(student.requestEndDate).toLocaleDateString()}</td></tr>
+                                    <tr><td><strong>Requested Days:</strong></td><td>${student.requestDays}</td></tr>
+                                    <tr><td><strong>Reason:</strong></td><td>${student.requestReason}</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        ${student.status === 'pending' ? `
+                            <button type="button" class="btn btn-success" onclick="approveRequest('${student.id}'); closeModal();">
+                                <i class="bi bi-check"></i> Approve
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="denyRequest('${student.id}'); closeModal();">
+                                <i class="bi bi-x"></i> Deny
+                            </button>
+                        ` : ''}
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modalBackdrop);
+        document.body.appendChild(modal);
+        
+        // Store references for cleanup
+        window.currentModal = modal;
+        window.currentModalBackdrop = modalBackdrop;
+    }
+
+    window.closeModal = function() {
+        if (window.currentModal) {
+            window.currentModal.remove();
+        }
+        if (window.currentModalBackdrop) {
+            window.currentModalBackdrop.remove();
+        }
+        window.currentModal = null;
+        window.currentModalBackdrop = null;
+    };
+
+    // Close modal on backdrop click
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-backdrop')) {
+            closeModal();
+        }
     });
-}
+
+    // Add some nice animations on load
+    setTimeout(() => {
+        const cards = document.querySelectorAll('.student-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    }, 100);
+});
