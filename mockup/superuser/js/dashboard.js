@@ -1,4 +1,7 @@
 // Dashboard functionality for Student Management System
+// Create a global variable to store student data that can be accessed by other scripts
+window.studentsData = [];
+
 document.addEventListener("DOMContentLoaded", function() {
     // Hardcoded student data
     const studentsData = [
@@ -10,8 +13,8 @@ document.addEventListener("DOMContentLoaded", function() {
             year: 3,
             status: "pending",
             vacationDays: 25,
-            requestDate: "2025-06-01T09:15:00",
-            requestEndDate: "2025-06-06T17:00:00",
+            requestDate: "2025-06-01",
+            requestEndDate: "2025-06-16",
             requestDays: 5,
             requestReason: "Family vacation",
             avatar: "EN"
@@ -24,8 +27,8 @@ document.addEventListener("DOMContentLoaded", function() {
             year: 2,
             status: "approved",
             vacationDays: 30,
-            requestDate: "2025-05-28T08:30:00",
-            requestEndDate: "2025-05-31T16:30:00",
+            requestDate: "2025-05-28",
+            requestEndDate: "2025-05-31",
             requestDays: 3,
             requestReason: "Medical appointment",
             avatar: "LA"
@@ -38,8 +41,8 @@ document.addEventListener("DOMContentLoaded", function() {
             year: 1,
             status: "denied",
             vacationDays: 20,
-            requestDate: "2025-06-05T10:00:00",
-            requestEndDate: "2025-06-13T18:00:00",
+            requestDate: "2025-06-05",
+            requestEndDate: "2025-06-13",
             requestDays: 8,
             requestReason: "Summer internship",
             avatar: "SL"
@@ -52,8 +55,8 @@ document.addEventListener("DOMContentLoaded", function() {
             year: 4,
             status: "pending",
             vacationDays: 25,
-            requestDate: "2025-06-08T07:45:00",
-            requestEndDate: "2025-06-15T15:30:00",
+            requestDate: "2025-06-08",
+            requestEndDate: "2025-06-15",
             requestDays: 7,
             requestReason: "Conference attendance",
             avatar: "MJ"
@@ -66,8 +69,8 @@ document.addEventListener("DOMContentLoaded", function() {
             year: 2,
             status: "approved",
             vacationDays: 30,
-            requestDate: "2025-05-25T11:20:00",
-            requestEndDate: "2025-05-29T14:45:00",
+            requestDate: "2025-05-25",
+            requestEndDate: "2025-05-29",
             requestDays: 4,
             requestReason: "Personal leave",
             avatar: "AP"
@@ -80,11 +83,68 @@ document.addEventListener("DOMContentLoaded", function() {
             year: 3,
             status: "pending",
             vacationDays: 25,
-            requestDate: "2025-06-10T13:00:00",
-            requestEndDate: "2025-06-16T16:00:00",
+            requestDate: "2025-06-10",
+            requestEndDate: "2025-06-16",
             requestDays: 6,
             requestReason: "Study abroad preparation",
             avatar: "FH"
+        },
+        // Add more approved requests for better demonstration
+        {
+            id: "STU007",
+            name: "Jacob Møller",
+            email: "jacob.moller@student.dk",
+            course: "Economics",
+            year: 2,
+            status: "approved",
+            vacationDays: 28,
+            requestDate: "2025-06-12",
+            requestEndDate: "2025-06-20",
+            requestDays: 8,
+            requestReason: "Family wedding",
+            avatar: "JM"
+        },
+        {
+            id: "STU008",
+            name: "Sara Schmidt",
+            email: "sara.schmidt@student.dk",
+            course: "Computer Science",
+            year: 3,
+            status: "approved",
+            vacationDays: 25,
+            requestDate: "2025-06-04",
+            requestEndDate: "2025-06-09",
+            requestDays: 5,
+            requestReason: "Tech conference",
+            avatar: "SS"
+        },
+        {
+            id: "STU009",
+            name: "Thomas Nielsen",
+            email: "thomas.nielsen@student.dk",
+            course: "Physics",
+            year: 4,
+            status: "approved",
+            vacationDays: 30,
+            requestDate: "2025-05-20",
+            requestEndDate: "2025-05-26",
+            requestDays: 6,
+            requestReason: "Research trip",
+            avatar: "TN"
+        },
+        {
+            id: "STU010",
+            name: "Maria Johansen",
+            email: "maria.johansen@student.dk",
+            course: "Arts",
+            year: 1,
+            status: "approved",
+            vacationDays: 25,
+            requestDate: "2025-06-15",
+            requestEndDate: "2025-06-25",
+            requestDays: 10,
+            requestReason: "Art exhibition abroad",
+            avatar: "MJ"
         }
     ];
 
@@ -102,56 +162,39 @@ document.addEventListener("DOMContentLoaded", function() {
     const searchResults = document.getElementById('searchResults');
     const noResults = document.getElementById('noResults');
     const navSections = document.querySelectorAll('.nav-section');
-
-    // Helper function to format date with time
-    function formatDateTime(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleString('da-DK', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
-    }
-
-    // Helper function to calculate precise duration
-    function calculateDuration(startDate, endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const diffMs = end - start;
-        
-        const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        
-        let duration = '';
-        if (days > 0) {
-            duration += `${days} day${days !== 1 ? 's' : ''}`;
-        }
-        if (hours > 0) {
-            if (duration) duration += ', ';
-            duration += `${hours} hour${hours !== 1 ? 's' : ''}`;
-        }
-        if (minutes > 0 && days === 0) {
-            if (duration) duration += ', ';
-            duration += `${minutes} minute${minutes !== 1 ? 's' : ''}`;
-        }
-        
-        return duration || '0 minutes';
-    }
-
-    // Track current view
-    let currentView = 'Students';
+    
+    // Approved requests elements
+    const approvedRequestsGrid = document.getElementById('approvedRequestsGrid');
+    const noApprovedResults = document.getElementById('noApprovedResults');
+    const activeRequestsBtn = document.getElementById('activeRequestsBtn');
+    const inactiveRequestsBtn = document.getElementById('inactiveRequestsBtn');
+    
+    // Today's date for comparing request dates
+    const today = new Date("2025-06-11"); // Using the specified date from context
+    
+    // Get current page
+    const currentPage = document.getElementById('currentPage')?.value || 'students';
 
     // Initialize the application
     init();
 
     function init() {
-        renderStudents(studentsData);
+        // Load different data based on the current page
+        if (currentPage === 'students') {
+            // Show all students
+            renderStudents(studentsData);
+        } else if (currentPage === 'requests') {
+            // Show only pending requests in the main grid
+            const pendingStudents = studentsData.filter(student => student.status === 'pending');
+            renderStudents(pendingStudents);
+            
+            // Initialize approved requests section
+            if (approvedRequestsGrid) {
+                initializeApprovedRequestsSection();
+            }
+        }
+        
         setupEventListeners();
-        setupNavigation();
     }
 
     function setupEventListeners() {
@@ -169,30 +212,211 @@ document.addEventListener("DOMContentLoaded", function() {
                 searchResults.style.display = 'none';
             }
         });
-    }
-
-    function setupNavigation() {
-        navSections.forEach(section => {
-            section.addEventListener('click', function() {
-                // Remove active class from all sections
-                navSections.forEach(s => s.classList.remove('active'));
-                // Add active class to clicked section
-                this.classList.add('active');
-                
-                // Handle navigation based on section
-                const sectionText = this.querySelector('span').textContent;
-                currentView = sectionText; // Update current view
-                
-                if (sectionText === 'Anmodninger') {
-                    // Filter to show only students with pending requests
-                    const pendingStudents = studentsData.filter(student => student.status === 'pending');
-                    renderStudents(pendingStudents);
-                } else if (sectionText === 'Students') {
-                    // Show all students
-                    renderStudents(studentsData);
-                }
+        
+        // Set up keyboard navigation for search results
+        searchInput.addEventListener('keydown', handleSearchNavigation);
+        
+        // Update the sidebar logo to navigate to home
+        const logo = document.querySelector('.sidebar .logo');
+        if (logo) {
+            logo.addEventListener('click', function() {
+                window.location.href = 'students.html';
             });
-        });
+        }
+        
+        // Set up toggle buttons for approved requests
+        if (activeRequestsBtn && inactiveRequestsBtn) {
+            activeRequestsBtn.addEventListener('click', () => {
+                toggleApprovedRequestsView('active');
+            });
+            
+            inactiveRequestsBtn.addEventListener('click', () => {
+                toggleApprovedRequestsView('inactive');
+            });
+        }
+    }
+    
+    /**
+     * Initialize the approved requests section
+     */
+    function initializeApprovedRequestsSection() {
+        // By default show active approved requests
+        toggleApprovedRequestsView('active');
+    }
+    
+    /**
+     * Toggle between active and inactive approved requests
+     * @param {string} view - 'active' or 'inactive'
+     */
+    function toggleApprovedRequestsView(view) {
+        // Update button styles
+        if (view === 'active') {
+            activeRequestsBtn.classList.add('btn-primary');
+            activeRequestsBtn.classList.remove('btn-outline-primary');
+            inactiveRequestsBtn.classList.add('btn-outline-primary');
+            inactiveRequestsBtn.classList.remove('btn-primary');
+        } else {
+            inactiveRequestsBtn.classList.add('btn-primary');
+            inactiveRequestsBtn.classList.remove('btn-outline-primary');
+            activeRequestsBtn.classList.add('btn-outline-primary');
+            activeRequestsBtn.classList.remove('btn-primary');
+        }
+        
+        // Filter approved requests based on active status
+        const approvedStudents = studentsData.filter(student => student.status === 'approved');
+        
+        // Determine if requests are active (end date is in the future) or inactive (completed)
+        let filteredRequests;
+        if (view === 'active') {
+            filteredRequests = approvedStudents.filter(student => {
+                const endDate = new Date(student.requestEndDate);
+                return endDate >= today;
+            });
+        } else {
+            filteredRequests = approvedStudents.filter(student => {
+                const endDate = new Date(student.requestEndDate);
+                return endDate < today;
+            });
+        }
+        
+        renderApprovedRequests(filteredRequests, view);
+    }
+    
+    /**
+     * Render the approved requests in the grid
+     * @param {Array} requests - The requests to render
+     * @param {string} status - 'active' or 'inactive'
+     */
+    function renderApprovedRequests(requests, status) {
+        if (!approvedRequestsGrid) return;
+        
+        if (requests.length === 0) {
+            approvedRequestsGrid.style.display = 'none';
+            noApprovedResults.style.display = 'block';
+            return;
+        }
+
+        approvedRequestsGrid.style.display = 'grid';
+        noApprovedResults.style.display = 'none';
+        
+        approvedRequestsGrid.innerHTML = requests.map(request => createApprovedRequestCard(request, status)).join('');
+    }
+    
+    /**
+     * Create an HTML card for an approved request
+     * @param {Object} request - The request data
+     * @param {string} status - 'active' or 'inactive'
+     * @returns {string} HTML string for the request card
+     */
+    function createApprovedRequestCard(request, status) {
+        const startDate = new Date(request.requestDate);
+        const endDate = new Date(request.requestEndDate);
+        
+        // Calculate days remaining (for active requests) or days since completion (for inactive)
+        let timeDescription;
+        if (status === 'active') {
+            const daysRemaining = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+            timeDescription = `${daysRemaining} days remaining`;
+        } else {
+            const daysSinceCompletion = Math.ceil((today - endDate) / (1000 * 60 * 60 * 24));
+            timeDescription = `Completed ${daysSinceCompletion} days ago`;
+        }
+        
+        return `
+            <div class="request-card ${status}" data-request-id="${request.id}">
+                <span class="request-status-badge ${status}">${status === 'active' ? 'Active' : 'Completed'}</span>
+                
+                <div class="student-header">
+                    <div class="student-avatar status-approved" style="width: 40px; height: 40px;">
+                        ${request.avatar}
+                    </div>
+                    <div class="student-info">
+                        <h4>${request.name}</h4>
+                        <p class="student-id">${request.id}</p>
+                    </div>
+                </div>
+                
+                <div class="request-dates mt-3">
+                    <div class="date-block">
+                        <div class="date-label">Start Date</div>
+                        <div class="date-value">${startDate.toLocaleDateString()}</div>
+                    </div>
+                    <div class="date-block">
+                        <div class="date-label">End Date</div>
+                        <div class="date-value">${endDate.toLocaleDateString()}</div>
+                    </div>
+                    <div class="date-block">
+                        <div class="date-label">Days</div>
+                        <div class="date-value">${request.requestDays}</div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <div class="detail-label">Reason:</div>
+                    <div class="detail-value">${request.requestReason}</div>
+                </div>
+                
+                <div class="mt-3 text-end">
+                    <small class="text-muted">${timeDescription}</small>
+                </div>
+                
+                <div class="mt-3 d-flex justify-content-end">
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('${request.id}')">
+                        <i class="bi bi-eye"></i> Details
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Track currently selected search result index
+    let selectedSearchResultIndex = -1;
+    
+    /**
+     * Handles keyboard navigation within search results
+     * Allows navigating through search results using up/down arrow keys
+     * and selecting with Enter
+     * @param {KeyboardEvent} e - The keyboard event
+     */
+    function handleSearchNavigation(e) {
+        const resultItems = searchResults.querySelectorAll('.search-result-item');
+        
+        // Only handle navigation if search results are visible and there are results
+        if (searchResults.style.display !== 'block' || resultItems.length === 0) {
+            return;
+        }
+        
+        // Handle arrow up/down navigation
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault(); // Prevent cursor movement in the input
+            
+            // Remove highlight from currently selected item
+            resultItems.forEach(item => item.classList.remove('selected'));
+            
+            // Update the selected index based on arrow key
+            if (e.key === 'ArrowDown') {
+                selectedSearchResultIndex = (selectedSearchResultIndex < resultItems.length - 1) 
+                    ? selectedSearchResultIndex + 1 
+                    : 0;
+            } else if (e.key === 'ArrowUp') {
+                selectedSearchResultIndex = (selectedSearchResultIndex > 0) 
+                    ? selectedSearchResultIndex - 1 
+                    : resultItems.length - 1;
+            }
+            
+            // Highlight the newly selected item
+            const selectedItem = resultItems[selectedSearchResultIndex];
+            selectedItem.classList.add('selected');
+            
+            // Make sure the selected item is visible in the dropdown
+            selectedItem.scrollIntoView({ block: 'nearest' });
+        }
+        
+        // Handle Enter key to select the currently highlighted item
+        if (e.key === 'Enter' && selectedSearchResultIndex >= 0) {
+            e.preventDefault();
+            resultItems[selectedSearchResultIndex].click();
+        }
     }
 
     function handleSearch(e) {
@@ -200,18 +424,32 @@ document.addEventListener("DOMContentLoaded", function() {
         
         if (query === '') {
             searchResults.style.display = 'none';
-            // Restore the appropriate view based on current navigation
-            if (currentView === 'Anmodninger') {
+            
+            // Show appropriate data based on current page
+            if (currentPage === 'students') {
+                renderStudents(studentsData);
+            } else if (currentPage === 'requests') {
                 const pendingStudents = studentsData.filter(student => student.status === 'pending');
                 renderStudents(pendingStudents);
-            } else {
-                renderStudents(studentsData);
+                
+                // Keep the approved requests section intact
+                if (activeRequestsBtn && activeRequestsBtn.classList.contains('btn-primary')) {
+                    toggleApprovedRequestsView('active');
+                } else {
+                    toggleApprovedRequestsView('inactive');
+                }
             }
             return;
         }
 
-        // Perform fuzzy search
-        const results = fuse.search(query);
+        // Perform fuzzy search on the appropriate dataset
+        let dataToSearch = studentsData;
+        if (currentPage === 'requests') {
+            dataToSearch = studentsData.filter(student => student.status === 'pending');
+        }
+        
+        const fuseForCurrentPage = new Fuse(dataToSearch, fuseOptions);
+        const results = fuseForCurrentPage.search(query);
         const searchResultsData = results.map(result => result.item);
         
         // Update search dropdown
@@ -219,13 +457,26 @@ document.addEventListener("DOMContentLoaded", function() {
         
         // Update main grid
         renderStudents(searchResultsData);
+        
+        // Keep the approved requests section visible if on requests page
+        if (currentPage === 'requests' && approvedRequestsGrid) {
+            if (activeRequestsBtn && activeRequestsBtn.classList.contains('btn-primary')) {
+                toggleApprovedRequestsView('active');
+            } else {
+                toggleApprovedRequestsView('inactive');
+            }
+        }
     }
 
     function updateSearchDropdown(results, query) {
         searchResults.innerHTML = '';
+        // Reset the selected index when updating dropdown
+        selectedSearchResultIndex = -1;
+        
+        const noResultsMessage = currentPage === 'students' ? 'No students found' : 'No requests found';
         
         if (results.length === 0) {
-            searchResults.innerHTML = '<div class="search-result-item">No students found</div>';
+            searchResults.innerHTML = `<div class="search-result-item">${noResultsMessage}</div>`;
         } else {
             results.slice(0, 5).forEach(student => {
                 const item = document.createElement('div');
@@ -245,6 +496,16 @@ document.addEventListener("DOMContentLoaded", function() {
                     searchResults.style.display = 'none';
                     renderStudents([student]);
                     highlightStudentCard(student.id);
+                });
+                
+                // Add mouseover event to update selectedSearchResultIndex
+                item.addEventListener('mouseover', () => {
+                    // Remove highlight from all items
+                    searchResults.querySelectorAll('.search-result-item').forEach((el, idx) => {
+                        if (el === item) selectedSearchResultIndex = idx;
+                        el.classList.remove('selected');
+                    });
+                    item.classList.add('selected');
                 });
                 
                 searchResults.appendChild(item);
@@ -285,38 +546,13 @@ document.addEventListener("DOMContentLoaded", function() {
         studentsGrid.style.display = 'grid';
         noResults.style.display = 'none';
         
-        // Use detailed cards for Anmodninger (requests) view, simple cards for Students view
-        const cardFunction = currentView === 'Anmodninger' ? createDetailedStudentCard : createStudentCard;
-        studentsGrid.innerHTML = students.map(student => cardFunction(student)).join('');
+        studentsGrid.innerHTML = students.map(student => createStudentCard(student)).join('');
         
         // Add event listeners to action buttons
         setupCardEventListeners();
     }
 
     function createStudentCard(student) {
-        return `
-            <div class="student-card" data-student-id="${student.id}">
-                <div class="student-header">
-                    <div class="student-avatar status-${student.status}">
-                        ${student.avatar}
-                    </div>
-                    <div class="student-info">
-                        <h4>${student.name}</h4>
-                        <p class="student-id">${student.id}</p>
-                    </div>
-                    ${student.status === 'pending' ? `
-                        <div class="card-action">
-                            <button class="btn btn-outline-primary btn-sm" onclick="viewDetails('${student.id}')">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-    }
-
-    function createDetailedStudentCard(student) {
         const requestDate = new Date(student.requestDate);
         const requestEndDate = new Date(student.requestEndDate);
         const today = new Date();
@@ -349,17 +585,17 @@ document.addEventListener("DOMContentLoaded", function() {
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Request End Date:</span>
-                        <span class="detail-value">${formatDateTime(student.requestEndDate)}</span>
+                        <span class="detail-value">${requestEndDate.toLocaleDateString()}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Requested:</span>
-                        <span class="detail-value">${calculateDuration(student.requestDate, student.requestEndDate)}</span>
+                        <span class="detail-value">${student.requestDays} days</span>
                     </div>
                 </div>
                 
                 <div class="student-card-footer">
                     <div class="days-remaining">
-                        ${daysSinceRequest} days ago • Ends: ${formatDateTime(student.requestEndDate)}
+                        ${daysSinceRequest} days ago • Ends: ${requestEndDate.toLocaleDateString()}
                     </div>
                     <div class="action-buttons">
                         ${student.status === 'pending' ? `
@@ -397,13 +633,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const student = studentsData.find(s => s.id === studentId);
         if (student) {
             student.status = 'approved';
-            // Refresh the appropriate view
-            if (currentView === 'Anmodninger') {
-                const pendingStudents = studentsData.filter(student => student.status === 'pending');
-                renderStudents(pendingStudents);
-            } else {
-                renderStudents(studentsData);
-            }
+            renderStudents(studentsData);
             showNotification(`Request approved for ${student.name}`, 'success');
         }
     };
@@ -412,13 +642,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const student = studentsData.find(s => s.id === studentId);
         if (student) {
             student.status = 'denied';
-            // Refresh the appropriate view
-            if (currentView === 'Anmodninger') {
-                const pendingStudents = studentsData.filter(student => student.status === 'pending');
-                renderStudents(pendingStudents);
-            } else {
-                renderStudents(studentsData);
-            }
+            renderStudents(studentsData);
             showNotification(`Request denied for ${student.name}`, 'warning');
         }
     };
@@ -501,16 +725,16 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <h6 class="text-primary mb-3"><i class="bi bi-calendar-range me-2"></i>Vacation Request</h6>
                                     <div class="row">
                                         <div class="col-4">
-                                            <small class="text-muted">Start Date & Time</small>
-                                            <div class="fw-medium">${formatDateTime(student.requestDate)}</div>
+                                            <small class="text-muted">Start Date</small>
+                                            <div class="fw-medium">${new Date(student.requestDate).toLocaleDateString()}</div>
                                         </div>
                                         <div class="col-4">
-                                            <small class="text-muted">End Date & Time</small>
-                                            <div class="fw-medium">${formatDateTime(student.requestEndDate)}</div>
+                                            <small class="text-muted">End Date</small>
+                                            <div class="fw-medium">${new Date(student.requestEndDate).toLocaleDateString()}</div>
                                         </div>
                                         <div class="col-4">
                                             <small class="text-muted">Duration</small>
-                                            <div class="fw-medium">${calculateDuration(student.requestDate, student.requestEndDate)}</div>
+                                            <div class="fw-medium">${student.requestDays} days</div>
                                         </div>
                                     </div>
                                     <div class="mt-3">
