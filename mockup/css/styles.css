@@ -70,8 +70,14 @@ body {
   position: relative;
 }
 
-.nav-section:hover .section-header,
-.nav-section.active .section-header {
+.nav-section:hover .requests-background,
+.nav-section.active .requests-background {
+  background-color: #412622c0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.nav-section:hover .students-background,
+.nav-section.active .students-background {
   background-color: #222941;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
