@@ -298,7 +298,32 @@ body {
 .student-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 15px;
+}
+
+.student-info {
+  flex: 1;
+  margin-left: 0;
+}
+
+.student-info h4 {
+  margin: 0 0 5px 0;
+}
+
+.student-info p {
+  margin: 0;
+}
+
+.card-action {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.card-action .btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
 .student-avatar {
