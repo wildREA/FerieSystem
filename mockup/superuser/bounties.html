@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Graphic designer personnel management website" />
-    <title>Personnel Management Dashboard</title>
+    <title>Requests Management - Ferie System</title>
     <!-- Frameworks & Tools -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <!-- Stylesheets -->
@@ -15,7 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script src="js/dashboard.js" defer></script>
     <!-- Hidden input to identify current page -->
-    <input type="hidden" id="currentPage" value="students">
+    <input type="hidden" id="currentPage" value="requests">
   </head>
   <body>
     <div class="dashboard-container">
@@ -29,7 +29,7 @@
           <div class="user-role">Super user</div>
         </div>
         <ul class="nav-menu">
-          <li class="nav-section">
+          <li class="nav-section active">
             <a href="requests.html" class="section-link">
               <div class="section-header requests-background">
                 <i class="bi bi-file-earmark-text text-danger"></i>
@@ -38,7 +38,7 @@
               </div>
             </a>
           </li>
-          <li class="nav-section active">
+          <li class="nav-section">
             <a href="students.html" class="section-link">
               <div class="section-header students-background">
                 <i class="bi bi-people text-primary"></i>
@@ -62,7 +62,7 @@
         <div class="search-container">
           <div class="search-wrapper">
             <i class="bi bi-search search-icon"></i>
-            <input type="text" id="studentSearch" placeholder="Search students..." class="form-control search-input">
+            <input type="text" id="studentSearch" placeholder="Search requests..." class="form-control search-input">
             <div id="searchResults" class="search-results"></div>
           </div>
         </div>
@@ -82,21 +82,12 @@
       <!-- Main Content -->
       <div class="main-content">
         <div class="content-header">
-          <h2>Students Management</h2>
-          <p class="text-muted">Manage student vacation requests and information</p>
+          <h2>Bounties</h2>
+          <p class="text-muted">Start bounties as tasks to complete them like quests for rewards (FF timer)</p>
         </div>
         
-        <div class="students-grid" id="studentsGrid">
-          <!-- Student cards will be generated here -->
-        </div>
-        
-        <div class="no-results" id="noResults" style="display: none;">
-          <div class="text-center py-5">
-            <i class="bi bi-search fs-1 text-muted"></i>
-            <h4 class="mt-3 text-muted">No students found</h4>
-            <p class="text-muted">Try adjusting your search criteria</p>
-          </div>
-        </div>
+        <!-- Rest of content below -->
+        <!-- Reward are "FF timer" -->
       </div>
     </div>
   </body>
