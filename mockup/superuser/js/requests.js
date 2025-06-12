@@ -26,6 +26,29 @@ document.addEventListener("DOMContentLoaded", function() {
         
         // Show active requests by default
         toggleApprovedRequestsView('active');
+        
+        // Check if we have a search query stored in localStorage from redirect
+        const searchQuery = localStorage.getItem('searchQuery');
+        if (searchQuery) {
+            // Get the search input field
+            const searchInput = document.getElementById('studentSearch');
+            if (searchInput) {
+                // Set the search input value
+                searchInput.value = searchQuery;
+                // Trigger the search function if available
+                if (typeof handleSearch === 'function') {
+                    // Create a synthetic event
+                    const event = new Event('input', {
+                        bubbles: true,
+                        cancelable: true,
+                    });
+                    searchInput.dispatchEvent(event);
+                }
+                
+                // Clear the localStorage item to prevent future redirects
+                localStorage.removeItem('searchQuery');
+            }
+        }
     }
     
     /**
@@ -48,17 +71,23 @@ document.addEventListener("DOMContentLoaded", function() {
      * @param {string} view - 'active' or 'inactive'
      */
     function toggleApprovedRequestsView(view) {
-        // Update button styles - toggle active class
+        // Update button styles - properly handle both btn-primary/btn-outline-primary and active class
         if (view === 'active') {
-            activeRequestsBtn.classList.add('btn-primary');
+            // Set active button styling
+            activeRequestsBtn.classList.add('btn-primary', 'active');
             activeRequestsBtn.classList.remove('btn-outline-primary');
+            
+            // Set inactive button styling
             inactiveRequestsBtn.classList.add('btn-outline-primary');
-            inactiveRequestsBtn.classList.remove('btn-primary');
+            inactiveRequestsBtn.classList.remove('btn-primary', 'active');
         } else {
-            inactiveRequestsBtn.classList.add('btn-primary');
+            // Set active button styling
+            inactiveRequestsBtn.classList.add('btn-primary', 'active');
             inactiveRequestsBtn.classList.remove('btn-outline-primary');
+            
+            // Set inactive button styling
             activeRequestsBtn.classList.add('btn-outline-primary');
-            activeRequestsBtn.classList.remove('btn-primary');
+            activeRequestsBtn.classList.remove('btn-primary', 'active');
         }
         
         // Get the student data from the main dashboard.js file
@@ -130,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function() {
             timeDescription = `${daysRemaining} days remaining`;
         } else {
             const daysSinceCompletion = Math.ceil((today - endDate) / (1000 * 60 * 60 * 24));
-            timeDescription = `Completed ${daysSinceCompletion} days ago`;
+            timeDescription = `Inactive ${daysSinceCompletion} days ago`;
         }
         
         return `
@@ -180,3 +209,75 @@ document.addEventListener("DOMContentLoaded", function() {
         `;
     }
 });
+
+/**
+ * Approve a student's vacation request
+ * @param {string} studentId - The ID of the student whose request is being approved
+ */
+window.approveRequest = function(studentId) {
+    // Get the students data from the global variable
+    const studentsData = window.studentsData || [];
+    
+    if (!studentsData.length) {
+        console.error('Student data not available');
+        return;
+    }
+    
+    // Find the student by ID
+    const studentIndex = studentsData.findIndex(student => student.id === studentId);
+    if (studentIndex === -1) {
+        console.error(`Student with ID ${studentId} not found`);
+        return;
+    }
+    
+    // Update the student's status to approved
+    studentsData[studentIndex].status = 'approved';
+    
+    // Show success notification if the notification function exists
+    if (typeof window.showNotification === 'function') {
+        window.showNotification(`Request for ${studentsData[studentIndex].name} has been approved`, 'success');
+    } else {
+        alert(`Request for ${studentsData[studentIndex].name} has been approved`);
+    }
+    
+    // Refresh the display if needed
+    if (typeof window.renderStudents === 'function') {
+        window.renderStudents(studentsData);
+    }
+};
+
+/**
+ * Deny a student's vacation request
+ * @param {string} studentId - The ID of the student whose request is being denied
+ */
+window.denyRequest = function(studentId) {
+    // Get the students data from the global variable
+    const studentsData = window.studentsData || [];
+    
+    if (!studentsData.length) {
+        console.error('Student data not available');
+        return;
+    }
+    
+    // Find the student by ID
+    const studentIndex = studentsData.findIndex(student => student.id === studentId);
+    if (studentIndex === -1) {
+        console.error(`Student with ID ${studentId} not found`);
+        return;
+    }
+    
+    // Update the student's status to denied
+    studentsData[studentIndex].status = 'denied';
+    
+    // Show success notification if the notification function exists
+    if (typeof window.showNotification === 'function') {
+        window.showNotification(`Request for ${studentsData[studentIndex].name} has been denied`, 'danger');
+    } else {
+        alert(`Request for ${studentsData[studentIndex].name} has been denied`);
+    }
+    
+    // Refresh the display if needed
+    if (typeof window.renderStudents === 'function') {
+        window.renderStudents(studentsData);
+    }
+};
