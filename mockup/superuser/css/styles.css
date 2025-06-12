@@ -89,6 +89,13 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
+.nav-section:hover .bounties-background,
+.nav-section.active .bounties-background {
+  background-color: #302241;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+
 .section-header i {
   margin-right: 12px;
   font-size: 18px;

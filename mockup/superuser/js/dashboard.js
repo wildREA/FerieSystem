@@ -569,48 +569,6 @@ document.addEventListener("DOMContentLoaded", function() {
                         <p class="student-id">${student.id}</p>
                     </div>
                 </div>
-                
-                <div class="student-details">
-                    <div class="detail-row">
-                        <span class="detail-label">Course:</span>
-                        <span class="detail-value">${student.course}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Year:</span>
-                        <span class="detail-value">${student.year}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Status:</span>
-                        <span class="status-badge status-${student.status}">${student.status}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Request End Date:</span>
-                        <span class="detail-value">${requestEndDate.toLocaleDateString()}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Requested:</span>
-                        <span class="detail-value">${student.requestDays} days</span>
-                    </div>
-                </div>
-                
-                <div class="student-card-footer">
-                    <div class="days-remaining">
-                        ${daysSinceRequest} days ago • Ends: ${requestEndDate.toLocaleDateString()}
-                    </div>
-                    <div class="action-buttons">
-                        ${student.status === 'pending' ? `
-                            <button class="btn btn-success btn-sm" onclick="approveRequest('${student.id}')">
-                                <i class="bi bi-check"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="denyRequest('${student.id}')">
-                                <i class="bi bi-x"></i>
-                            </button>
-                        ` : ''}
-                        <button class="btn btn-outline-primary btn-sm" onclick="viewDetails('${student.id}')">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </div>
-                </div>
             </div>
         `;
     }

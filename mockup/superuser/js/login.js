@@ -1,0 +1,166 @@
+const loginForm = document.querySelector('form[action="/login"]');
+const keyVerificationForm = document.getElementById('keyVerificationForm');
+const registrationForm = document.getElementById('registrationForm');
+const headerTitle = document.getElementById('headerTitle');
+
+const showRegisterKeyLink = document.getElementById('showRegisterKey');
+const showLoginLink = document.getElementById('showLogin');
+const showLoginFromRegisterLink = document.getElementById('showLoginFromRegister');
+
+function showForm(formToShow) {
+    loginForm.style.display = 'none';
+    keyVerificationForm.style.display = 'none';
+    registrationForm.style.display = 'none';
+    formToShow.style.display = 'block';
+    
+    if (formToShow === loginForm) {
+        headerTitle.textContent = 'FerieSystem Login';
+    } else if (formToShow === keyVerificationForm) {
+        headerTitle.textContent = 'FerieSystem Registration';
+    } else if (formToShow === registrationForm) {
+        headerTitle.textContent = 'FerieSystem Registration';
+    }
+}
+
+showRegisterKeyLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    showForm(keyVerificationForm);
+});
+
+showLoginLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    showForm(loginForm);
+});
+
+showLoginFromRegisterLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    showForm(loginForm);
+});
+
+keyVerificationForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const key = document.getElementById('registrationKey').value.trim();
+    
+    if (key.length > 0) {
+        showForm(registrationForm);
+    } else {
+        alert('Please enter a registration key.');
+    }
+});
+
+const keyBoxes = document.querySelectorAll('.key-box');
+const hiddenKeyInput = document.getElementById('registrationKey');
+
+keyBoxes.forEach((box, index) => {
+    box.addEventListener('input', function(e) {
+        const cleanValue = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        const value = cleanValue.slice(-1);
+        e.target.value = value;
+        
+        if (value) {
+            e.target.classList.add('filled');
+            if (index < keyBoxes.length - 1) {
+                keyBoxes[index + 1].focus();
+            }
+        } else {
+            e.target.classList.remove('filled');
+        }
+        
+        updateCompleteKey();
+        
+        checkAutoSubmit();
+    });
+
+    box.addEventListener('focus', function(e) {
+        e.target.select();
+    });
+
+    box.addEventListener('keydown', function(e) {
+        if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
+            if (e.target.selectionStart !== e.target.selectionEnd) {
+                e.target.value = '';
+                e.target.classList.remove('filled');
+            }
+        }
+        
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+            keyBoxes[index - 1].focus();
+            keyBoxes[index - 1].value = '';
+            keyBoxes[index - 1].classList.remove('filled');
+            updateCompleteKey();
+        }
+        
+        if (e.key === 'ArrowLeft' && index > 0) {
+            keyBoxes[index - 1].focus();
+            setTimeout(() => keyBoxes[index - 1].select(), 0);
+        }
+        if (e.key === 'ArrowRight' && index < keyBoxes.length - 1) {
+            keyBoxes[index + 1].focus();
+            setTimeout(() => keyBoxes[index + 1].select(), 0);
+        }
+    });
+
+    box.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData('text').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        
+        for (let i = 0; i < Math.min(pastedData.length, keyBoxes.length - index); i++) {
+            keyBoxes[index + i].value = pastedData[i];
+            keyBoxes[index + i].classList.add('filled');
+        }
+        
+        const nextIndex = Math.min(index + pastedData.length, keyBoxes.length - 1);
+        keyBoxes[nextIndex].focus();
+        
+        updateCompleteKey();
+        
+        checkAutoSubmit();
+    });
+});
+
+function updateCompleteKey() {
+    const completeKey = Array.from(keyBoxes).map(box => box.value).join('');
+    hiddenKeyInput.value = completeKey;
+}
+
+function checkAutoSubmit() {
+    const allFilled = Array.from(keyBoxes).every(box => box.value.trim() !== '');
+    
+    if (allFilled) {
+        setTimeout(() => {
+            keyVerificationForm.dispatchEvent(new Event('submit'));
+        }, 300);
+    }
+}
+
+registrationForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('registerName').value;
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (password !== confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+    }
+    
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters long!');
+        return;
+    }
+    
+    alert(`Welcome ${name}! Registration successful.`);
+    showForm(loginForm);
+    
+    registrationForm.reset();
+});
+
+loginForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const remember = document.getElementById('remember').checked;
+    
+    alert(`Welcome back!${remember ? ' (Remember me enabled)' : ''}`);
+});
