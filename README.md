@@ -20,6 +20,12 @@ The main routes are defined in the `routes/web.php` file, which includes:
 - User profile: `/user/{id}`
 - API users: `/api/users`
 
+## System Flowchart
+
+Below is a flowchart that illustrates the overall system architecture and workflow of the FerieSystem. This diagram provides a visual representation of how different components interact and how data flows through the application.
+
+![FerieSystem Flowchart](https://github.com/wildREA/FerieSystem/blob/mech/flowchart.jpg)
+
 ## Development Server
 
 If you're using PHP's built-in server, make sure you're running it from the project root directory:
