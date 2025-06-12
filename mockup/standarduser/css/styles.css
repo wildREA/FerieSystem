@@ -490,6 +490,23 @@ body {
   justify-content: center;
 }
 
+/* Clickable stat card */
+.stat-card.clickable {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.stat-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card.clickable .label small {
+  font-size: 10px;
+  color: #7a8ba0;
+  font-style: italic;
+}
+
 /* Chart card styles */
 .chart-card {
   background-color: #222941;
