@@ -20,10 +20,15 @@ body {
 
 /* Modal text selection styles */
 .modal-header, .modal-footer, .text-primary, .bi {
+  border-color: #2e353b !important;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+}
+
+.modal-title {
+  color: #ffffff;
 }
 
 .text-muted {
@@ -238,6 +243,7 @@ body {
 .search-result-item {
   padding: 10px 15px;
   cursor: pointer;
+  border-left: 3px solid #1a1f2c;
   border-bottom: 1px solid #2c3142;
   display: flex;
   align-items: center;
@@ -786,13 +792,6 @@ body {
   overflow: hidden;
 }
 
-.request-card.active {
-  border-left: 4px solid #28a745;
-}
-
-.request-card.inactive {
-  border-left: 4px solid #6c757d;
-}
 
 .request-card:hover {
   transform: translateY(-5px);
@@ -841,7 +840,19 @@ body {
   font-weight: bold;
 }
 
-/* Special classes for text selection control */
+.alert-light {
+  --bs-alert-border-color: #425183 !important;
+}
+
+.selectable-text {
+  color: #6f7580;
+} 
+
+.non-selectable {
+  color: #a0a7b5 !important;
+}
+
+/* Specialz classes for text selection control */
 .selectable-text {
   user-select: text !important;
   -webkit-user-select: text !important;
