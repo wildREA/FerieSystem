@@ -722,7 +722,90 @@ document.addEventListener("DOMContentLoaded", function() {
         modal.style.zIndex = '1050';
         modal.innerHTML = `
             <div class="modal-dialog modal-lg">
-                <div class="modal-content">
+                <div class="modal-content" style="background-color: #232838;">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Student Details - ${student.name}</h5>
+                        <button type="button" class="btn-close" onclick="closeModal()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <div class="student-avatar status-${student.status}" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 15px;">
+                                    ${student.avatar}
+                                </div>
+                                <h4 class="mb-1 non-selectable">${student.name}</h4>
+                                <p class="text-muted mb-2 selectable-text">${student.id}</p>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3"><i class="bi bi-person-circle me-2"></i>Student Information</h6>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small class="text-muted">Email</small>
+                                            <div class="fw-medium selectable-text">${student.email}</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <small class="text-muted">Course</small>
+                                            <div class="fw-medium selectable-text">${student.course}</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <small class="text-muted">Year</small>
+                                            <div class="fw-medium selectable-text">${student.year}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Notes Section -->
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3"><i class="bi bi-journal-text me-2"></i>Administrative Notes</h6>
+                                    <div class="alert alert-light mb-0" style="background-color: #232838;">
+                                        <textarea class="form-control border-0 bg-transparent" placeholder="Add notes about this student here..." rows="2"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        ${student.status === 'pending' ? `
+                            <button type="button" class="btn btn-success" onclick="approveRequest('${student.id}'); closeModal();">
+                                <i class="bi bi-check"></i> Approve
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="denyRequest('${student.id}'); closeModal();">
+                                <i class="bi bi-x"></i> Deny
+                            </button>
+                        ` : ''}
+                        
+                        <a href="requests.html" class="btn btn-primary" onclick="localStorage.setItem('searchQuery', '${student.name}');">
+                            <i class="bi bi-list-check"></i> View All Requests
+                        </a>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modalBackdrop);
+        document.body.appendChild(modal);
+        
+        // Store references for cleanup
+        window.currentModal = modal;
+        window.currentModalBackdrop = modalBackdrop;
+    }
+
+    function showRequestModal(student) {
+        // Create modal backdrop
+        const modalBackdrop = document.createElement('div');
+        modalBackdrop.className = 'modal-backdrop fade show';
+        modalBackdrop.style.zIndex = '1040';
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'modal fade show';
+        modal.style.display = 'block';
+        modal.style.zIndex = '1050';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content" style="background-color: #232838;">
                     <div class="modal-header">
                         <h5 class="modal-title">Student Details - ${student.name}</h5>
                         <button type="button" class="btn-close" onclick="closeModal()"></button>
@@ -777,7 +860,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                         </div>
                                     </div>
                                     
-                                    <div class="alert alert-light border mb-3">
+                                    <div class="alert alert-light mb-3" style="background-color: #232838;">
                                         <small class="text-muted d-block mb-1">Request Reason</small>
                                         <div class="selectable-text">${student.requestReason}</div>
                                     </div>
@@ -804,7 +887,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <!-- Notes Section -->
                                 <div class="mb-4">
                                     <h6 class="text-primary mb-3"><i class="bi bi-journal-text me-2"></i>Administrative Notes</h6>
-                                    <div class="alert alert-light border mb-0">
+                                    <div class="alert alert-light mb-0" style="background-color: #232838;">
                                         <textarea class="form-control border-0 bg-transparent" placeholder="Add notes about this student here..." rows="2"></textarea>
                                     </div>
                                 </div>
