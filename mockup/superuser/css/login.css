@@ -1,9 +1,10 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    background-color: #1a1f2c;
+    color: #ffffff;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -23,25 +24,47 @@ body {
 }
 
 header {
-    background: #35424a;
+    background: #222941;
     color: white;
     padding: 20px;
     text-align: center;
-    border-radius: 5px 5px 0 0;
+    border-radius: 12px 12px 0 0;
+    border: 1px solid #2c3142;
+    border-bottom: none;
+    position: relative;
+}
+
+header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background: #52579b;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
 }
 
 .content {
-    background: white;
+    background: #222941;
     padding: 30px;
-    border-radius: 0 0 5px 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 12px 12px;
+    border: 1px solid #2c3142;
+    border-top: none;
 }
 
 footer {
-    background: #35424a;
-    color: white;
+    background: #1a1f2c;
+    color: #a0a7b5;
     text-align: center;
-    padding: 15px;
+    padding: 20px;
+    margin-top: auto;
+    border-top: 1px solid #2c3142;
 }
 
 .alert {
@@ -52,9 +75,9 @@ footer {
 }
 
 .alert-danger {
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
+    color: #ffffff;
+    background-color: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.3);
 }
 
 .form-group {
@@ -63,22 +86,43 @@ footer {
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #a0a7b5;
 }
 
 .form-group input[type="text"],
 .form-group input[type="email"],
 .form-group input[type="password"] {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 12px 16px;
+    border: 2px solid #2c3142;
+    border-radius: 8px;
     box-sizing: border-box;
+    background-color: #1a1f2c;
+    color: #ffffff;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="password"]:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    background-color: #1a1f2c;
+}
+
+.form-group input[type="text"]::placeholder,
+.form-group input[type="email"]::placeholder,
+.form-group input[type="password"]::placeholder {
+    color: #6c757d;
 }
 
 .form-group input[type="checkbox"] {
-    margin-right: 10px;
+    margin-right: 8px;
+    accent-color: #007bff;
 }
 
 .form-group .forgot-password {
@@ -99,51 +143,63 @@ footer {
     align-items: center;
     margin-bottom: 0;
     cursor: pointer;
+    color: #a0a7b5;
+    font-size: 14px;
+}
+
+.forgot-password a {
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.forgot-password a:hover {
+    color: #0056b3;
+    text-decoration: underline;
 }
 
 .btn {
     display: inline-block;
-    background: #35424a;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: white;
-    padding: 10px 20px;
+    padding: 12px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
+    font-weight: 500;
     width: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
 }
 
 .btn:hover {
-    background: #2c3840;
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
-/* Forgot password and register links */
-.forgot-password {
-    text-align: right;
-    margin-top: 0;
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
 }
 
-.forgot-password a {
-    color: #35424a;
-    text-decoration: none;
-}
-
-.forgot-password a:hover {
-    text-decoration: underline;
-}
-
+/* Link styles */
 .register-link {
     text-align: center;
     margin-top: 20px;
 }
 
 .register-link a {
-    color: #35424a;
+    color: #007bff;
     text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
 }
 
 .register-link a:hover {
-    text-decoration: underline;
+    color: #0056b3;
+    text-decoration: none;
 }
 
 /* Form headers */
@@ -151,14 +207,14 @@ footer {
 #registrationForm h2 {
     text-align: center;
     margin-bottom: 10px;
-    color: #35424a;
+    color: #ffffff;
     font-size: 24px;
     font-weight: 600;
 }
 
 .form-description {
     text-align: center;
-    color: #666;
+    color: #a0a7b5;
     margin-bottom: 25px;
     font-size: 14px;
     line-height: 1.4;
@@ -177,59 +233,10 @@ form[style*="none"] {
     margin-bottom: 0;
 }
 
-.btn {
-    display: inline-block;
-    background: linear-gradient(135deg, #35424a 0%, #2c3840 100%);
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 500;
-    width: 100%;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.btn:hover {
-    background: linear-gradient(135deg, #2c3840 0%, #1f252a 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.register-link {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.register-link a {
-    color: #35424a;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.register-link a:hover {
-    color: #2c3840;
-    text-decoration: none;
-}
-
-.register-link a[href="#"]:before {
-    content: "";
-    display: inline-block;
-    margin-right: 5px;
-}
-
 .form-group input:focus {
     outline: none;
-    border-color: #35424a;
-    box-shadow: 0 0 0 2px rgba(53, 66, 74, 0.1);
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 .key-input-container {
@@ -245,12 +252,13 @@ form[style*="none"] {
     text-align: center;
     font-size: 18px;
     font-weight: bold;
-    border: 2px solid #ddd !important;
+    border: 2px solid #2c3142 !important;
     border-radius: 8px !important;
-    background: white;
+    background: #1a1f2c;
+    color: #ffffff;
     transition: all 0.2s ease;
     text-transform: uppercase;
-    caret-color: transparent;
+    caret-color: #007bff;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -266,17 +274,69 @@ form[style*="none"] {
 }
 
 .key-box:focus {
-    border-color: #35424a !important;
-    box-shadow: 0 0 0 2px rgba(53, 66, 74, 0.1) !important;
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
     transform: scale(1.05);
+    background-color: #1a1f2c;
 }
 
 .key-box.filled {
-    background-color: #f8f9fa;
-    border-color: #35424a !important;
+    background-color: #222941;
+    border-color: #007bff !important;
 }
 
 .key-box.error {
     border-color: #dc3545 !important;
-    background-color: #fff5f5;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Password input container and toggle styles */
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-container input {
+    padding-right: 45px !important;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    z-index: 1;
+}
+
+.password-toggle:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    transform: scale(1.05);
+}
+
+.password-toggle:active {
+    transform: scale(0.95);
+}
+
+.password-toggle svg {
+    width: 18px;
+    height: 18px;
+    color: #a0a7b5;
+    transition: color 0.2s ease;
+}
+
+.password-toggle:hover svg {
+    color: #007bff;
+}
+
+.password-toggle .eye-icon,
+.password-toggle .eye-off-icon {
+    transition: opacity 0.2s ease;
 }

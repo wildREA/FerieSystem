@@ -8,18 +8,40 @@ const showLoginLink = document.getElementById('showLogin');
 const showLoginFromRegisterLink = document.getElementById('showLoginFromRegister');
 
 function showForm(formToShow) {
-    loginForm.style.display = 'none';
-    keyVerificationForm.style.display = 'none';
-    registrationForm.style.display = 'none';
-    formToShow.style.display = 'block';
-    
-    if (formToShow === loginForm) {
-        headerTitle.textContent = 'FerieSystem Login';
-    } else if (formToShow === keyVerificationForm) {
-        headerTitle.textContent = 'FerieSystem Registration';
-    } else if (formToShow === registrationForm) {
-        headerTitle.textContent = 'FerieSystem Registration';
+    // Add fade-out effect to current visible form
+    const currentForm = document.querySelector('.content form[style="display: block"], .content form:not([style*="none"])');
+    if (currentForm && currentForm !== formToShow) {
+        currentForm.style.opacity = '0';
+        currentForm.style.transform = 'translateY(-10px)';
     }
+    
+    setTimeout(() => {
+        loginForm.style.display = 'none';
+        keyVerificationForm.style.display = 'none';
+        registrationForm.style.display = 'none';
+        formToShow.style.display = 'block';
+        
+        // Add fade-in effect to new form
+        formToShow.style.opacity = '0';
+        formToShow.style.transform = 'translateY(10px)';
+        
+        setTimeout(() => {
+            formToShow.style.opacity = '1';
+            formToShow.style.transform = 'translateY(0)';
+        }, 50);
+        
+        if (formToShow === loginForm) {
+            headerTitle.textContent = 'FerieSystem Login';
+        } else if (formToShow === keyVerificationForm) {
+            headerTitle.textContent = 'FerieSystem Registration';
+            // Focus first key box
+            keyBoxes[0].focus();
+        } else if (formToShow === registrationForm) {
+            headerTitle.textContent = 'FerieSystem Registration';
+            // Focus first input
+            document.getElementById('registerName').focus();
+        }
+    }, currentForm ? 150 : 0);
 }
 
 showRegisterKeyLink.addEventListener('click', function(e) {
@@ -41,10 +63,11 @@ keyVerificationForm.addEventListener('submit', function(e) {
     e.preventDefault();
     const key = document.getElementById('registrationKey').value.trim();
     
-    if (key.length > 0) {
+    if (key.length === 6) {
+        // Accept any 6-character key for now
         showForm(registrationForm);
     } else {
-        alert('Please enter a registration key.');
+        alert('Please enter a complete 6-character registration key.');
     }
 });
 
@@ -127,19 +150,27 @@ function checkAutoSubmit() {
     const allFilled = Array.from(keyBoxes).every(box => box.value.trim() !== '');
     
     if (allFilled) {
+        // Add a small delay before auto-submitting to allow user to see the filled key
         setTimeout(() => {
-            keyVerificationForm.dispatchEvent(new Event('submit'));
-        }, 300);
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            keyVerificationForm.dispatchEvent(submitEvent);
+        }, 500);
     }
 }
 
 registrationForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const name = document.getElementById('registerName').value;
-    const email = document.getElementById('registerEmail').value;
+    const name = document.getElementById('registerName').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    // Validation
+    if (!name || !email || !password || !confirmPassword) {
+        alert('Please fill in all fields.');
+        return;
+    }
     
     if (password !== confirmPassword) {
         alert('Passwords do not match!');
@@ -151,10 +182,24 @@ registrationForm.addEventListener('submit', function(e) {
         return;
     }
     
-    alert(`Welcome ${name}! Registration successful.`);
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+    
+    // Success
+    alert(`Welcome ${name}! Registration successful. You can now log in with your credentials.`);
     showForm(loginForm);
     
+    // Clear all forms
     registrationForm.reset();
+    keyBoxes.forEach(box => {
+        box.value = '';
+        box.classList.remove('filled');
+    });
+    document.getElementById('registrationKey').value = '';
 });
 
 loginForm.addEventListener('submit', function(e) {
@@ -163,4 +208,24 @@ loginForm.addEventListener('submit', function(e) {
     const remember = document.getElementById('remember').checked;
     
     alert(`Welcome back!${remember ? ' (Remember me enabled)' : ''}`);
+});
+
+// Password toggle functionality
+document.querySelectorAll('.password-toggle').forEach(button => {
+    button.addEventListener('click', function() {
+        const targetId = this.getAttribute('data-target');
+        const passwordInput = document.getElementById(targetId);
+        const eyeIcon = this.querySelector('.eye-icon');
+        const eyeOffIcon = this.querySelector('.eye-off-icon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.style.display = 'none';
+            eyeOffIcon.style.display = 'block';
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.style.display = 'block';
+            eyeOffIcon.style.display = 'none';
+        }
+    });
 });
