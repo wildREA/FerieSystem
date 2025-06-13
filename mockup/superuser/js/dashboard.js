@@ -179,11 +179,14 @@ document.addEventListener("DOMContentLoaded", function() {
     init();
 
     function init() {
+        // Check if we're on a page that needs student rendering
+        const studentsGrid = document.getElementById('studentsGrid');
+        
         // Load different data based on the current page
-        if (currentPage === 'students') {
+        if (currentPage === 'students' && studentsGrid) {
             // Show all students
             renderStudents(studentsData);
-        } else if (currentPage === 'requests') {
+        } else if (currentPage === 'requests' && studentsGrid) {
             // Show only pending requests in the main grid
             const pendingStudents = studentsData.filter(student => student.status === 'pending');
             renderStudents(pendingStudents);
@@ -249,17 +252,23 @@ document.addEventListener("DOMContentLoaded", function() {
      * @param {string} view - 'active' or 'inactive'
      */
     function toggleApprovedRequestsView(view) {
-        // Update button styles
+        // Update button styles - properly handle both btn-primary/btn-outline-primary and active class
         if (view === 'active') {
-            activeRequestsBtn.classList.add('btn-primary');
+            // Set active button styling
+            activeRequestsBtn.classList.add('btn-primary', 'active');
             activeRequestsBtn.classList.remove('btn-outline-primary');
+            
+            // Set inactive button styling
             inactiveRequestsBtn.classList.add('btn-outline-primary');
-            inactiveRequestsBtn.classList.remove('btn-primary');
+            inactiveRequestsBtn.classList.remove('btn-primary', 'active');
         } else {
-            inactiveRequestsBtn.classList.add('btn-primary');
+            // Set active button styling
+            inactiveRequestsBtn.classList.add('btn-primary', 'active');
             inactiveRequestsBtn.classList.remove('btn-outline-primary');
+            
+            // Set inactive button styling
             activeRequestsBtn.classList.add('btn-outline-primary');
-            activeRequestsBtn.classList.remove('btn-primary');
+            activeRequestsBtn.classList.remove('btn-primary', 'active');
         }
         
         // Filter approved requests based on active status
@@ -421,6 +430,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function handleSearch(e) {
         const query = e.target.value.trim();
+        const searchResults = document.getElementById('searchResults');
+        
+        if (!searchResults) {
+            console.warn('searchResults element not found on this page');
+            return;
+        }
         
         if (query === '') {
             searchResults.style.display = 'none';
@@ -435,7 +450,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Keep the approved requests section intact
                 if (activeRequestsBtn && activeRequestsBtn.classList.contains('btn-primary')) {
                     toggleApprovedRequestsView('active');
-                } else {
+                } else if (inactiveRequestsBtn) {
                     toggleApprovedRequestsView('inactive');
                 }
             }
@@ -537,22 +552,96 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function renderStudents(students) {
+        // Get studentsGrid element and check if it exists
+        const studentsGrid = document.getElementById('studentsGrid');
+        const noResults = document.getElementById('noResults');
+        
+        // If studentsGrid doesn't exist on this page, exit the function
+        if (!studentsGrid) {
+            console.warn('studentsGrid element not found on this page');
+            return;
+        }
+        
         if (students.length === 0) {
             studentsGrid.style.display = 'none';
-            noResults.style.display = 'block';
+            if (noResults) {
+                noResults.style.display = 'block';
+            }
             return;
         }
 
         studentsGrid.style.display = 'grid';
-        noResults.style.display = 'none';
+        if (noResults) {
+            noResults.style.display = 'none';
+        }
         
-        studentsGrid.innerHTML = students.map(student => createStudentCard(student)).join('');
+        // Use the appropriate card creation function based on the current page
+        if (currentPage === 'students') {
+            studentsGrid.innerHTML = students.map(student => createStudentsCard(student)).join('');
+        } else if (currentPage === 'requests') {
+            studentsGrid.innerHTML = students.map(student => createRequestsCard(student)).join('');
+        }
         
         // Add event listeners to action buttons
         setupCardEventListeners();
     }
 
-    function createStudentCard(student) {
+    function createRequestsCard(student) {
+        const requestDate = new Date(student.requestDate);
+        const requestEndDate = new Date(student.requestEndDate);
+        const today = new Date();
+        const daysSinceRequest = Math.floor((today - requestDate) / (1000 * 60 * 60 * 24));
+        
+        return `
+            <div class="student-card" data-student-id="${student.id}">
+                <div class="student-header">
+                    <div class="student-avatar status-${student.status}">
+                        ${student.avatar}
+                    </div>
+                    <div class="student-info">
+                        <h4>${student.name}</h4>
+                        <p class="student-id">${student.id}</p>
+                    </div>
+                </div>
+                
+                <div class="student-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Course:</span>
+                        <span class="detail-value">${student.course}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Year:</span>
+                        <span class="detail-value">${student.year}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="status-badge status-${student.status}">${student.status}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Request End Date:</span>
+                        <span class="detail-value">${requestEndDate.toLocaleDateString()}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Requested:</span>
+                        <span class="detail-value">${student.requestDays} days</span>
+                    </div>
+                </div>
+                
+                <div class="student-card-footer">
+                    <div class="days-remaining">
+                        ${daysSinceRequest} days ago • Ends: ${requestEndDate.toLocaleDateString()}
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-outline-primary btn-sm" onclick="viewDetails('${student.id}')">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function createStudentsCard(student) {
         const requestDate = new Date(student.requestDate);
         const requestEndDate = new Date(student.requestEndDate);
         const today = new Date();
@@ -575,7 +664,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function setupCardEventListeners() {
         // Add click handlers to student cards
-        document.querySelectorAll('.student-card').forEach(card => {
+        const studentCards = document.querySelectorAll('.student-card');
+        
+        if (studentCards.length === 0) {
+            return; // No cards to set up listeners for
+        }
+        
+        studentCards.forEach(card => {
             card.addEventListener('click', (e) => {
                 // Don't trigger card click if clicking on buttons
                 if (e.target.closest('.action-buttons')) return;
@@ -587,24 +682,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Global functions for button actions
-    window.approveRequest = function(studentId) {
-        const student = studentsData.find(s => s.id === studentId);
-        if (student) {
-            student.status = 'approved';
-            renderStudents(studentsData);
-            showNotification(`Request approved for ${student.name}`, 'success');
-        }
-    };
-
-    window.denyRequest = function(studentId) {
-        const student = studentsData.find(s => s.id === studentId);
-        if (student) {
-            student.status = 'denied';
-            renderStudents(studentsData);
-            showNotification(`Request denied for ${student.name}`, 'warning');
-        }
-    };
-
     window.viewDetails = function(studentId) {
         const student = studentsData.find(s => s.id === studentId);
         if (student) {
@@ -612,7 +689,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    function showNotification(message, type = 'info') {
+    window.showNotification = function(message, type = 'info') {
         // Create notification element
         const notification = document.createElement('div');
         notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
@@ -645,7 +722,7 @@ document.addEventListener("DOMContentLoaded", function() {
         modal.style.zIndex = '1050';
         modal.innerHTML = `
             <div class="modal-dialog modal-lg">
-                <div class="modal-content">
+                <div class="modal-content" style="background-color: #232838;">
                     <div class="modal-header">
                         <h5 class="modal-title">Student Details - ${student.name}</h5>
                         <button type="button" class="btn-close" onclick="closeModal()"></button>
@@ -656,9 +733,8 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <div class="student-avatar status-${student.status}" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 15px;">
                                     ${student.avatar}
                                 </div>
-                                <h4 class="mb-1">${student.name}</h4>
-                                <p class="text-muted mb-2">${student.id}</p>
-                                <span class="status-badge status-${student.status}" style="font-size: 0.9rem; padding: 6px 12px;">${student.status}</span>
+                                <h4 class="mb-1 non-selectable">${student.name}</h4>
+                                <p class="text-muted mb-2 selectable-text">${student.id}</p>
                             </div>
                             <div class="col-md-8">
                                 <div class="mb-4">
@@ -666,44 +742,25 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <div class="row">
                                         <div class="col-6">
                                             <small class="text-muted">Email</small>
-                                            <div class="fw-medium">${student.email}</div>
+                                            <div class="fw-medium selectable-text">${student.email}</div>
                                         </div>
                                         <div class="col-3">
                                             <small class="text-muted">Course</small>
-                                            <div class="fw-medium">${student.course}</div>
+                                            <div class="fw-medium selectable-text">${student.course}</div>
                                         </div>
                                         <div class="col-3">
                                             <small class="text-muted">Year</small>
-                                            <div class="fw-medium">${student.year}</div>
+                                            <div class="fw-medium selectable-text">${student.year}</div>
                                         </div>
                                     </div>
                                 </div>
-                                
+
+                                <!-- Notes Section -->
                                 <div class="mb-4">
-                                    <h6 class="text-primary mb-3"><i class="bi bi-calendar-range me-2"></i>Vacation Request</h6>
-                                    <div class="row">
-                                        <div class="col-4">
-                                            <small class="text-muted">Start Date</small>
-                                            <div class="fw-medium">${new Date(student.requestDate).toLocaleDateString()}</div>
-                                        </div>
-                                        <div class="col-4">
-                                            <small class="text-muted">End Date</small>
-                                            <div class="fw-medium">${new Date(student.requestEndDate).toLocaleDateString()}</div>
-                                        </div>
-                                        <div class="col-4">
-                                            <small class="text-muted">Duration</small>
-                                            <div class="fw-medium">${student.requestDays} days</div>
-                                        </div>
+                                    <h6 class="text-primary mb-3"><i class="bi bi-journal-text me-2"></i>Administrative Notes</h6>
+                                    <div class="alert alert-light mb-0" style="background-color: #232838;">
+                                        <textarea class="form-control border-0 bg-transparent" placeholder="Add notes about this student here..." rows="2"></textarea>
                                     </div>
-                                    <div class="mt-3">
-                                        <small class="text-muted">Reason</small>
-                                        <div class="fw-medium">${student.requestReason}</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="alert alert-light border">
-                                    <small class="text-muted">Total Vacation Days Available</small>
-                                    <div class="fw-medium">${student.vacationDays} days</div>
                                 </div>
                             </div>
                         </div>
@@ -717,6 +774,139 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <i class="bi bi-x"></i> Deny
                             </button>
                         ` : ''}
+                        
+                        <a href="requests.html" class="btn btn-primary" onclick="localStorage.setItem('searchQuery', '${student.name}');">
+                            <i class="bi bi-list-check"></i> View All Requests
+                        </a>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modalBackdrop);
+        document.body.appendChild(modal);
+        
+        // Store references for cleanup
+        window.currentModal = modal;
+        window.currentModalBackdrop = modalBackdrop;
+    }
+
+    function showRequestModal(student) {
+        // Create modal backdrop
+        const modalBackdrop = document.createElement('div');
+        modalBackdrop.className = 'modal-backdrop fade show';
+        modalBackdrop.style.zIndex = '1040';
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'modal fade show';
+        modal.style.display = 'block';
+        modal.style.zIndex = '1050';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content" style="background-color: #232838;">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Student Details - ${student.name}</h5>
+                        <button type="button" class="btn-close" onclick="closeModal()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <div class="student-avatar status-${student.status}" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 15px;">
+                                    ${student.avatar}
+                                </div>
+                                <h4 class="mb-1 non-selectable">${student.name}</h4>
+                                <p class="text-muted mb-2 selectable-text">${student.id}</p>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3"><i class="bi bi-person-circle me-2"></i>Student Information</h6>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small class="text-muted">Email</small>
+                                            <div class="fw-medium selectable-text">${student.email}</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <small class="text-muted">Course</small>
+                                            <div class="fw-medium selectable-text">${student.course}</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <small class="text-muted">Year</small>
+                                            <div class="fw-medium selectable-text">${student.year}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Vacation Request Information -->
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3"><i class="bi bi-calendar-check me-2"></i>Vacation Request Details</h6>
+                                    <div class="row mb-3">
+                                        <div class="col-3">
+                                            <small class="text-muted">Start Date</small>
+                                            <div class="fw-medium selectable-text">${new Date(student.requestDate).toLocaleDateString()}</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <small class="text-muted">End Date</small>
+                                            <div class="fw-medium selectable-text">${new Date(student.requestEndDate).toLocaleDateString()}</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <small class="text-muted">Duration</small>
+                                            <div class="fw-medium selectable-text">${student.requestDays} days</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <small class="text-muted">Status</small>
+                                            <div class="status-badge status-${student.status}">${student.status}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="alert alert-light mb-3" style="background-color: #232838;">
+                                        <small class="text-muted d-block mb-1">Request Reason</small>
+                                        <div class="selectable-text">${student.requestReason}</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Additional Student Information -->
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3"><i class="bi bi-info-circle me-2"></i>Additional Information</h6>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small class="text-muted">Total Vacation Days Available</small>
+                                            <div class="fw-medium selectable-text">${student.vacationDays} days</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Previous Requests This Year</small>
+                                            <div class="fw-medium selectable-text">
+                                                <span class="badge bg-success me-1">Approved: 2</span>
+                                                <span class="badge bg-danger me-1">Denied: 1</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Notes Section -->
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3"><i class="bi bi-journal-text me-2"></i>Administrative Notes</h6>
+                                    <div class="alert alert-light mb-0" style="background-color: #232838;">
+                                        <textarea class="form-control border-0 bg-transparent" placeholder="Add notes about this student here..." rows="2"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        ${student.status === 'pending' ? `
+                            <button type="button" class="btn btn-success" onclick="approveRequest('${student.id}'); closeModal();">
+                                <i class="bi bi-check"></i> Approve
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="denyRequest('${student.id}'); closeModal();">
+                                <i class="bi bi-x"></i> Deny
+                            </button>
+                        ` : ''}
+                        
+                        <a href="requests.html" class="btn btn-primary" onclick="localStorage.setItem('searchQuery', '${student.name}');">
+                            <i class="bi bi-list-check"></i> View All Requests
+                        </a>
                         <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
                     </div>
                 </div>
@@ -763,4 +953,13 @@ document.addEventListener("DOMContentLoaded", function() {
             }, index * 100);
         });
     }, 100);
+
+    // Iterate through requests by amount and return the number of requests to .notification-badge
+    const requestAmount = studentsData.filter(student => student.status === 'pending').length;
+    const notificationBadge = document.querySelector('.notification-badge');
+    
+    if (notificationBadge) {
+        notificationBadge.textContent = requestAmount > 0 ? requestAmount : '';
+        notificationBadge.style.display = requestAmount > 0 ? 'block' : 'none';
+    }
 });

@@ -1,0 +1,194 @@
+/* filepath: /home/wildrea-archlinux/Documents/Projects/Websites/FerieSystem/mockup/superuser/css/students.css */
+/* Styles specific to the students page */
+
+/* Non-selectable elements */
+.status-badge, 
+.status-indicator,
+.student-card-footer,
+.students-grid .btn {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Keep card content selectable */
+.student-info h4,
+.student-info p,
+.detail-value,
+.student-email,
+.student-course {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Student card styles */
+.student-card {
+  background-color: #232838;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.student-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+.student-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 40px 40px 0;
+  border-color: transparent #1a1f2c transparent transparent;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.student-card:hover::before {
+  border-color: transparent #3498db transparent transparent;
+}
+
+/* Highlighted card style */
+.student-card.highlighted {
+  border: 2px solid #3498db;
+  box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
+  background-color: #28303f;
+}
+
+/* Student avatar */
+.student-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 600;
+  border: 3px solid #1a1f2c;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  background-image: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.2) 100%);
+  font-weight: bold;
+  color: white;
+  margin-right: 15px;
+}
+
+/* Status colors */
+.status-approved {
+  background-color: #28a745;
+}
+
+.status-pending {
+  background-color: #ffc107;
+}
+
+.status-denied {
+  background-color: #dc3545;
+}
+
+/* Student header */
+.student-header {
+  display: flex;
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.student-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(90deg, #3498db, transparent);
+}
+
+/* Student info styling */
+.student-info h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  position: relative;
+  display: inline-block;
+}
+
+.student-info h4::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: #3498db;
+  transition: width 0.3s ease;
+}
+
+.student-card:hover .student-info h4::after {
+  width: 100%;
+}
+
+.student-info p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  color: #a0a7b5;
+}
+
+/* Enhance detail rows */
+.detail-row {
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: #a0a7b5;
+  font-size: 0.8rem;
+}
+
+.detail-value {
+  font-weight: 500;
+}
+
+/* Student card footer improvements */
+.student-card-footer {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.days-remaining {
+  font-size: 0.8rem;
+  color: #a0a7b5;
+}
+
+/* Improve action buttons */
+.action-buttons .btn {
+  transition: all 0.3s ease;
+}
+
+.action-buttons .btn:hover {
+  transform: translateY(-3px);
+}
