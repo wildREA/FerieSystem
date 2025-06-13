@@ -1,0 +1,130 @@
+/* filepath: /home/wildrea-archlinux/Documents/Projects/Websites/FerieSystem/mockup/superuser/css/requests.css */
+/* Styles specific to the requests page */
+
+/* Non-selectable elements */
+.request-status-badge, 
+.date-label, 
+.days-remaining,
+.approved-requests-grid .btn {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Make all card content non-selectable by default */
+.student-card, .request-card, 
+.student-avatar, .student-header, 
+.student-info h4, .student-info p, 
+.detail-value, .date-value, .student-details,
+.detail-row, .detail-label, .student-card-footer,
+.days-remaining, .request-dates, .date-block,
+.action-buttons, .request-status-badge {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Only allow selecting specific critical information */
+.detail-value span.selectable,
+.date-value span.selectable,
+.request-reason {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Request card styles */
+.request-card {
+  background-color: #232838;
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.request-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+.request-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background-image: radial-gradient(circle at bottom right, rgba(52, 152, 219, 0.1), transparent 70%);
+  pointer-events: none;
+}
+
+/* Status badge styles */
+.request-status-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+}
+
+.request-status-badge.active {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.9), rgba(40, 167, 69, 0.7));
+  color: white;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.request-status-badge.active::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #4AE54A;
+  margin-right: 6px;
+  animation: pulse 2s infinite;
+}
+
+.request-status-badge.inactive {
+  background: linear-gradient(135deg, rgba(108, 117, 125, 0.9), rgba(108, 117, 125, 0.7));
+  color: white;
+  border: 1px solid rgba(108, 117, 125, 0.3);
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(74, 229, 74, 0.7); }
+  70% { box-shadow: 0 0 0 6px rgba(74, 229, 74, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 229, 74, 0); }
+}
+
+/* Date blocks */
+.request-dates {
+  display: flex;
+  justify-content: space-between;
+}
+
+.date-block {
+  text-align: center;
+  flex: 1;
+}
+
+.date-label {
+  font-size: 0.8rem;
+  color: #a0a7b5;
+  margin-bottom: 5px;
+}
+
+.date-value {
+  font-weight: 500;
+}

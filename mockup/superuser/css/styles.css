@@ -7,6 +7,61 @@ body {
   padding: 0;
 }
 
+/* Make UI elements non-selectable */
+.sidebar, .top-header, .content-header, .section-header, .toggle-container,
+.nav-menu, .user-actions, .btn, .modal-header, .request-status-badge,
+.date-label, .detail-label, .toggle-label, .user-role,
+.notification-badge, .no-results, .no-approved-results {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Modal text selection styles */
+.modal-header, .modal-footer, .text-primary, .bi {
+  border-color: #2e353b !important;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.modal-title {
+  color: #ffffff;
+}
+
+.text-muted {
+  color: #a0a7b5 !important;
+}
+
+.modal-body small.text-muted {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Allow selecting important content in modals */
+.modal-body .fw-medium, 
+.modal-body p:not(.text-muted), 
+.modal-body .alert {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Student avatar in modal */
+.modal-body .student-avatar,
+.modal-body h4,
+.modal-body .status-badge {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 /* Sidebar styles */
 .sidebar {
   background-color: #1a1f2c;
@@ -188,6 +243,7 @@ body {
 .search-result-item {
   padding: 10px 15px;
   cursor: pointer;
+  border-left: 3px solid #1a1f2c;
   border-bottom: 1px solid #2c3142;
   display: flex;
   align-items: center;
@@ -283,7 +339,6 @@ body {
 .content-header h2 {
   color: #ffffff;
   font-weight: 600;
-  margin-bottom: 5px;
 }
 
 .content-header p {
@@ -323,7 +378,20 @@ body {
 .student-header {
   display: flex;
   align-items: center;
+  padding-bottom: 12px;
   margin-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.student-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(90deg, #3498db, transparent);
 }
 
 .student-avatar {
@@ -338,19 +406,24 @@ body {
   color: white;
   font-weight: bold;
   font-size: 18px;
+  position: relative;
+  transition: all 0.3s ease;
 }
 
 .student-avatar.status-pending {
   background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
   color: #333;
+  box-shadow: 0 0 15px rgba(253, 203, 110, 0.5);
 }
 
 .student-avatar.status-approved {
   background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
+  box-shadow: 0 0 15px rgba(0, 184, 148, 0.5);
 }
 
 .student-avatar.status-denied {
   background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+  box-shadow: 0 0 15px rgba(232, 67, 147, 0.5);
 }
 
 .student-info h4 {
@@ -719,13 +792,6 @@ body {
   overflow: hidden;
 }
 
-.request-card.active {
-  border-left: 4px solid #28a745;
-}
-
-.request-card.inactive {
-  border-left: 4px solid #6c757d;
-}
 
 .request-card:hover {
   transform: translateY(-5px);
@@ -772,4 +838,32 @@ body {
 .date-value {
   font-size: 14px;
   font-weight: bold;
+}
+
+.alert-light {
+  --bs-alert-border-color: #425183 !important;
+}
+
+.selectable-text {
+  color: #6f7580;
+} 
+
+.non-selectable {
+  color: #a0a7b5 !important;
+}
+
+/* Specialz classes for text selection control */
+.selectable-text {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  cursor: text;
+}
+
+.non-selectable {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
 }
