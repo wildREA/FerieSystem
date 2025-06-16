@@ -777,6 +777,18 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }, 3000);
   };
+  
+  // Function to copy text to clipboard
+  window.copyToClipboard = function(text) {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        window.showNotification("Email copied to clipboard", "success");
+      })
+      .catch(err => {
+        window.showNotification("Failed to copy email", "danger");
+        console.error('Failed to copy text: ', err);
+      });
+  };
 
   function showStudentModal(student) {
     // Create modal backdrop
@@ -784,12 +796,28 @@ document.addEventListener("DOMContentLoaded", function () {
     modalBackdrop.className = "modal-backdrop fade show";
     modalBackdrop.style.zIndex = "1040";
 
+    testFFvalue = 37;  // Test value for FF hours
+    
+    // Process email for display
+    const truncatedEmail = student.email.length > 16 ? student.email.substring(0, 16) + '...' : student.email;
+
     // Create modal
     const modal = document.createElement("div");
     modal.className = "modal fade show";
     modal.style.display = "block";
     modal.style.zIndex = "1050";
     modal.innerHTML = `
+            <style>
+                /* Hide number input arrows */
+                input[type=number]::-webkit-inner-spin-button,
+                input[type=number]::-webkit-outer-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                }
+                input[type=number] {
+                    -moz-appearance: textfield;
+                }
+            </style>
             <div class="modal-dialog modal-lg">
                 <div class="modal-content" style="background-color: #232838;">
                     <div class="modal-header">
@@ -811,11 +839,14 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <div class="row">
                                         <div class="col-6">
                                             <small class="text-muted">Email</small>
-                                            <div class="fw-medium selectable-text">${student.email}</div>
+                                            <div class="fw-medium selectable-text" title="${student.email}" style="cursor: pointer;" onclick="copyToClipboard('${student.email}')">
+                                                ${truncatedEmail}
+                                                <i class="bi bi-clipboard ms-1" style="font-size: 0.8rem; opacity: 0.7;"></i>
+                                            </div>
                                         </div>
                                         <div class="col-3">
                                             <small class="text-muted">Course</small>
-                                            <div class="fw-medium selectable-text">${student.course}</div>
+                                            <div class="fw-medium selectable-text text-truncate" title="${student.course}" style="max-width: 100%; overflow: hidden;">${student.course}</div>
                                         </div>
                                         <div class="col-3">
                                             <small class="text-muted">Year</small>
@@ -829,6 +860,34 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <h6 class="text-primary mb-3"><i class="bi bi-journal-text me-2"></i>Administrative Notes</h6>
                                     <div class="alert alert-light mb-0" style="background-color: #232838;">
                                         <textarea class="form-control border-0 bg-transparent" placeholder="Add notes about this student here..." rows="2"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- FF Hours Section -->
+                        <div class="mt-4 mb-3">
+                            <h6 class="text-primary mb-3"><i class="bi bi-clock-history me-2"></i>FF Hours Management</h6>
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center">
+                                        <span class="text-muted me-3">Current FF Hours:</span>
+                                        <span class="fw-bold fs-5 text-muted">${testFFvalue}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center">
+                                        <div class="input-group me-3" style="max-width: 150px;">
+                                            <button class="btn btn-outline-light" style="background-color: #232838; border-color: #444a54;" type="button">-</button>
+                                            <input type="number" class="form-control text-center" style="background-color: #1a1f2c; border-color: #444a54; color: #ffffff; border-left: none; border-right: none; -webkit-appearance: none; -moz-appearance: textfield;" value="1" min="1">
+                                            <button class="btn btn-outline-light" style="background-color: #232838; border-color: #444a54;" type="button">+</button>
+                                        </div>
+                                        <button class="btn btn-primary me-2" style="background-color: #0d6efd; border-color: #0d6efd;">
+                                            <i class="bi bi-plus-circle me-1"></i> Add
+                                        </button>
+                                        <button class="btn btn-outline-danger" style="color: #dc3545; border-color: #dc3545;">
+                                            <i class="bi bi-dash-circle me-1"></i> Subtract
+                                        </button>
                                     </div>
                                 </div>
                             </div>
