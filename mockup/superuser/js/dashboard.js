@@ -886,7 +886,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                             <input type="number" class="form-control text-center" style="background-color: #1a1f2c; border-color: #444a54; color: #ffffff; border-left: none; border-right: none; -webkit-appearance: none; -moz-appearance: textfield;" value="1" min="1">
                                             <button class="btn btn-outline-light" style="background-color: #232838; border-color: #444a54;" type="button">+</button>
                                         </div>
-                                        <button class="btn btn-outline-danger me-2" style="color:#49dc35; border-color: #49dc35;">
+                                        <button class="btn btn-outline-success me-2" style="color:#49dc35; border-color: #49dc35;">
                                             <i class="bi bi-plus-circle me-1"></i> Add
                                         </button>
                                         <button class="btn btn-outline-danger" style="color: #dc3545; border-color: #dc3545;">
