@@ -45,10 +45,10 @@ The student portal has been converted from a single-page application (SPA) to a 
 - Page transition animations
 
 ### Page-Specific Scripts
-- **`js/dashboard-page.js`** - Dashboard specific functionality
-- **`js/new-request-page.js`** - Form handling and request submission
-- **`js/requests-page.js`** - Request filtering and display
-- **`js/balance-page.js`** - Balance calculations and history
+- **`js/dashboard.js`** - Dashboard specific functionality
+- **`js/new-request.js`** - Form handling and request submission
+- **`js/requests.js`** - Request filtering and display
+- **`js/balance.js`** - Balance calculations and history
 
 ## Navigation
 Each page includes a sidebar navigation that links to other pages:
@@ -123,10 +123,10 @@ standarduser/
 │   └── student-styles.css  # Student-specific styles
 └── js/
     ├── common.js           # Shared functionality
-    ├── dashboard-page.js   # Dashboard specific
-    ├── new-request-page.js # Request form handling
-    ├── requests-page.js    # Request management
-    ├── balance-page.js     # Balance functionality
+    ├── dashboard.js   # Dashboard specific
+    ├── new-request.js # Request form handling
+    ├── requests.js    # Request management
+    ├── balance.js     # Balance functionality
     └── student-dashboard.js # Original SPA script (kept for reference)
 ```
 
