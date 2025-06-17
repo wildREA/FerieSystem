@@ -36,13 +36,20 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Set the search input value
                 searchInput.value = searchQuery;
                 // Trigger the search function if available
-                if (typeof handleSearch === 'function') {
-                    // Create a synthetic event
+                if (typeof window.handleSearch === 'function') {
+                    // Create a synthetic event with the searchInput as target
                     const event = new Event('input', {
                         bubbles: true,
                         cancelable: true,
                     });
-                    searchInput.dispatchEvent(event);
+                    
+                    // Add the target property to the event
+                    Object.defineProperty(event, 'target', {
+                        value: searchInput,
+                        enumerable: true
+                    });
+                    
+                    window.handleSearch(event);
                 }
                 
                 // Clear the localStorage item to prevent future redirects
@@ -91,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         // Get the student data from the main dashboard.js file
-        const studentsData = window.getStudentsData ? window.getStudentsData() : [];
+        const studentsData = window.studentsData || [];
         
         if (!studentsData.length) {
             console.error('Student data not available');
