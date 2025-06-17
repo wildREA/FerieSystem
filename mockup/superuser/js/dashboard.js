@@ -800,6 +800,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Process email for display
     const truncatedEmail = student.email.length > 16 ? student.email.substring(0, 16) + '...' : student.email;
+    const truncatedCourse = student.course.length > 12 ? student.course.substring(0, 12) + '...' : student.course;
 
     // Create modal
     const modal = document.createElement("div");
@@ -837,16 +838,19 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <div class="mb-4">
                                     <h6 class="text-primary mb-3"><i class="bi bi-person-circle me-2"></i>Student Information</h6>
                                     <div class="row">
-                                        <div class="col-6">
+                                        <div class="col-5">
                                             <small class="text-muted">Email</small>
-                                            <div class="fw-medium selectable-text" title="${student.email}" style="cursor: pointer;" onclick="copyToClipboard('${student.email}')">
+                                            <div class="fw-medium selectable-text text-truncate" title="${student.email}" style="cursor: pointer;" onclick="copyToClipboard('${student.email}')">
                                                 ${truncatedEmail}
                                                 <i class="bi bi-clipboard ms-1" style="font-size: 0.8rem; opacity: 0.7;"></i>
                                             </div>
                                         </div>
-                                        <div class="col-3">
+                                        <div class="col-4">
                                             <small class="text-muted">Course</small>
-                                            <div class="fw-medium selectable-text text-truncate" title="${student.course}" style="max-width: 100%; overflow: hidden;">${student.course}</div>
+                                            <div class="fw-medium selectable-text text-truncate" title="${student.course}" style="cursor: pointer" onclick="copyToClipboard('${student.course}')">
+                                                ${truncatedCourse}
+                                                <i class="bi bi-clipboard ms-1" style="font-size: 0.8rem; opacity: 0.7;"></i>
+                                            </div>
                                         </div>
                                         <div class="col-3">
                                             <small class="text-muted">Year</small>
@@ -859,7 +863,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <div class="mb-4">
                                     <h6 class="text-primary mb-3"><i class="bi bi-journal-text me-2"></i>Administrative Notes</h6>
                                     <div class="alert alert-light mb-0" style="background-color: #232838;">
-                                        <textarea class="form-control border-0 bg-transparent" placeholder="Add notes about this student here..." rows="2"></textarea>
+                                        <textarea class="form-control border-0 bg-transparent"g placeholder="Add notes about this student here..." rows="2"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -882,7 +886,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                             <input type="number" class="form-control text-center" style="background-color: #1a1f2c; border-color: #444a54; color: #ffffff; border-left: none; border-right: none; -webkit-appearance: none; -moz-appearance: textfield;" value="1" min="1">
                                             <button class="btn btn-outline-light" style="background-color: #232838; border-color: #444a54;" type="button">+</button>
                                         </div>
-                                        <button class="btn btn-primary me-2" style="background-color: #0d6efd; border-color: #0d6efd;">
+                                        <button class="btn btn-outline-success me-2" style="color:#49dc35; border-color: #49dc35;">
                                             <i class="bi bi-plus-circle me-1"></i> Add
                                         </button>
                                         <button class="btn btn-outline-danger" style="color: #dc3545; border-color: #dc3545;">
