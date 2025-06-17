@@ -79,7 +79,13 @@ document.addEventListener("DOMContentLoaded", function() {
         `).join('');
     }
 
+    function updateRequestCount() {
+        console.log("Updating request count...");
+    }
+
     function filterRequests() {
         renderAllRequests();
+        // Call function to update the request count
+        updateRequestCount();
     }
 });
