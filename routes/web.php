@@ -11,7 +11,7 @@ $routes = [];
 
 // Home page
 $routes['GET']['/'] = function() {
-    return view('home');
+    return view('/standarduser/index');
 };
 
 // Example routes
