@@ -2,6 +2,10 @@
 // Define the application base path
 define('BASE_PATH', dirname(__DIR__));
 
+// Import necessary files
+require_once BASE_PATH . '/app/Core/cookies.php';  // For remember me and session ID management
+require_once BASE_PATH . '/app/Core/connection.php'; // For database connection
+
 // Load the configuration
 $config = require_once BASE_PATH . '/config/config.php';
 
