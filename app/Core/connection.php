@@ -4,8 +4,10 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Load environment variables from project root .env file
+// Load Composer autoloader
 require_once __DIR__ . '/../../vendor/autoload.php';
+
+// Load environment variables from project root .env file
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
 $dotenv->load();
 
