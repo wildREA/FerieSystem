@@ -8,6 +8,7 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 // Load environment variables from project root .env file
+require_once __DIR__ . '/autoload.php';
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
 $dotenv->load();
 
