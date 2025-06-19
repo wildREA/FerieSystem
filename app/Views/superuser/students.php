@@ -1,23 +1,19 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <?php require_once dirname(__DIR__) . '/components/header.php'; ?>
     <meta name="description" content="Graphic designer personnel management website" />
     <title>Personnel Management Dashboard</title>
-    <!-- Favicon -->
-    <link rel="icon" href="../favicon/ico/favicon.ico" type="image/x-icon">
-    <link rel="shortcut icon" href="../favicon/ico/favicon.ico" type="image/x-icon">
     <!-- Frameworks & Tools -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="css/css-super/styles.css">
-    <link rel="stylesheet" href="css/css-super/students.css">
+    <link rel="stylesheet" href="/css/super/styles.css">
+    <link rel="stylesheet" href="/css/super/students.css">
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-    <script src="js/super/dashboard.js" defer></script>
+    <script src="/js/super/dashboard.js" defer></script>
     <!-- Hidden input to identify current page -->
     <input type="hidden" id="currentPage" value="students">
   </head>

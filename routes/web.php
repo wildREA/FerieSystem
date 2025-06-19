@@ -9,13 +9,12 @@
 // Define routes as an array that will be processed by the router
 // Import necessary files
 require_once BASE_PATH . '/app/Core/sessions.php';  // For remember me and session ID management
-require_once BASE_PATH . '/app/Core/sessions.php';
 $sessionManager = new SessionManager();
 
 $routes = [];
 
 // Home page
-$routes['GET']['/'] = function() {
+$routes['GET']['/'] = function() use ($sessionManager) {
 
     if (!$sessionManager->isAuthenticated()) {
         if (!$sessionManager->hasRememberMeToken()) {
@@ -117,7 +116,7 @@ $routes['GET']['/superuser/calendar'] = function() use ($sessionManager) {
 
 // Example route with parameters
 $routes['GET']['/user/{id}'] = function($id) {
-    return "User ID: " . $id;
+    return "User ID: " . $id; 
 };
 
 // Example route with controller

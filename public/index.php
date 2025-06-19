@@ -2,8 +2,6 @@
 // Define the application base path
 define('BASE_PATH', dirname(__DIR__));
 
-
-
 // Load the configuration
 $config = require_once BASE_PATH . '/config/config.php';
 
@@ -30,6 +28,16 @@ class Router
         // Get the request method and URI
         $method = $_SERVER['REQUEST_METHOD'];
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        
+        // Special case for favicon.ico
+        if ($uri === '/favicon.ico') {
+            $faviconPath = __DIR__ . '/favicon.ico';
+            if (file_exists($faviconPath)) {
+                header('Content-Type: image/x-icon');
+                readfile($faviconPath);
+                exit;
+            }
+        }
 
         // Look for a matching route
         if (isset($this->routes[$method][$uri])) {
