@@ -1,7 +1,7 @@
 <?php
 namespace App\Controllers;
 
-require_once dirname(__DIR__) . '/Core/cookies.php';
+require_once dirname(__DIR__) . '/Core/sessions.php';
 
 class AuthController {
     private $sessionManager;
@@ -9,14 +9,25 @@ class AuthController {
     
     public function __construct() {
         // Initialize session manager
-        $this->sessionManager = new SessionManager();
+        global $sessionManager;
+        if (isset($sessionManager)) {
+            $this->sessionManager = $sessionManager;
+        } else {
+            $this->sessionManager = new \SessionManager();
+        }
         
+        // Database connection - COMMENTED OUT FOR NOW
+        $this->db = null;
+        
+        /* DATABASE VERSION - COMMENTED OUT FOR NOW
         // Get database connection
         try {
             $this->db = require_once dirname(__DIR__) . '/Core/connection.php';
         } catch (Exception $e) {
             error_log("Database connection failed in AuthController: " . $e->getMessage());
+            $this->db = null;
         }
+        */
     }
 
     /**
@@ -95,13 +106,32 @@ class AuthController {
      * @return array|false User data if valid, false otherwise
      */
     protected function verifyCredentials($email, $password) {
+        // MOCK DATA - No database required for now
+        // Accept any non-empty password for demo purposes
+        if (empty($password)) {
+            return false;
+        }
+        
+        // Determine user type based on email
+        $userType = (strpos(strtolower($email), 'admin') !== false || 
+                    strpos(strtolower($email), 'super') !== false) ? 'super' : 'standard';
+        
+        // Return mock user data
+        return [
+            'id' => 1,
+            'name' => 'Test User',
+            'email' => $email,
+            'user_type' => $userType
+        ];
+        
+        /* DATABASE VERSION - COMMENTED OUT FOR NOW
         if (!$this->db) {
             return false;
         }
         
         try {
             $stmt = $this->db->prepare("
-                SELECT id, name, email, password, user_type 
+                SELECT id, name, email, password, user_type
                 FROM users 
                 WHERE email = ? AND status = 'active'
             ");
@@ -126,6 +156,7 @@ class AuthController {
             error_log("Database error in verifyCredentials: " . $e->getMessage());
             return false;
         }
+        */
     }
     
     /**
@@ -179,7 +210,13 @@ class AuthController {
      * @return mixed View response
      */
     protected function renderLogin($data = []) {
-        // Assuming you have a global view() helper function
-        return view('login', $data);
+        // Set error message in session for display
+        if (isset($data['error'])) {
+            $_SESSION['login_error'] = $data['error'];
+        }
+        
+        // Redirect back to auth page
+        header('Location: /auth');
+        exit;
     }
 }

@@ -1,4 +1,4 @@
-const loginForm = document.querySelector('form[action="/login"]');
+const loginForm = document.getElementById('loginForm');
 const keyVerificationForm = document.getElementById('keyVerificationForm');
 const registrationForm = document.getElementById('registrationForm');
 const headerTitle = document.getElementById('headerTitle');
@@ -202,12 +202,21 @@ registrationForm.addEventListener('submit', function(e) {
     document.getElementById('registrationKey').value = '';
 });
 
+// Handle login form submission
 loginForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const remember = document.getElementById('remember').checked;
+    // Allow the form to submit normally to the server
+    // Remove the preventDefault to allow form submission
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
     
-    alert(`Welcome back!${remember ? ' (Remember me enabled)' : ''}`);
+    // Basic client-side validation
+    if (!email || !password) {
+        e.preventDefault();
+        alert('Please enter both email and password.');
+        return false;
+    }
+    
+    // Form will submit normally to /login endpoint
 });
 
 // Password toggle functionality

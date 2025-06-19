@@ -1,5 +1,12 @@
 <?php
+// Start session to access error messages
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
+// Get error message if any
+$error = $_SESSION['login_error'] ?? null;
+unset($_SESSION['login_error']); // Clear error after displaying
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -18,7 +25,13 @@
             </header>
 
             <div class="content">
-                <form action="/login" method="post">
+                <?php if ($error): ?>
+                    <div class="alert alert-error" style="background-color: #fee; border: 1px solid #fcc; color: #c66; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                        <?php echo htmlspecialchars($error); ?>
+                    </div>
+                <?php endif; ?>
+                
+                <form action="/login" method="post" id="loginForm">
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" placeholder="Email address" required>
@@ -44,7 +57,7 @@
                     <div class="form-group">
                         <div class="forgot-password">
                             <label for="remember">
-                                <input type="checkbox" id="remember" name="remember">
+                                <input type="checkbox" id="remember" name="remember" value="1">
                                 Remember me
                             </label>
                             <div onclick="alert('Construction in progress 🚧')">
