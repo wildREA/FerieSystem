@@ -71,7 +71,7 @@ class AuthController {
         $this->sessionManager->login($user['id'], $user['user_type'], $remember);
         
         // Determine redirect URL based on user type
-        $redirectUrl = $user['user_type'] === 'super' ? '/superuser' : '/dashboard';
+        $redirectUrl = $user['user_type'] === 'super' ? '/students' : '/dashboard';
         
         // Return response based on request type
         if ($contentType === 'application/json') {

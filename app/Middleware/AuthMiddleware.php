@@ -89,7 +89,7 @@ class RoleMiddleware
         // Check if user has required role
         if (!in_array($userType, $this->roles)) {
             // Redirect based on user type
-            $redirectUrl = $userType === 'super' ? '/superuser' : '/dashboard';
+            $redirectUrl = $userType === 'super' ? '/students' : '/dashboard';
             redirect($redirectUrl);
         }
         

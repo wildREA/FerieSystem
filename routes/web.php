@@ -32,7 +32,7 @@ $routes['GET']['/'] = function() {
     // User is authenticated, redirect based on user type
     $userType = $sessionManager->getUserType();
     if ($userType === 'super') {
-        redirect('/superuser');
+        redirect('/students');
     } elseif ($userType === 'standard') {
         redirect('/dashboard');
     } else {
@@ -101,8 +101,8 @@ $routes['GET']['/dashboard'] = function() {
     // Route users based on their type
     $userType = $sessionManager->getUserType();
     if ($userType === 'super') {
-        // Redirect super users to their superuser page
-        redirect('/superuser');
+        // Redirect super users to their students page
+        redirect('/students');
     } else {
         $sessionManager->requireUserType(['standard'], '/auth');
         return view('standarduser/index');
@@ -116,8 +116,8 @@ $routes['GET']['/dashboard/'] = function() {
     // Route users based on their type
     $userType = $sessionManager->getUserType();
     if ($userType === 'super') {
-        // Redirect super users to their superuser page
-        redirect('/superuser');
+        // Redirect super users to their students page
+        redirect('/students');
     } else {
         $sessionManager->requireUserType(['standard'], '/auth');
         return view('standarduser/index');
