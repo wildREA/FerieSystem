@@ -80,15 +80,47 @@ const DataManager = {
         // This would be where you'd set up API connections in a real app
     },
 
-    addRequest(newRequest) {
-        // Add the new request to the requests array
-        requestsData.push(newRequest);
-        
-        // In a real application, this would send the request to a server
-        // For now, we just update the local data
-        
-        // Update request badges and other UI elements
-        StudentUtils.updateRequestsBadge();
+    async addRequest(newRequest) {
+        try {
+            // Prepare data for API call (match what the backend expects)
+            const requestData = {
+                requestType: 'vacation', // Default to vacation for now
+                startDate: newRequest.startDate.split('T')[0], // Extract just the date part
+                endDate: newRequest.endDate.split('T')[0],     // Extract just the date part  
+                reason: newRequest.reason
+            };
+
+            // Make API call to submit request
+            const response = await fetch('/api/submit-request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                // Add the request to local data with the server response
+                const serverRequest = {
+                    ...newRequest,
+                    id: result.data.id, // Use server-generated ID
+                    status: result.data.status || 'pending'
+                };
+                requestsData.push(serverRequest);
+                
+                // Update request badges and other UI elements
+                StudentUtils.updateRequestsBadge();
+                
+                return { success: true, data: result.data };
+            } else {
+                throw new Error(result.error || 'Failed to submit request');
+            }
+        } catch (error) {
+            console.error('Error submitting request:', error);
+            throw error;
+        }
     },
 
     updateRequest(requestId, updatedData) {

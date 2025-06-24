@@ -202,5 +202,13 @@ $routes['GET']['/students/'] = function() {
     return view('superuser/students');
 };
 
+
+// Request submission route
+$routes['POST']['/api/submit-request'] = function() {
+    require_once BASE_PATH . '/app/Controllers/RequestController.php';
+    $controller = new App\Controllers\RequestController();
+    return $controller->submitRequest();
+};
+
 // Return the routes array to be processed by the router
 return $routes;

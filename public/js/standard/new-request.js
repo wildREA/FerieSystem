@@ -346,9 +346,7 @@ document.addEventListener("DOMContentLoaded", function() {
         submitBtn.disabled = !isValid;
         
         return isValid;
-    }
-
-    function handleRequestSubmission(e) {
+    }    async function handleRequestSubmission(e) {
         e.preventDefault();
         
         // Validate form first
@@ -356,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function() {
             StudentUtils.showNotification('Please fill in all required fields correctly', 'warning');
             return;
         }
-        
+
         const startDate = startDateInput.value;
         const endDate = endDateInput.value;
         const startHour = document.getElementById('startHour').value;
@@ -401,36 +399,52 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!confirm(confirmMessage)) {
             return;
         }
+
+        // Disable submit button to prevent double submission
+        const submitButton = document.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Submitting...';
         
-        // Create new request
-        const newRequest = {
-            id: 'REQ' + String(requestsData.length + 1).padStart(3, '0'),
-            startDate: startDateTime,
-            endDate: endDateTime,
-            reason: reason,
-            status: 'pending',
-            submitDate: new Date().toISOString(),
-            hours: workingHours,
-            isShortNotice: isShortNotice,
-            totalCalendarDays: Math.ceil((end - start) / (1000 * 60 * 60 * 24))
-        };
-        
-        // Use DataManager to add request and update data
-        DataManager.addRequest(newRequest);
-        
-        // Reset form
-        resetForm();
-        
-        let successMessage = 'Request submitted successfully!';
-        if (isShortNotice) {
-            successMessage += ' (Short notice - may take longer to approve)';
+        try {
+            // Create new request
+            const newRequest = {
+                id: 'REQ' + String(requestsData.length + 1).padStart(3, '0'),
+                startDate: startDateTime,
+                endDate: endDateTime,
+                reason: reason,
+                status: 'pending',
+                submitDate: new Date().toISOString(),
+                hours: workingHours,
+                isShortNotice: isShortNotice,
+                totalCalendarDays: Math.ceil((end - start) / (1000 * 60 * 60 * 24))
+            };
+            
+            // Use DataManager to add request and update data
+            const apiResult = await DataManager.addRequest(newRequest);
+            
+            // Reset form
+            resetForm();
+            
+            let successMessage = 'Request submitted successfully!';
+            if (isShortNotice) {
+                successMessage += ' (Short notice - may take longer to approve)';
+            }
+            StudentUtils.showNotification(successMessage, 'success');
+            
+            // Redirect to requests page after a short delay
+            setTimeout(() => {
+                window.location.href = 'index.php?route=/requests';
+            }, 2000);
+            
+        } catch (error) {
+            console.error('Error submitting request:', error);
+            StudentUtils.showNotification('Failed to submit request: ' + error.message, 'danger');
+        } finally {
+            // Re-enable submit button
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
         }
-        StudentUtils.showNotification(successMessage, 'success');
-        
-        // Redirect to requests page after a short delay
-        setTimeout(() => {
-            window.location.href = 'index.php?route=/requests';
-        }, 2000);
     }
 
     function resetForm() {
