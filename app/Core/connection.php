@@ -19,10 +19,19 @@ if (empty($_ENV)) {
 }
 
 // Database connection parameters
-$host = $_ENV['DB_HOST'];
-$database = $_ENV['DB_DATABASE'];
-$username = $_ENV['DB_USERNAME'];
-$password = $_ENV['DB_PASSWORD'];
+$host = $_ENV['DB_HOST'] ?? 'localhost';
+$database = $_ENV['DB_DATABASE'] ?? '';
+$username = $_ENV['DB_USERNAME'] ?? '';
+$password = $_ENV['DB_PASSWORD'] ?? '';
+
+// Debug: Check if environment variables are loaded
+if (empty($database) || empty($username)) {
+    error_log("Environment variables not loaded properly:");
+    error_log("DB_HOST: " . ($host ?? 'not set'));
+    error_log("DB_DATABASE: " . ($database ?? 'not set'));
+    error_log("DB_USERNAME: " . ($username ?? 'not set'));
+    error_log("DB_PASSWORD: " . (empty($password) ? 'not set' : 'set'));
+}
 
 // Create database connection
 $dsn = "mysql:host=$host;dbname=$database;charset=utf8mb4";
@@ -36,8 +45,20 @@ try {
     $pdo = new PDO($dsn, $username, $password, $options);
     return $pdo;
 } catch (PDOException $e) {
-    // Log error for debugging but don't expose details in production
+    // Log detailed error for debugging
     error_log("Database connection failed: " . $e->getMessage());
-    die("Database connection failed. Please try again later.");
+    error_log("DSN: " . $dsn);
+    error_log("Username: " . $username);
+    
+    // Check if it's a specific connection issue
+    if (strpos($e->getMessage(), 'Access denied') !== false) {
+        die("Database connection failed: Invalid username or password.");
+    } elseif (strpos($e->getMessage(), 'Unknown database') !== false) {
+        die("Database connection failed: Database '$database' does not exist.");
+    } elseif (strpos($e->getMessage(), 'Connection refused') !== false) {
+        die("Database connection failed: Cannot connect to database server at '$host'.");
+    } else {
+        die("Database connection failed: " . $e->getMessage());
+    }
 }
 ?>

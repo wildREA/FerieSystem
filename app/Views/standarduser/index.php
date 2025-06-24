@@ -12,8 +12,8 @@
     <link rel="stylesheet" href="<?= asset('css/standard/student-styles.css') ?>">
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="/js/standard/common.js" defer></script>
-    <script src="/js/standard/dashboard.js" defer></script>
+    <script src="<?= asset('js/standard/common.js') ?>" defer></script>
+    <script src="<?= asset('js/standard/dashboard.js') ?>" defer></script>
 </head>
 <body>
     <div class="dashboard-container">
