@@ -6,6 +6,9 @@
  * using both short-lived PHP sessions and long-lived secure tokens stored in cookies and database.
  */
 
+// Include UrlHelper for redirects
+require_once __DIR__ . '/../Helpers/UrlHelper.php';
+
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     // Set secure session parameters
@@ -367,10 +370,9 @@ class SessionManager {
      * @param string $redirectUrl URL to redirect to if not authenticated
      * @return bool Whether user is authenticated
      */
-    public function requireAuth($redirectUrl = '/auth.php') {
+    public function requireAuth($redirectUrl = '/auth') {
         if (!$this->isAuthenticated()) {
-            header("Location: $redirectUrl");
-            exit;
+            redirect($redirectUrl);
         }
         return true;
     }
@@ -384,8 +386,7 @@ class SessionManager {
      */
     public function requireUserType($requiredTypes, $redirectUrl = '/') {
         if (!$this->isAuthenticated()) {
-            header("Location: /auth.php");
-            exit;
+            redirect('/auth');
         }
         
         $userType = $this->getUserType();
@@ -396,8 +397,7 @@ class SessionManager {
         }
         
         if (!in_array($userType, $requiredTypes)) {
-            header("Location: $redirectUrl");
-            exit;
+            redirect($redirectUrl);
         }
         
         return true;

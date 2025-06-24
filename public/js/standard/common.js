@@ -183,9 +183,9 @@ const StudentUtils = {
     // Map section names to page URLs
     getPageUrl(sectionText) {
         const pageMap = {
-            'Dashboard': 'index.html',
-            'New Request': 'new-request.html',
-            'My Requests': 'requests.html'
+            'Dashboard': 'index.php?route=/dashboard',
+            'New Request': 'index.php?route=/new-request',
+            'My Requests': 'index.php?route=/requests'
         };
         return pageMap[sectionText];
     },

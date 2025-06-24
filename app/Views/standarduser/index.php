@@ -35,13 +35,13 @@
                     </a>
                 </li>
                 <li class="nav-section">
-                    <a href="new-request.html" class="section-header">
+                    <a href="<?= url('/new-request') ?>" class="section-header">
                         <i class="bi bi-plus-circle text-success"></i>
                         <span>New Request</span>
                     </a>
                 </li>
                 <li class="nav-section">
-                    <a href="requests.html" class="section-header">
+                    <a href="<?= url('/requests') ?>" class="section-header">
                         <i class="bi bi-clock-history text-warning"></i>
                         <span>My Requests</span>
                         <span class="notification-badge" id="requestsBadge">3</span>
@@ -94,7 +94,7 @@
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Requests</h5>
-                        <a href="requests.html" class="btn btn-outline-primary btn-sm">
+                        <a href="<?= url('/requests') ?>" class="btn btn-outline-primary btn-sm">
                             View All
                         </a>
                     </div>
@@ -113,13 +113,13 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <a href="new-request.html" class="btn btn-success w-100">
+                                <a href="<?= url('/new-request') ?>" class="btn btn-success w-100">
                                     <i class="bi bi-plus-circle me-2"></i>
                                     New Request
                                 </a>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <a href="requests.html" class="btn btn-warning w-100">  <!-- MAKE WARNING BUTTON BETTER STYLING IN NEW CSS FILE WITH STYLES ON DISCORD -->>
+                                <a href="<?= url('/requests') ?>" class="btn btn-warning w-100">  <!-- MAKE WARNING BUTTON BETTER STYLING IN NEW CSS FILE WITH STYLES ON DISCORD -->>
                                     <i class="bi bi-list-ul me-2"></i>
                                     My Requests
                                 </a>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="PASSWORD" host="feriesystem_gr_2.skp-dp.sde.dk" id="bb32bcd9-fcc1-4fec-94ff-08558781da47" port="22" nameFormat="DESCRIPTIVE" username="feriesystem_gr_2.skp-dp.sde.dk" useOpenSSHConfig="true" />
+    </configs>
+  </component>
+</project>

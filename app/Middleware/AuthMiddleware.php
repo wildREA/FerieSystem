@@ -8,6 +8,7 @@
 namespace App\Middleware;
 
 require_once dirname(__DIR__) . '/Core/cookies.php';
+require_once dirname(__DIR__) . '/Helpers/UrlHelper.php';
 
 class AuthMiddleware
 {
@@ -88,9 +89,8 @@ class RoleMiddleware
         // Check if user has required role
         if (!in_array($userType, $this->roles)) {
             // Redirect based on user type
-            $redirectUrl = $userType === 'super' ? '/superuser/' : '/standarduser/';
-            header("Location: $redirectUrl");
-            exit;
+            $redirectUrl = $userType === 'super' ? '/requests' : '/dashboard';
+            redirect($redirectUrl);
         }
         
         // User has required role, proceed to next middleware/controller

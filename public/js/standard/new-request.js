@@ -429,7 +429,7 @@ document.addEventListener("DOMContentLoaded", function() {
         
         // Redirect to requests page after a short delay
         setTimeout(() => {
-            window.location.href = 'requests.html';
+            window.location.href = 'index.php?route=/requests';
         }, 2000);
     }
 

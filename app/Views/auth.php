@@ -13,8 +13,8 @@ unset($_SESSION['login_error']); // Clear error after displaying
 <head>
     <?php require_once __DIR__ . '/components/header.php'; ?>
     <title>Login - FerieSystem</title>
-    <link rel="stylesheet" href="/css/login.css">
-    <script src="/js/login.js" defer></script>
+    <link rel="stylesheet" href="<?= asset('css/login.css') ?>">
+    <script src="<?= asset('js/login.js') ?>" defer></script>
 </head>
 <body>
     <div class="login-form">

@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 require_once dirname(__DIR__) . '/Core/sessions.php';
+require_once dirname(__DIR__) . '/Helpers/UrlHelper.php';
 
 class AuthController {
     private $sessionManager;
@@ -70,7 +71,7 @@ class AuthController {
         $this->sessionManager->login($user['id'], $user['user_type'], $remember);
         
         // Determine redirect URL based on user type
-        $redirectUrl = $user['user_type'] === 'super' ? '/superuser/' : '/standarduser/';
+        $redirectUrl = $user['user_type'] === 'super' ? '/requests' : '/dashboard';
         
         // Return response based on request type
         if ($contentType === 'application/json') {
@@ -80,8 +81,7 @@ class AuthController {
                 'userType' => $user['user_type']
             ]);
         } else {
-            header("Location: $redirectUrl");
-            exit;
+            redirect($redirectUrl);
         }
     }
 
@@ -94,8 +94,7 @@ class AuthController {
         $this->sessionManager->logout();
         
         // Redirect to login page
-        header('Location: /auth.php');
-        exit;
+        redirect('/auth');
     }
     
     /**

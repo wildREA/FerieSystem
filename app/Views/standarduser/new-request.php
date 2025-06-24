@@ -35,13 +35,13 @@
                     </a>
                 </li>
                 <li class="nav-section active">
-                    <a href="new-request.html" class="section-header">
+                    <a href="<?= url('/new-request') ?>" class="section-header">
                         <i class="bi bi-plus-circle text-success"></i>
                         <span>New Request</span>
                     </a>
                 </li>
                 <li class="nav-section">
-                    <a href="requests.html" class="section-header">
+                    <a href="<?= url('/requests') ?>" class="section-header">
                         <i class="bi bi-clock-history text-warning"></i>
                         <span>My Requests</span>
                         <span class="notification-badge" id="requestsBadge">3</span>

@@ -2,6 +2,9 @@
 // Define the application base path
 define('BASE_PATH', dirname(__DIR__));
 
+// Load the URL helper
+require_once BASE_PATH . '/app/Helpers/UrlHelper.php';
+
 // Load the configuration
 $config = require_once BASE_PATH . '/config/config.php';
 
@@ -27,7 +30,29 @@ class Router
     {
         // Get the request method and URI
         $method = $_SERVER['REQUEST_METHOD'];
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        
+        // Handle different URL patterns when .htaccess is not available
+        $uri = '/';
+        
+        // First, try to get route from query parameter
+        if (isset($_GET['route'])) {
+            $uri = $_GET['route'];
+        }
+        // Then try PATH_INFO if available
+        elseif (isset($_SERVER['PATH_INFO'])) {
+            $uri = $_SERVER['PATH_INFO'];
+        }
+        // Finally, try to parse from REQUEST_URI
+        else {
+            $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+            // Remove /index.php from the beginning if present
+            $uri = preg_replace('#^/index\.php#', '', $requestUri);
+        }
+        
+        // Ensure URI starts with /
+        if (empty($uri) || $uri[0] !== '/') {
+            $uri = '/' . $uri;
+        }
         
         // Special case for favicon.ico
         if ($uri === '/favicon.ico') {

@@ -35,13 +35,13 @@
                     </a>
                 </li>
                 <li class="nav-section">
-                    <a href="new-request.html" class="section-header">
+                    <a href="<?= url('/new-request') ?>" class="section-header">
                         <i class="bi bi-plus-circle text-success"></i>
                         <span>New Request</span>
                     </a>
                 </li>
                 <li class="nav-section active">
-                    <a href="requests.html" class="section-header">
+                    <a href="<?= url('/standarduser/requests') ?>" class="section-header">
                         <i class="bi bi-clock-history text-warning"></i>
                         <span>My Requests</span>
                         <span class="notification-badge" id="requestsBadge">3</span>
@@ -87,7 +87,7 @@
                             <option value="approved">Approved</option>
                             <option value="denied">Denied</option>
                         </select>
-                        <a href="new-request.html" class="btn btn-success">
+                        <a href="<?= url('/new-request') ?>" class="btn btn-success">
                             <i class="bi bi-plus-circle me-2"></i>New Request
                         </a>
                     </div>

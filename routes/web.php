@@ -7,20 +7,26 @@
  */
 
 // Define routes as an array that will be processed by the router
-// Import necessary files
-require_once BASE_PATH . '/app/Core/sessions.php';  // For remember me and session ID management
-$sessionManager = new SessionManager();
-
 $routes = [];
 
+// Helper function to get SessionManager
+function getSessionManager() {
+    static $sessionManager = null;
+    if ($sessionManager === null) {
+        require_once BASE_PATH . '/app/Core/sessions.php';
+        $sessionManager = new SessionManager();
+    }
+    return $sessionManager;
+}
+
 // Home page
-$routes['GET']['/'] = function() use ($sessionManager) {
+$routes['GET']['/'] = function() {
+    $sessionManager = getSessionManager();
 
     if (!$sessionManager->isAuthenticated()) {
         if (!$sessionManager->hasRememberMeToken()) {
             // If no session and no remember me token, redirect to login
-            header('Location: /auth');
-            exit;
+            redirect('/auth');
         } else {
             // If remember me token exists, revalidate it
             $sessionManager->revalidateRememberMeToken();
@@ -31,19 +37,23 @@ $routes['GET']['/'] = function() use ($sessionManager) {
 
     $user = $sessionManager->getUser();
     if ($user['user_type'] === 'admin') {
-        return view('/admin/index');
+        redirect('/admin');
     } elseif ($user['user_type'] === 'standard') {
-        return view('/standarduser/index');
+        redirect('/dashboard');
     } else {
         // Handle other user types or redirect to a default page
-        header('Location: /auth');
+        redirect('/auth');
     }
     
 
 };
 
-// Example routes
+// Example routes (both with and without trailing slash where applicable)
 $routes['GET']['/about'] = function() {
+    return view('about');
+};
+
+$routes['GET']['/about/'] = function() {
     return view('about');
 };
 
@@ -51,90 +61,186 @@ $routes['GET']['/contact'] = function() {
     return view('contact');
 };
 
-// Login page
+$routes['GET']['/contact/'] = function() {
+    return view('contact');
+};
+
+// Login page (both variants)
 $routes['GET']['/auth'] = function() {
     return view('auth');
 };
 
-// Handle login form submission
+$routes['GET']['/auth/'] = function() {
+    return view('auth');
+};
+
+// Handle login form submission (both variants)
 $routes['POST']['/login'] = function() {
     require_once BASE_PATH . '/app/Controllers/AuthController.php';
     $auth = new App\Controllers\AuthController();
     return $auth->login();
 };
 
-// Logout route
+$routes['POST']['/login/'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->login();
+};
+
+// Logout route (both variants)
 $routes['POST']['/logout'] = function() {
     require_once BASE_PATH . '/app/Controllers/AuthController.php';
     $auth = new App\Controllers\AuthController();
     return $auth->logout();
 };
 
-// Standard user routes
-$routes['GET']['/standarduser/'] = function() use ($sessionManager) {
+$routes['POST']['/logout/'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->logout();
+};
+// test
+// Simple route pattern (as decided)
+$routes['GET']['/dashboard'] = function() {
+    $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
     $sessionManager->requireUserType(['standard'], '/auth');
     return view('standarduser/index');
 };
 
-$routes['GET']['/standarduser/requests'] = function() use ($sessionManager) {
+$routes['GET']['/dashboard/'] = function() {
+    $sessionManager = getSessionManager();
+    $sessionManager->requireAuth('/auth');
+    $sessionManager->requireUserType(['standard'], '/auth');
+    return view('standarduser/index');
+};
+
+$routes['GET']['/requests'] = function() {
+    $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
     $sessionManager->requireUserType(['standard'], '/auth');
     return view('standarduser/requests');
 };
 
-$routes['GET']['/standarduser/new-request'] = function() use ($sessionManager) {
+$routes['GET']['/requests/'] = function() {
+    $sessionManager = getSessionManager();
+    $sessionManager->requireAuth('/auth');
+    $sessionManager->requireUserType(['standard'], '/auth');
+    return view('standarduser/requests');
+};
+
+$routes['GET']['/new-request'] = function() {
+    $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
     $sessionManager->requireUserType(['standard'], '/auth');
     return view('standarduser/new-request');
 };
 
-// Super user routes
-$routes['GET']['/superuser/'] = function() use ($sessionManager) {
+$routes['GET']['/new-request/'] = function() {
+    $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
-    $sessionManager->requireUserType(['super'], '/auth');
-    return view('superuser/requests');
+    $sessionManager->requireUserType(['standard'], '/auth');
+    return view('standarduser/new-request');
 };
 
-$routes['GET']['/superuser/requests'] = function() use ($sessionManager) {
-    $sessionManager->requireAuth('/auth');
-    $sessionManager->requireUserType(['super'], '/auth');
-    return view('superuser/requests');
-};
-
-$routes['GET']['/superuser/students'] = function() use ($sessionManager) {
-    $sessionManager->requireAuth('/auth');
-    $sessionManager->requireUserType(['super'], '/auth');
-    return view('superuser/students');
-};
-
-$routes['GET']['/superuser/calendar'] = function() use ($sessionManager) {
+// Calendar and admin routes for super users
+$routes['GET']['/calendar'] = function() {
+    $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
     $sessionManager->requireUserType(['super'], '/auth');
     return view('superuser/calendar');
 };
 
-// Example route with parameters
-$routes['GET']['/user/{id}'] = function($id) {
-    return "User ID: " . $id; 
+$routes['GET']['/calendar/'] = function() {
+    $sessionManager = getSessionManager();
+    $sessionManager->requireAuth('/auth');
+    $sessionManager->requireUserType(['super'], '/auth');
+    return view('superuser/calendar');
 };
 
-// Example route with controller
-// $routes['GET']['/users'] = ['controller' => 'UserController', 'method' => 'index'];
+$routes['GET']['/students'] = function() {
+    $sessionManager = getSessionManager();
+    $sessionManager->requireAuth('/auth');
+    $sessionManager->requireUserType(['super'], '/auth');
+    return view('superuser/students');
+};
 
-// Example route with middleware
-// $routes['GET']['/admin'] = [
-//     'middleware' => 'auth',
-//     'controller' => 'AdminController',
-//     'method' => 'index'
-// ];
+$routes['GET']['/students/'] = function() {
+    $sessionManager = getSessionManager();
+    $sessionManager->requireAuth('/auth');
+    $sessionManager->requireUserType(['super'], '/auth');
+    return view('superuser/students');
+};
 
-// Example API routes
-$routes['GET']['/api/users'] = function() {
-    return json_encode([
-        ['id' => 1, 'name' => 'John Doe'],
-        ['id' => 2, 'name' => 'Jane Doe']
-    ]);
+// Legacy/fallback routes for old URL patterns - redirect to simple routes
+$routes['GET']['/standarduser'] = function() {
+    // Redirect to the simple dashboard route
+    redirect('/dashboard');
+};
+
+$routes['GET']['/standarduser/'] = function() {
+    // Redirect to the simple dashboard route
+    redirect('/dashboard');
+};
+
+$routes['GET']['/standarduser/requests'] = function() {
+    // Redirect to the simple requests route
+    redirect('/requests');
+};
+
+$routes['GET']['/standarduser/requests/'] = function() {
+    // Redirect to the simple requests route
+    redirect('/requests');
+};
+
+$routes['GET']['/standarduser/new-request'] = function() {
+    // Redirect to the simple new-request route
+    redirect('/new-request');
+};
+
+$routes['GET']['/standarduser/new-request/'] = function() {
+    // Redirect to the simple new-request route
+    redirect('/new-request');
+};
+
+$routes['GET']['/superuser'] = function() {
+    // Redirect to the simple requests route (super users see requests by default)
+    redirect('/requests');
+};
+
+$routes['GET']['/superuser/'] = function() {
+    // Redirect to the simple requests route
+    redirect('/requests');
+};
+
+$routes['GET']['/superuser/requests'] = function() {
+    // Redirect to the simple requests route
+    redirect('/requests');
+};
+
+$routes['GET']['/superuser/requests/'] = function() {
+    // Redirect to the simple requests route
+    redirect('/requests');
+};
+
+$routes['GET']['/superuser/students'] = function() {
+    // Redirect to the simple students route
+    redirect('/students');
+};
+
+$routes['GET']['/superuser/students/'] = function() {
+    // Redirect to the simple students route
+    redirect('/students');
+};
+
+$routes['GET']['/superuser/calendar'] = function() {
+    // Redirect to the simple calendar route
+    redirect('/calendar');
+};
+
+$routes['GET']['/superuser/calendar/'] = function() {
+    // Redirect to the simple calendar route
+    redirect('/calendar');
 };
 
 // Return the routes array to be processed by the router
