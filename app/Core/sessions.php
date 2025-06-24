@@ -18,6 +18,11 @@ if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.cookie_secure', isset($_SERVER['HTTPS']));
     ini_set('session.cookie_samesite', 'Strict');
     
+    // Set session cookie lifetime to 1 day (86400 seconds)
+    // This is different from the remember me token which lasts 30 days
+    ini_set('session.cookie_lifetime', 86400);
+    ini_set('session.gc_maxlifetime', 86400);
+    
     session_start();
 }
 
@@ -29,8 +34,10 @@ class SessionManager {
     // Constants for cookie and session settings
     const REMEMBER_COOKIE = 'remember_token';
     const REMEMBER_EXPIRY = 2592000; // 30 days in seconds
+    const SESSION_EXPIRY = 86400; // 1 day in seconds
     const SESSION_USER_KEY = 'user_id';
     const SESSION_USER_TYPE = 'user_type';
+    const SESSION_CREATED_AT = 'session_created_at';
     
     private $db = null;
     
@@ -96,6 +103,7 @@ class SessionManager {
         // Set session variables
         $_SESSION[self::SESSION_USER_KEY] = $userId;
         $_SESSION[self::SESSION_USER_TYPE] = $userType;
+        $_SESSION[self::SESSION_CREATED_AT] = time(); // Store session creation time
         
         // Generate a new session ID to prevent session fixation attacks
         session_regenerate_id(true);
@@ -163,16 +171,27 @@ class SessionManager {
      * @return bool Whether user was authenticated via remember me
      */
     private function verifyRememberMeToken() {
-        if (!isset($_COOKIE[self::REMEMBER_COOKIE]) || !$this->db) {
+        error_log('Attempting to verify remember me token');
+        
+        // If no cookie present or no DB connection
+        if (!isset($_COOKIE[self::REMEMBER_COOKIE])) {
+            error_log('No remember me cookie found');
+            return false;
+        }
+        
+        if (!$this->db) {
+            error_log('No database connection available for token verification');
             return false;
         }
         
         // Get cookie value
         $cookieValue = $_COOKIE[self::REMEMBER_COOKIE];
+        error_log('Remember me cookie found: ' . substr($cookieValue, 0, 10) . '...');
         
         // Split the cookie value into selector and token
         $parts = explode(':', $cookieValue);
         if (count($parts) !== 2) {
+            error_log('Invalid remember me cookie format');
             $this->clearRememberMeCookie();
             return false;
         }
@@ -193,11 +212,29 @@ class SessionManager {
             $stmt->execute([$selector]);
             $tokenData = $stmt->fetch();
             
-            // If no valid token found or token hash doesn't match
-            if (!$tokenData || !hash_equals($tokenData['token_hash'], $tokenHash)) {
+            // Check if token exists
+            if (!$tokenData) {
+                error_log('No valid token found for selector or token has expired');
                 $this->clearRememberMeCookie();
                 return false;
             }
+            
+            // Verify token hash
+            if (!hash_equals($tokenData['token_hash'], $tokenHash)) {
+                error_log('Token hash verification failed');
+                $this->clearRememberMeCookie();
+                return false;
+            }
+            
+            // Check token expiration explicitly
+            $expiresTime = strtotime($tokenData['expires']);
+            if ($expiresTime < time()) {
+                error_log('Token has expired: ' . $tokenData['expires']);
+                $this->clearRememberMeCookie();
+                return false;
+            }
+            
+            error_log('Remember me token validated successfully. Expiry: ' . $tokenData['expires']);
             
             // Get the user data
             $userId = $tokenData['user_id'];
@@ -275,28 +312,81 @@ class SessionManager {
     
     /**
      * Check if the user is authenticated either via session or remember me token
+     * Also handles session expiration and token revalidation
      * 
-     * @return void
+     * @return bool Whether user is authenticated
      */
     public function checkAuthentication() {
-        // Already logged in via session
+        // Check if user has an active session
         if (isset($_SESSION[self::SESSION_USER_KEY])) {
-            return;
+            // Check if session hasn't expired
+            if (isset($_SESSION[self::SESSION_CREATED_AT])) {
+                $sessionAge = time() - $_SESSION[self::SESSION_CREATED_AT];
+                
+                // If session has exceeded expiry time
+                if ($sessionAge > self::SESSION_EXPIRY) {
+                    error_log('Session expired. Age: ' . $sessionAge . ' seconds. Checking for remember me token...');
+                    
+                    // Check for remember me token
+                    if ($this->hasRememberMeToken()) {
+                        error_log('Found remember me token, attempting to revalidate');
+                        // Try to revalidate and create a new session
+                        return $this->revalidateRememberMeToken();
+                    } else {
+                        error_log('No remember me token found, logging out user');
+                        $this->logout();
+                        return false;
+                    }
+                } else {
+                    // Session is still valid
+                    return true;
+                }
+            } else {
+                // No creation time - this is unusual, but we'll accept the session
+                error_log('Session found without creation timestamp. Setting timestamp now.');
+                $_SESSION[self::SESSION_CREATED_AT] = time();
+                return true;
+            }
         }
         
-        // Try to authenticate via remember me token
-        if ($this->verifyRememberMeToken()) {
-            return;
+        // No active session, try to authenticate via remember me token
+        if ($this->hasRememberMeToken()) {
+            error_log('No session but remember me token found. Attempting to revalidate.');
+            return $this->verifyRememberMeToken();
         }
+        
+        return false;
     }
     
     /**
-     * Check if user is authenticated
+     * Check if user is authenticated and session is not expired
      * 
      * @return bool Authentication status
      */
     public function isAuthenticated() {
-        return isset($_SESSION[self::SESSION_USER_KEY]);
+        if (!isset($_SESSION[self::SESSION_USER_KEY])) {
+            return false;
+        }
+        
+        // Check if session has expired
+        if (isset($_SESSION[self::SESSION_CREATED_AT])) {
+            $sessionAge = time() - $_SESSION[self::SESSION_CREATED_AT];
+            
+            // If session has exceeded expiry time
+            if ($sessionAge > self::SESSION_EXPIRY) {
+                // Check for remember me token
+                if ($this->hasRememberMeToken()) {
+                    // Try to revalidate and create a new session
+                    return $this->revalidateRememberMeToken();
+                }
+                
+                // No remember me token, session expired
+                $this->logout();
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     /**
@@ -436,15 +526,28 @@ class SessionManager {
     }
 
     /**
-     * Revalidate remember me token
+     * Revalidate remember me token and refresh session
      * @return bool
      */
     public function revalidateRememberMeToken() {
+        error_log('Revalidating remember me token...');
+        
         if (!$this->db) {
-            return false; // No database, cannot revalidate
+            error_log('No database connection, cannot revalidate token');
+            return false;
         }
         
-        return $this->verifyRememberMeToken();
+        // Verify token and create new session
+        $success = $this->verifyRememberMeToken();
+        
+        if ($success) {
+            error_log('Remember me token revalidated successfully, session refreshed');
+            // The new session is created in verifyRememberMeToken if successful
+            return true;
+        } else {
+            error_log('Remember me token revalidation failed');
+            return false;
+        }
     }
 
     /**

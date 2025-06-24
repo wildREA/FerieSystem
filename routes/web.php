@@ -23,18 +23,13 @@ function getSessionManager() {
 $routes['GET']['/'] = function() {
     $sessionManager = getSessionManager();
 
-    if (!$sessionManager->isAuthenticated()) {
-        if (!$sessionManager->hasRememberMeToken()) {
-            // If no session and no remember me token, redirect to login
-            redirect('/auth');
-        } else {
-            // If remember me token exists, revalidate it
-            $sessionManager->revalidateRememberMeToken();
-            // Restart session to ensure session ID is valid
-            $sessionManager->restartSession();
-        }
+    // This will check session validity, expiration, and remember me token in one call
+    if (!$sessionManager->checkAuthentication()) {
+        // Not authenticated via session or remember me token
+        redirect('/auth');
     }
 
+    // User is authenticated, redirect based on user type
     $userType = $sessionManager->getUserType();
     if ($userType === 'super') {
         redirect('/superuser');
@@ -44,8 +39,6 @@ $routes['GET']['/'] = function() {
         // Handle other user types or redirect to a default page
         redirect('/auth');
     }
-    
-
 };
 
 // Example routes (both with and without trailing slash where applicable)
