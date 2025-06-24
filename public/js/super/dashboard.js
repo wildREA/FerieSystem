@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const logo = document.querySelector(".sidebar .logo");
     if (logo) {
       logo.addEventListener("click", function () {
-        window.location.href = "students.html";
+        window.location.href = "/students";
       });
     }
 
@@ -898,7 +898,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <a href="requests.html" class="btn btn-primary" onclick="localStorage.setItem('searchQuery', '${student.name}');">
+                        <a href="/requests" class="btn btn-primary" onclick="localStorage.setItem('searchQuery', '${student.name}');">
                             <i class="bi bi-list-check"></i> View All Requests
                         </a>
                         <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>

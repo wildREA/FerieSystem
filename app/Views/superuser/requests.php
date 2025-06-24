@@ -8,13 +8,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="/css/super/styles.css">
-    <link rel="stylesheet" href="/css/super/requests.css">
+    <link rel="stylesheet" href="<?= asset('css/super/styles.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/super/requests.css') ?>">
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-    <script src="/js/super/dashboard.js" defer></script>
-    <script src="/js/super/requests.js" defer></script>
+    <script src="<?= asset('js/super/dashboard.js') ?>" defer></script>
+    <script src="<?= asset('js/super/requests.js') ?>" defer></script>
     <!-- Hidden input to identify current page -->
     <input type="hidden" id="currentPage" value="requests">
   </head>
@@ -31,7 +31,7 @@
         </div>
         <ul class="nav-menu">
           <li class="nav-section active">
-            <a href="requests.html" class="section-link">
+            <a href="<?= url('/requests') ?>" class="section-link">
               <div class="section-header requests-background">
                 <i class="bi bi-file-earmark-text text-danger"></i>
                 <span class="user-select-none">Requests</span>
@@ -40,7 +40,7 @@
             </a>
           </li>
           <li class="nav-section">
-            <a href="students.html" class="section-link">
+            <a href="<?= url('/students') ?>" class="section-link">
               <div class="section-header students-background">
                 <i class="bi bi-people text-primary"></i>
                 <span class="user-select-none">Students</span>
@@ -48,7 +48,7 @@
             </a>
           </li>
           <li class="nav-section">
-            <a href="calendar.html" class="section-link">
+            <a href="<?= url('/calendar') ?>" class="section-link">
               <div class="section-header bounties-background">
                 <i class="bi bi-cash-coin text-success"></i>
                 <span class="user-select-none">Calendar</span>

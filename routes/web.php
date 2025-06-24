@@ -35,10 +35,10 @@ $routes['GET']['/'] = function() {
         }
     }
 
-    $user = $sessionManager->getUser();
-    if ($user['user_type'] === 'admin') {
-        redirect('/admin');
-    } elseif ($user['user_type'] === 'standard') {
+    $userType = $sessionManager->getUserType();
+    if ($userType === 'super') {
+        redirect('/superuser');
+    } elseif ($userType === 'standard') {
         redirect('/dashboard');
     } else {
         // Handle other user types or redirect to a default page
@@ -104,29 +104,59 @@ $routes['POST']['/logout/'] = function() {
 $routes['GET']['/dashboard'] = function() {
     $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
-    $sessionManager->requireUserType(['standard'], '/auth');
-    return view('standarduser/index');
+    
+    // Route users based on their type
+    $userType = $sessionManager->getUserType();
+    if ($userType === 'super') {
+        // Redirect super users to their superuser page
+        redirect('/superuser');
+    } else {
+        $sessionManager->requireUserType(['standard'], '/auth');
+        return view('standarduser/index');
+    }
 };
 
 $routes['GET']['/dashboard/'] = function() {
     $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
-    $sessionManager->requireUserType(['standard'], '/auth');
-    return view('standarduser/index');
+    
+    // Route users based on their type
+    $userType = $sessionManager->getUserType();
+    if ($userType === 'super') {
+        // Redirect super users to their superuser page
+        redirect('/superuser');
+    } else {
+        $sessionManager->requireUserType(['standard'], '/auth');
+        return view('standarduser/index');
+    }
 };
 
 $routes['GET']['/requests'] = function() {
     $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
-    $sessionManager->requireUserType(['standard'], '/auth');
-    return view('standarduser/requests');
+    
+    // Route super users to super requests, standard users to standard requests
+    $userType = $sessionManager->getUserType();
+    if ($userType === 'super') {
+        return view('superuser/requests');
+    } else {
+        $sessionManager->requireUserType(['standard'], '/auth');
+        return view('standarduser/requests');
+    }
 };
 
 $routes['GET']['/requests/'] = function() {
     $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
-    $sessionManager->requireUserType(['standard'], '/auth');
-    return view('standarduser/requests');
+    
+    // Route super users to super requests, standard users to standard requests
+    $userType = $sessionManager->getUserType();
+    if ($userType === 'super') {
+        return view('superuser/requests');
+    } else {
+        $sessionManager->requireUserType(['standard'], '/auth');
+        return view('standarduser/requests');
+    }
 };
 
 $routes['GET']['/new-request'] = function() {

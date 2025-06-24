@@ -29,7 +29,7 @@
             </div>
             <ul class="nav-menu">
                 <li class="nav-section">
-                    <a href="index.html" class="section-header">
+                    <a href="<?= url('/dashboard') ?>" class="section-header">
                         <i class="bi bi-house-door text-primary"></i>
                         <span>Dashboard</span>
                     </a>
