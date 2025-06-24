@@ -4,13 +4,19 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Load Composer autoloader
-require_once __DIR__ . '/../../vendor/autoload.php';
-
-// Load environment variables from project root .env file
-require_once __DIR__ . '/autoload.php';
-$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
-$dotenv->load();
+// Ensure environment variables are loaded
+if (empty($_ENV)) {
+    // Load Composer autoloader if not already loaded
+    if (!class_exists('Dotenv\Dotenv')) {
+        require_once __DIR__ . '/../../vendor/autoload.php';
+    }
+    
+    // Load environment variables if not already loaded
+    if (file_exists(__DIR__ . '/../../.env')) {
+        $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
+        $dotenv->load();
+    }
+}
 
 // Database connection parameters
 $host = $_ENV['DB_HOST'];

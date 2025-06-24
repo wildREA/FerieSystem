@@ -120,5 +120,6 @@ if (!function_exists('view')) {
 }
 
 // Initialize router and dispatch the request
-$router = new Router(['routes' => require_once BASE_PATH . '/config/routes.php']);
+$routesConfig = require_once BASE_PATH . '/config/routes.php';
+$router = new Router(['routes' => $routesConfig]);
 echo $router->dispatch();
