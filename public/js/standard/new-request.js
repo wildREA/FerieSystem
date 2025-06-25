@@ -433,9 +433,9 @@ document.addEventListener("DOMContentLoaded", function() {
             StudentUtils.showNotification(successMessage, 'success');
             
             // Redirect to requests page after a short delay
-            setTimeout(() => {
-                window.location.href = 'index.php?route=/requests';
-            }, 2000);
+            // setTimeout(() => {
+            //     window.location.href = 'index.php?route=/requests';
+            // }, 2000);
             
         } catch (error) {
             console.error('Error submitting request:', error);
@@ -568,7 +568,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-success" onclick="document.getElementById('newRequestForm').dispatchEvent(new Event('submit'));" data-bs-dismiss="modal">Submit Request</button>
+                            <button type="button" class="btn btn-success" onclick="document.getElementById('newRequestForm').dispatchEvent(new Event('submit', {cancelable: true}));" data-bs-dismiss="modal">Submit Request</button>
                         </div>
                     </div>
                 </div>

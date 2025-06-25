@@ -8,12 +8,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="<?= asset('css/standard/styles.css') ?>">
-    <link rel="stylesheet" href="<?= asset('css/standard/student-styles.css') ?>">
+    <link rel="stylesheet" href="<?= asset('public/css/standard/styles.css') ?>">
+    <link rel="stylesheet" href="<?= asset('public/css/standard/student-styles.css') ?>">
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="<?= asset('js/standard/common.js') ?>" defer></script>
-    <script src="<?= asset('js/standard/new-request.js') ?>" defer></script>
+    <script src="<?= asset('public/js/standard/common.js') ?>" defer></script>
+    <script src="<?= asset('public/js/standard/new-request.js') ?>" defer></script>
 </head>
 <body>
     <div class="dashboard-container">

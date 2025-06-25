@@ -32,4 +32,4 @@
 </nav>
 
 <!-- Include CSS for navigation -->
-<link rel="stylesheet" href="<?= asset('css/nav.css') ?>">
+<link rel="stylesheet" href="<?= asset('public/css/nav.css') ?>">

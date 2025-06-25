@@ -13,8 +13,8 @@ unset($_SESSION['login_error']); // Clear error after displaying
 <head>
     <?php require_once __DIR__ . '/components/header.php'; ?>
     <title>Login - FerieSystem</title>
-    <link rel="stylesheet" href="<?= asset('css/login.css') ?>">
-    <script src="<?= asset('js/login.js') ?>" defer></script>
+    <link rel="stylesheet" href="public/css/login.css">
+    <script src="public/js/login.js" defer></script>
 </head>
 <body>
     <div class="login-form">
@@ -30,7 +30,7 @@ unset($_SESSION['login_error']); // Clear error after displaying
                     </div>
                 <?php endif; ?>
                 
-                <form action="/login" method="post" id="loginForm">
+                <form action="<?= url('/login') ?>" method="post" id="loginForm">
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" placeholder="Email address" required>

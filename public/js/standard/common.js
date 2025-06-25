@@ -81,6 +81,7 @@ const DataManager = {
     },
 
     async addRequest(newRequest) {
+        console.log('Adding new request:', newRequest);
         try {
             // Prepare data for API call (match what the backend expects)
             const requestData = {
@@ -89,6 +90,10 @@ const DataManager = {
                 endDate: newRequest.endDate.split('T')[0],     // Extract just the date part  
                 reason: newRequest.reason
             };
+            
+            console.log('Request data to submit:', requestData);
+            // Simulate a 5 second delay before submitting (for demo/testing)
+            await new Promise(resolve => setTimeout(resolve, 50000));
 
             // Make API call to submit request
             const response = await fetch('/api/submit-request', {
@@ -100,6 +105,7 @@ const DataManager = {
             });
 
             const result = await response.json();
+            console.log('Server response:', result);
 
             if (response.ok && result.success) {
                 // Add the request to local data with the server response
@@ -115,10 +121,15 @@ const DataManager = {
                 
                 return { success: true, data: result.data };
             } else {
+                console.log('❌ Server returned error:');
+                console.log('❌ Error details:', result.error || 'No error message provided');
                 throw new Error(result.error || 'Failed to submit request');
             }
         } catch (error) {
-            console.error('Error submitting request:', error);
+            console.error('💥 Error submitting request:', error);
+            console.error('💥 Error name:', error.name);
+            console.error('💥 Error message:', error.message);
+            console.error('💥 Error stack:', error.stack);
             throw error;
         }
     },
@@ -192,13 +203,15 @@ const StudentUtils = {
     setupNavigation() {
         const navSections = document.querySelectorAll('.nav-section');
         navSections.forEach(section => {
-            section.addEventListener('click', function() {
+            section.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent default link behavior
                 const sectionText = this.querySelector('span').textContent;
                 const targetPage = StudentUtils.getPageUrl(sectionText);
                 const currentPage = window.location.pathname.split('/').pop() || 'index.html';
                 
                 if (targetPage && targetPage !== currentPage) {
                     window.location.href = targetPage;
+                    console.log('Navigation to', targetPage, 'prevented');
                 }
             });
         });
@@ -206,8 +219,11 @@ const StudentUtils = {
         // Add logo click to go to dashboard
         const logo = document.querySelector('.logo');
         if (logo) {
-            logo.addEventListener('click', function() {
-                window.location.href = '/dashboard';
+            logo.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent default behavior
+                // Comment out the redirect for now
+                // window.location.href = '/dashboard';
+                console.log('Logo navigation to dashboard prevented');
             });
         }
     },
