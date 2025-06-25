@@ -8,10 +8,10 @@ require_once BASE_PATH . '/app/Helpers/UrlHelper.php';
 // Load the configuration
 $config = require_once BASE_PATH . '/config/config.php';
 
-// Initialize database on every request (temporary for development)
-require_once BASE_PATH . '/database/init.php';
+// Initialize autoloader
+require_once BASE_PATH . '/app/Core/autoload.php';
 
-// Simple router implementation
+// Simple router
 class Router
 {
     protected $routes = [];

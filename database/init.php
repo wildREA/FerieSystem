@@ -20,6 +20,9 @@ try {
         throw new Exception("No SQL files found");
     }
     
+    // Sort SQL files to ensure proper execution order
+    sort($sqlFiles);
+    
     // Execute each SQL file
     foreach ($sqlFiles as $sqlFile) {
         $sql = file_get_contents($sqlFile);
@@ -36,6 +39,11 @@ try {
         }
     }
     
+    // Return the PDO connection for use by the application
+    return $pdo;
+    
 } catch (Exception $e) {
-    die("Database initialization failed: " . $e->getMessage() . "\n");
+    error_log("Database initialization failed: " . $e->getMessage());
+    // Don't die in production, just log the error
+    return null;
 }

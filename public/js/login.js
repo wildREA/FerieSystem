@@ -64,7 +64,8 @@ keyVerificationForm.addEventListener('submit', function(e) {
     const key = document.getElementById('registrationKey').value.trim();
     
     if (key.length === 6) {
-        // Accept any 6-character key for now
+        // Pass the registration key to the registration form
+        document.getElementById('regRegistrationKey').value = key;
         showForm(registrationForm);
     } else {
         alert('Please enter a complete 6-character registration key.');
@@ -165,6 +166,7 @@ registrationForm.addEventListener('submit', function(e) {
     const email = document.getElementById('registerEmail').value.trim();
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
+    const registrationKey = document.getElementById('regRegistrationKey').value.trim();
     
     // Validation
     if (!name || !email || !password || !confirmPassword) {
@@ -189,34 +191,112 @@ registrationForm.addEventListener('submit', function(e) {
         return;
     }
     
-    // Success
-    alert(`Welcome ${name}! Registration successful. You can now log in with your credentials.`);
-    showForm(loginForm);
+    if (registrationKey.length !== 6) {
+        alert('Please enter a valid 6-character registration key.');
+        return;
+    }
     
-    // Clear all forms
-    registrationForm.reset();
-    keyBoxes.forEach(box => {
-        box.value = '';
-        box.classList.remove('filled');
+    // Disable submit button
+    const submitButton = this.querySelector('button[type="submit"]');
+    const originalText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Creating Account...';
+    
+    // Send AJAX request
+    fetch(window.APP_URLS.register, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            name: name,
+            email: email,
+            password: password,
+            confirmPassword: confirmPassword,
+            registrationKey: registrationKey
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Success
+            alert(data.message);
+            showForm(loginForm);
+            
+            // Clear all forms
+            registrationForm.reset();
+            keyBoxes.forEach(box => {
+                box.value = '';
+                box.classList.remove('filled');
+            });
+            document.getElementById('registrationKey').value = '';
+        } else {
+            // Show error message
+            alert(data.message || 'Registration failed. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Registration error:', error);
+        alert('An error occurred during registration. Please try again.');
+    })
+    .finally(() => {
+        // Re-enable submit button
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
     });
-    document.getElementById('registrationKey').value = '';
 });
 
 // Handle login form submission
 loginForm.addEventListener('submit', function(e) {
-    // Allow the form to submit normally to the server
-    // Remove the preventDefault to allow form submission
+    e.preventDefault(); // Prevent default form submission
+    
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value.trim();
+    const remember = document.getElementById('remember').checked;
     
     // Basic client-side validation
     if (!email || !password) {
-        e.preventDefault();
         alert('Please enter both email and password.');
         return false;
     }
     
-    // Form will submit normally to /login endpoint
+    // Disable submit button to prevent double submission
+    const submitButton = this.querySelector('button[type="submit"]');
+    const originalText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Signing in...';
+    
+    // Send AJAX request
+    fetch(window.APP_URLS.login, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: email,
+            password: password,
+            remember: remember
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Successful login - redirect
+            window.location.href = data.redirect;
+        } else {
+            // Show error message
+            alert(data.message || 'Login failed. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Login error:', error);
+        alert('An error occurred during login. Please try again.');
+    })
+    .finally(() => {
+        // Re-enable submit button
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+    });
 });
 
 // Password toggle functionality

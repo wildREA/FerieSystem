@@ -80,7 +80,7 @@ $routes['POST']['/login/'] = function() {
     return $auth->login();
 };
 
-// Logout route (both variants)
+// Logout routes (both GET and POST)
 $routes['POST']['/logout'] = function() {
     require_once BASE_PATH . '/app/Controllers/AuthController.php';
     $auth = new App\Controllers\AuthController();
@@ -88,6 +88,18 @@ $routes['POST']['/logout'] = function() {
 };
 
 $routes['POST']['/logout/'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->logout();
+};
+
+$routes['GET']['/logout'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->logout();
+};
+
+$routes['GET']['/logout/'] = function() {
     require_once BASE_PATH . '/app/Controllers/AuthController.php';
     $auth = new App\Controllers\AuthController();
     return $auth->logout();
@@ -201,6 +213,32 @@ $routes['POST']['/api/submit-request'] = function() {
     require_once BASE_PATH . '/app/Controllers/RequestController.php';
     $controller = new App\Controllers\RequestController();
     return $controller->submitRequest();
+};
+
+// API Login route (both variants)
+$routes['POST']['/api/login'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->login();
+};
+
+$routes['POST']['/api/login/'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->login();
+};
+
+// API Register route (both variants)
+$routes['POST']['/api/register'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->register();
+};
+
+$routes['POST']['/api/register/'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->register();
 };
 
 // Return the routes array to be processed by the router

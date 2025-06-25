@@ -23,8 +23,3 @@ CREATE TABLE IF NOT EXISTS remember_tokens (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Insert default users if they don't exist
-INSERT IGNORE INTO users (name, email, password, user_type)
-VALUES 
-    ('Admin User', 'admin@example.com', '$2y$10$8jN1/XBJ4pXNBVL01YdmNuqbJ.CXuqgJAynC2X5dGUXle6lBSFhZK', 'super'),
-    ('Student User', 'user@example.com', '$2y$10$lYbpOtqyYZpQCKgzQYch7.PBSJQAXn7q/0HHJmCG1KzEOq.zcSfQK', 'standard');

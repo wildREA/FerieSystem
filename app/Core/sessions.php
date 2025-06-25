@@ -1,74 +1,57 @@
 <?php
-/**
- * Session and Authentication Management
- * 
- * This file handles session management, authentication, and "remember me" functionality
- * using both short-lived PHP sessions and long-lived secure tokens stored in cookies and database.
- */
-
-// Include UrlHelper for redirects
 require_once __DIR__ . '/../Helpers/UrlHelper.php';
 
-// Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
-    // Set secure session parameters
     ini_set('session.use_only_cookies', 1);
     ini_set('session.use_strict_mode', 1);
     ini_set('session.cookie_httponly', 1);
     ini_set('session.cookie_secure', isset($_SERVER['HTTPS']));
     ini_set('session.cookie_samesite', 'Strict');
-    
-    // Set session cookie lifetime to 1 day (86400 seconds)
-    // This is different from the remember me token which lasts 30 days
     ini_set('session.cookie_lifetime', 86400);
     ini_set('session.gc_maxlifetime', 86400);
     
     session_start();
 }
 
-/**
- * SessionManager class
- * Handles user sessions, authentication, and "remember me" functionality
- */
 class SessionManager {
-    // Constants for cookie and session settings
     const REMEMBER_COOKIE = 'remember_token';
-    const REMEMBER_EXPIRY = 2592000; // 30 days in seconds
-    const SESSION_EXPIRY = 86400; // 1 day in seconds
+    const REMEMBER_EXPIRY = 2592000; // 30 days
+    const SESSION_EXPIRY = 86400; // 1 day
     const SESSION_USER_KEY = 'user_id';
     const SESSION_USER_TYPE = 'user_type';
     const SESSION_CREATED_AT = 'session_created_at';
     
     private $db = null;
     
-    /**
-     * Constructor
-     */
     public function __construct() {
         // Get database connection
-        // TEMPORARILY COMMENTED OUT FOR TESTING WITHOUT DATABASE
-        /*
         try {
-            $this->db = require_once __DIR__ . '/connection.php';
+            $connectionPath = __DIR__ . '/connection.php';
+            error_log("SessionManager: Attempting to load connection from: " . $connectionPath);
+            
+            if (!file_exists($connectionPath)) {
+                error_log("SessionManager: Connection file not found at: " . $connectionPath);
+                $this->db = null;
+            } else {
+                $connection = require $connectionPath;
+                if ($connection instanceof PDO) {
+                    $this->db = $connection;
+                    error_log("SessionManager: Database connection successful");
+                } else {
+                    error_log("SessionManager: Database connection returned: " . gettype($connection) . " (expected PDO)");
+                    $this->db = null;
+                }
+            }
         } catch (Exception $e) {
-            error_log("Database connection failed in SessionManager: " . $e->getMessage());
-        }  
-        */
-        $this->db = null; // Set to null for testing
+            error_log("SessionManager: Database connection failed with Exception: " . $e->getMessage());
+            $this->db = null;
+        }
         
-        // Create token table if it doesn't exist
         $this->ensureTokenTable();
-        
-        // Check authentication status
         $this->checkAuthentication();
     }
     
-    /**
-     * Ensure the remember_tokens table exists in the database
-     * @return void
-     */
     private function ensureTokenTable() {
-        // Skip if no database connection
         if (!$this->db) {
             return;
         }
@@ -91,21 +74,11 @@ class SessionManager {
         }
     }
     
-    /**
-     * Set authenticated session
-     * 
-     * @param int $userId User ID
-     * @param string $userType User type (standard, super)
-     * @param bool $rememberMe Whether to create a remember me token
-     * @return bool Success status
-     */
     public function login($userId, $userType, $rememberMe = false) {
-        // Set session variables
         $_SESSION[self::SESSION_USER_KEY] = $userId;
         $_SESSION[self::SESSION_USER_TYPE] = $userType;
-        $_SESSION[self::SESSION_CREATED_AT] = time(); // Store session creation time
+        $_SESSION[self::SESSION_CREATED_AT] = time();
         
-        // Generate a new session ID to prevent session fixation attacks
         session_regenerate_id(true);
         
         // If remember me requested, create a persistent token
@@ -127,17 +100,13 @@ class SessionManager {
             return false;
         }
         
-        // Generate a random secure token
         $selector = bin2hex(random_bytes(16));
         $token = bin2hex(random_bytes(32));
         
-        // Hash the token for database storage
         $tokenHash = hash('sha256', $token);
         
-        // Calculate expiry time (30 days from now)
         $expires = date('Y-m-d H:i:s', time() + self::REMEMBER_EXPIRY);
         
-        // Store the token in the database
         try {
             $stmt = $this->db->prepare("
                 INSERT INTO remember_tokens (user_id, token_hash, selector, expires) 
@@ -146,8 +115,6 @@ class SessionManager {
             
             $stmt->execute([$userId, $tokenHash, $selector, $expires]);
             
-            // Set the cookie with the selector:token format
-            // We'll use the selector to look up the record and the token to verify
             $cookieValue = $selector . ':' . $token;
             
             setcookie(self::REMEMBER_COOKIE, $cookieValue, [
@@ -165,15 +132,7 @@ class SessionManager {
         }
     }
     
-    /**
-     * Verify remember me token and recreate the session
-     * 
-     * @return bool Whether user was authenticated via remember me
-     */
     private function verifyRememberMeToken() {
-        error_log('Attempting to verify remember me token');
-        
-        // If no cookie present or no DB connection
         if (!isset($_COOKIE[self::REMEMBER_COOKIE])) {
             error_log('No remember me cookie found');
             return false;
@@ -260,14 +219,7 @@ class SessionManager {
         }
     }
     
-    /**
-     * Clear remember me cookie and tokens
-     * 
-     * @param int|null $userId If provided, only clear tokens for this user
-     * @return void
-     */
     public function clearRememberMeTokens($userId = null) {
-        // Clear cookie regardless of userId
         $this->clearRememberMeCookie();
         
         if (!$this->db) {
@@ -295,11 +247,6 @@ class SessionManager {
         }
     }
     
-    /**
-     * Clear remember me cookie
-     * 
-     * @return void
-     */
     private function clearRememberMeCookie() {
         setcookie(self::REMEMBER_COOKIE, '', [
             'expires' => time() - 3600,
@@ -310,27 +257,13 @@ class SessionManager {
         ]);
     }
     
-    /**
-     * Check if the user is authenticated either via session or remember me token
-     * Also handles session expiration and token revalidation
-     * 
-     * @return bool Whether user is authenticated
-     */
-    public function checkAuthentication() {
-        // Check if user has an active session
+    private function checkAuthentication() {
         if (isset($_SESSION[self::SESSION_USER_KEY])) {
-            // Check if session hasn't expired
             if (isset($_SESSION[self::SESSION_CREATED_AT])) {
                 $sessionAge = time() - $_SESSION[self::SESSION_CREATED_AT];
                 
-                // If session has exceeded expiry time
                 if ($sessionAge > self::SESSION_EXPIRY) {
-                    error_log('Session expired. Age: ' . $sessionAge . ' seconds. Checking for remember me token...');
-                    
-                    // Check for remember me token
                     if ($this->hasRememberMeToken()) {
-                        error_log('Found remember me token, attempting to revalidate');
-                        // Try to revalidate and create a new session
                         return $this->revalidateRememberMeToken();
                     } else {
                         error_log('No remember me token found, logging out user');
@@ -549,11 +482,6 @@ class SessionManager {
             return false;
         }
     }
-
-    /**
-     * Get user data (stub for when no database is available)
-     * @return array|null
-     */
     public function getUser() {
         if (isset($_SESSION['user_id'])) {
             $userType = $_SESSION['user_type'] ?? 'standard';
@@ -583,47 +511,26 @@ class SessionManager {
         return false;
     }
 
-    /**
-     * Start a new session for authenticated user
-     * @param int $userId User ID
-     * @param string $userType User type
-     * @return bool Success status
-     */
     public function startSession($userId = null, $userType = 'standard') {
-        // If no parameters provided, use default values for testing
         if ($userId === null) {
-            $userId = 1; // Default test user ID
+            $userId = 1;
         }
         
         // Set session variables
         $_SESSION[self::SESSION_USER_KEY] = $userId;
         $_SESSION[self::SESSION_USER_TYPE] = $userType;
         
-        // Generate a new session ID to prevent session fixation attacks
         session_regenerate_id(true);
         
         return true;
     }
 
-    /**
-     * Create a new authentication token (CSRF protection or similar)
-     * @return string Generated token
-     */
     public function createToken() {
-        // Generate a secure random token
         $token = bin2hex(random_bytes(32));
-        
-        // Store in session for verification
         $_SESSION['csrf_token'] = $token;
-        
         return $token;
     }
 
-    /**
-     * Verify a token against the stored session token
-     * @param string $token Token to verify
-     * @return bool Whether token is valid
-     */
     public function verifyToken($token) {
         return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
     }

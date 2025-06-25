@@ -4,9 +4,13 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Get error message if any
+// Get error and success messages
 $error = $_SESSION['login_error'] ?? null;
-unset($_SESSION['login_error']); // Clear error after displaying
+$regError = $_SESSION['registration_error'] ?? $_SESSION['register_error'] ?? null;
+$regSuccess = $_SESSION['registration_success'] ?? $_SESSION['success_message'] ?? null;
+
+// Clear messages after displaying
+unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['registration_success'], $_SESSION['register_error'], $_SESSION['success_message']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,6 +18,14 @@ unset($_SESSION['login_error']); // Clear error after displaying
     <?php require_once __DIR__ . '/components/header.php'; ?>
     <title>Login - FerieSystem</title>
     <link rel="stylesheet" href="public/css/login.css">
+    <script>
+        // Pass PHP URLs to JavaScript
+        window.APP_URLS = {
+            login: '<?= url('/api/login') ?>',
+            register: '<?= url('/api/register') ?>',
+            auth: '<?= url('/auth') ?>'
+        };
+    </script>
     <script src="public/js/login.js" defer></script>
 </head>
 <body>
@@ -27,6 +39,18 @@ unset($_SESSION['login_error']); // Clear error after displaying
                 <?php if ($error): ?>
                     <div class="alert alert-error" style="background-color: #fee; border: 1px solid #fcc; color: #c66; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
                         <?php echo htmlspecialchars($error); ?>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if ($regError): ?>
+                    <div class="alert alert-error" style="background-color: #fee; border: 1px solid #fcc; color: #c66; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                        <?php echo htmlspecialchars($regError); ?>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if ($regSuccess): ?>
+                    <div class="alert alert-success" style="background-color: #efe; border: 1px solid #cfc; color: #6c6; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                        <?php echo htmlspecialchars($regSuccess); ?>
                     </div>
                 <?php endif; ?>
                 
@@ -97,9 +121,10 @@ unset($_SESSION['login_error']); // Clear error after displaying
                     </div>
                 </form>
 
-                <form id="registrationForm" style="display: none;">
+                <form action="<?= url('/register') ?>" method="post" id="registrationForm" style="display: none;">
                     <h2>Create Account</h2>
                     <p class="form-description">Fill in your details to register</p>
+                    <input type="hidden" id="regRegistrationKey" name="registrationKey" value="">
                     <div class="form-group">
                         <label for="registerName">Name</label>
                         <input type="text" id="registerName" name="name" placeholder="Full name" required>

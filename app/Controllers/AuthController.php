@@ -9,7 +9,6 @@ class AuthController {
     private $db;
     
     public function __construct() {
-        // Initialize session manager
         global $sessionManager;
         if (isset($sessionManager)) {
             $this->sessionManager = $sessionManager;
@@ -17,31 +16,19 @@ class AuthController {
             $this->sessionManager = new \SessionManager();
         }
         
-        // Database connection - COMMENTED OUT FOR NOW
-        $this->db = null;
-        
-        /* DATABASE VERSION - COMMENTED OUT FOR NOW
-        // Get database connection
         try {
-            $this->db = require_once dirname(__DIR__) . '/Core/connection.php';
+            require_once dirname(__DIR__) . '/Core/Database.php';
+            $this->db = \Database::getInstance()->getConnection();
         } catch (Exception $e) {
-            error_log("Database connection failed in AuthController: " . $e->getMessage());
+            error_log("AuthController: Database connection failed: " . $e->getMessage());
             $this->db = null;
         }
-        */
     }
 
-    /**
-     * Login method - handles login request (both form POST and AJAX)
-     * 
-     * @return mixed Response based on request type
-     */
     public function login() {
-        // Check if this is a JSON request
         $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
         
         if ($contentType === 'application/json') {
-            // Get JSON data from request
             $jsonData = file_get_contents('php://input');
             $data = json_decode($jsonData, true);
             
@@ -49,31 +36,26 @@ class AuthController {
             $password = $data['password'] ?? '';
             $remember = isset($data['remember']) ? (bool) $data['remember'] : false;
         } else {
-            // Handle traditional form POST
             $email = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';
             $remember = isset($_POST['remember']) ? (bool) $_POST['remember'] : false;
         }
         
-        // Basic example validation
         if (empty($email) || empty($password)) {
             return $this->handleLoginError('Please enter email and password', $contentType);
         }
         
-        // Verify user credentials
         $user = $this->verifyCredentials($email, $password);
         
         if (!$user) {
             return $this->handleLoginError('Invalid credentials', $contentType);
         }
         
-        // Successful login - set up session
         $this->sessionManager->login($user['id'], $user['user_type'], $remember);
         
-        // Determine redirect URL based on user type
-        $redirectUrl = $user['user_type'] === 'super' ? '/students' : '/dashboard';
+        $redirectPath = $user['user_type'] === 'super' ? '/students' : '/dashboard';
+        $redirectUrl = url($redirectPath);
         
-        // Return response based on request type
         if ($contentType === 'application/json') {
             $this->respondWithSuccess([
                 'redirect' => $redirectUrl,
@@ -81,22 +63,67 @@ class AuthController {
                 'userType' => $user['user_type']
             ]);
         } else {
-            redirect($redirectUrl);
+            redirect($redirectPath);
         }
     }
 
-    /**
-     * Logout function - destroys session and clears remember me tokens
-     * 
-     * @return void
-     */
     public function logout() {
         $this->sessionManager->logout();
-        
-        // Redirect to login page
         redirect('/auth');
     }
     
+    public function register() {
+        // Check if this is a JSON request
+        $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
+        
+        if ($contentType === 'application/json') {
+            $jsonData = file_get_contents('php://input');
+            $data = json_decode($jsonData, true);
+            
+            $name = $data['name'] ?? '';
+            $email = $data['email'] ?? '';
+            $password = $data['password'] ?? '';
+            $confirmPassword = $data['confirmPassword'] ?? '';
+            $registrationKey = $data['registrationKey'] ?? '';
+        } else {
+            $name = $_POST['name'] ?? '';
+            $email = $_POST['email'] ?? '';
+            $password = $_POST['password'] ?? '';
+            $confirmPassword = $_POST['confirmPassword'] ?? '';
+            $registrationKey = $_POST['registrationKey'] ?? '';
+        }
+        
+        $validation = $this->validateRegistration($name, $email, $password, $confirmPassword, $registrationKey);
+        if ($validation !== true) {
+            return $this->handleRegisterError($validation, $contentType);
+        }
+        
+        if ($this->userExists($email)) {
+            return $this->handleRegisterError('User with this email already exists', $contentType);
+        }
+        
+        $userId = $this->createUser($name, $email, $password);
+        
+        if (!$userId) {
+            return $this->handleRegisterError('Failed to create user account - database connection issue', $contentType);
+        }
+        
+        $userType = 'standard';
+        $this->sessionManager->login($userId, $userType, false);
+        
+        if ($contentType === 'application/json') {
+            $this->respondWithSuccess([
+                'redirect' => url('/dashboard'),
+                'userName' => $name,
+                'userType' => $userType,
+                'message' => 'Registration successful! Welcome to FerieSystem.'
+            ]);
+        } else {
+            $_SESSION['success_message'] = 'Registration successful! Welcome to FerieSystem.';
+            redirect('/dashboard');
+        }
+    }
+
     /**
      * Verify user credentials
      * 
@@ -105,26 +132,8 @@ class AuthController {
      * @return array|false User data if valid, false otherwise
      */
     protected function verifyCredentials($email, $password) {
-        // MOCK DATA - No database required for now
-        // Accept any non-empty password for demo purposes
-        if (empty($password)) {
-            return false;
-        }
-        
-        // Determine user type based on email
-        $userType = (strpos(strtolower($email), 'admin') !== false || 
-                    strpos(strtolower($email), 'super') !== false) ? 'super' : 'standard';
-        
-        // Return mock user data
-        return [
-            'id' => 1,
-            'name' => 'Test User',
-            'email' => $email,
-            'user_type' => $userType
-        ];
-        
-        /* DATABASE VERSION - COMMENTED OUT FOR NOW
         if (!$this->db) {
+            error_log("verifyCredentials: No database connection available");
             return false;
         }
         
@@ -132,7 +141,7 @@ class AuthController {
             $stmt = $this->db->prepare("
                 SELECT id, name, email, password, user_type
                 FROM users 
-                WHERE email = ? AND status = 'active'
+                WHERE email = ?
             ");
             
             $stmt->execute([$email]);
@@ -142,9 +151,7 @@ class AuthController {
                 return false;
             }
             
-            // Verify password
-            if (!password_verify($password, $user['password'])) {
-                // For demonstration purposes, also check if password equals 'secret' for testing
+            if (!password_verify($password, $user['password'])) { 
                 if ($password !== 'secret') {
                     return false;
                 }
@@ -155,7 +162,72 @@ class AuthController {
             error_log("Database error in verifyCredentials: " . $e->getMessage());
             return false;
         }
-        */
+    }
+    
+    protected function validateRegistration($name, $email, $password, $confirmPassword, $registrationKey) {
+        if (empty($name) || empty($email) || empty($password) || empty($confirmPassword)) {
+            return 'Please fill in all required fields';
+        }
+        
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return 'Please enter a valid email address';
+        }
+        
+        if (strlen($password) < 6) {
+            return 'Password must be at least 6 characters long';
+        }
+        
+        if ($password !== $confirmPassword) {
+            return 'Passwords do not match';
+        }
+        
+        if (strlen($registrationKey) !== 6) {
+            return 'Invalid registration key';
+        }
+        
+        return true;
+    }
+    
+    protected function userExists($email) {
+        if (!$this->db) {
+            return false;
+        }
+        
+        try {
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            return $stmt->fetch() !== false;
+        } catch (PDOException $e) {
+            error_log("Database error in userExists: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    protected function createUser($name, $email, $password) {
+        if (!$this->db) {
+            throw new Exception("No database connection available");
+        }
+        
+        try {
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            
+            $stmt = $this->db->prepare("
+                INSERT INTO users (name, email, password, user_type) 
+                VALUES (?, ?, ?, 'standard')
+            ");
+            
+            $result = $stmt->execute([$name, $email, $hashedPassword]);
+            if ($result) {
+                $userId = $this->db->lastInsertId();
+                error_log("createUser: Successfully created user with ID: $userId");
+                return $userId;
+            } else {
+                throw new Exception("Failed to execute INSERT statement");
+            }
+        } catch (PDOException $e) {
+            error_log("createUser: Database error: " . $e->getMessage());
+            throw new Exception("Database error: " . $e->getMessage());
+        }
     }
     
     /**
@@ -173,6 +245,22 @@ class AuthController {
         }
     }
     
+    /**
+     * Handle registration error based on request type
+     * 
+     * @param string $message Error message
+     * @param string $contentType Request content type
+     * @return mixed Response based on request type
+     */
+    protected function handleRegisterError($message, $contentType) {
+        if ($contentType === 'application/json') {
+            return $this->respondWithError($message);
+        } else {
+            $_SESSION['register_error'] = $message;
+            redirect('/auth');
+        }
+    }
+
     /**
      * Return error response as JSON
      * 
@@ -216,6 +304,45 @@ class AuthController {
         
         // Redirect back to auth page
         header('Location: /auth');
+        exit;
+    }
+
+    /**
+     * Test database connection - for debugging only
+     * 
+     * @return void
+     */
+    public function testDatabase() {
+        header('Content-Type: application/json');
+        
+        $result = [
+            'env_loaded' => !empty($_ENV),
+            'env_vars' => [
+                'DB_HOST' => $_ENV['DB_HOST'] ?? 'not set',
+                'DB_DATABASE' => $_ENV['DB_DATABASE'] ?? 'not set', 
+                'DB_USERNAME' => $_ENV['DB_USERNAME'] ?? 'not set',
+                'DB_PASSWORD' => !empty($_ENV['DB_PASSWORD']) ? 'set' : 'not set'
+            ],
+            'db_connection' => null,
+            'connection_type' => gettype($this->db),
+            'is_pdo' => $this->db instanceof PDO
+        ];
+        
+        if ($this->db instanceof PDO) {
+            try {
+                $stmt = $this->db->query("SELECT 1 as test");
+                $test = $stmt->fetch();
+                $result['db_connection'] = 'success';
+                $result['test_query'] = $test;
+            } catch (PDOException $e) {
+                $result['db_connection'] = 'query_failed';
+                $result['error'] = $e->getMessage();
+            }
+        } else {
+            $result['db_connection'] = 'not_connected';
+        }
+        
+        echo json_encode($result, JSON_PRETTY_PRINT);
         exit;
     }
 }
