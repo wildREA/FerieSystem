@@ -1,7 +1,6 @@
 # Ignore environment and sensitive files
 .env
 .env.*
-.htaccess
 *.key
 *.pem
 *.crt
