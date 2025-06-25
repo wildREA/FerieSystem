@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function() {
         renderRecentRequests();
         updateProgressBars();
         setupBalanceModal();
+        updateStatCardBorderColor();
     }
 
     function setupBalanceModal() {
@@ -106,5 +107,32 @@ document.addEventListener("DOMContentLoaded", function() {
                 <div class="status-badge status-${request.status}">${request.status}</div>
             </div>
         `).join('');
+    }
+
+    function updateStatCardBorderColor() {
+        const balanceCard = document.getElementById('balanceCard');
+        const valueElement = balanceCard?.querySelector('.value');
+        
+        if (valueElement) {
+            const valueText = valueElement.textContent;
+            // Extract numeric value from text like "128 timer 30 minutter"
+            const numericMatch = valueText.match(/^(-?\d+)/);
+            
+            if (numericMatch) {
+                const numericValue = parseInt(numericMatch[1]);
+                
+                // Remove existing color classes
+                balanceCard.classList.remove('blue', 'green', 'red');
+                
+                // Add appropriate color class based on value
+                if (numericValue > 0) {
+                    balanceCard.classList.add('green');
+                } else if (numericValue < 0) {
+                    balanceCard.classList.add('red');
+                } else {
+                    balanceCard.classList.add('blue');
+                }
+            }
+        }
     }
 });

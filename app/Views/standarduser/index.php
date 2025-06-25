@@ -77,7 +77,7 @@
             <div class="content-section active" id="dashboardSection">
                 <!-- Stats Cards -->
                 <div class="row mb-4">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-auto mb-3">
                         <div class="stat-card blue clickable" id="balanceCard" data-bs-toggle="modal" data-bs-target="#balanceModal">
                             <div>
                                 <div class="value">128 timer 30 minutter</div>

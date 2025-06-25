@@ -443,11 +443,15 @@ body {
 .stat-card {
   background-color: #222941;
   border-radius: 10px;
-  padding: 15px;
-  height: 100px;
+  padding: 20px;
+  min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  white-space: nowrap;
+  width: auto;
+  min-width: 250px;
+  gap: 20px;
 }
 
 .stat-card.yellow {
@@ -465,14 +469,28 @@ body {
   border-top: 2px solid #34a853;
 }
 
-.stat-card.pink {
+.stat-card.red {
   background-color: #222941;
-  border-top: 2px solid #ea4c89;
+  border-top: 2px solid #dc3545;
 }
 
 .stat-card .value {
-  font-size: 28px;
+  font-size: 1.44rem;
   font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .stat-card .value {
+    font-size: 1.5rem;
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-card .value {
+    font-size: 1.1rem;
+  }
 }
 
 .stat-card .label {
