@@ -98,6 +98,32 @@ class AuthController {
             return $this->handleRegisterError($validation, $contentType);
         }
         
+        // Check if this is super user registration
+        if ($registrationKey === $this->getAdminSecret()) {
+            // Store registration data in session for super user creation
+            $_SESSION['super_user_data'] = [
+                'name' => $name,
+                'email' => $email,
+                'password' => $password,
+                'confirmPassword' => $confirmPassword
+            ];
+            
+            if ($contentType === 'application/json') {
+                $this->respondWithSuccess([
+                    'redirect' => url('/create-superuser'),
+                    'message' => 'Redirecting to super user registration...'
+                ]);
+            } else {
+                redirect('/create-superuser');
+            }
+            return;
+        }
+        
+        // TODO: Check if registration key is valid student key by looking up in database table
+        // Example: SELECT * FROM student_registration_keys WHERE key = ? AND used = 0
+        // If not found or already used, return error
+        // If valid, mark as used and continue with registration
+        
         if ($this->userExists($email)) {
             return $this->handleRegisterError('User with this email already exists', $contentType);
         }
@@ -124,6 +150,95 @@ class AuthController {
         }
     }
 
+    public function createSuperUser() {
+        // Check if admin key was verified
+        if (!isset($_SESSION['verified_admin_key'])) {
+            $_SESSION['error_message'] = 'Access denied. Please verify admin key first.';
+            redirect('/auth');
+            return;
+        }
+        
+        $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
+        
+        if ($contentType === 'application/json') {
+            $jsonData = file_get_contents('php://input');
+            $data = json_decode($jsonData, true);
+            
+            $name = $data['name'] ?? '';
+            $email = $data['email'] ?? '';
+            $password = $data['password'] ?? '';
+            $confirmPassword = $data['confirmPassword'] ?? '';
+        } else {
+            $name = $_POST['name'] ?? '';
+            $email = $_POST['email'] ?? '';
+            $password = $_POST['password'] ?? '';
+            $confirmPassword = $_POST['confirmPassword'] ?? '';
+        }
+        
+        // Clear the verified admin key
+        unset($_SESSION['verified_admin_key']);
+        
+        $validation = $this->validateSuperUserRegistration($name, $email, $password, $confirmPassword);
+        if ($validation !== true) {
+            return $this->handleSuperUserError($validation, $contentType);
+        }
+        
+        if ($this->userExists($email)) {
+            return $this->handleSuperUserError('User with this email already exists', $contentType);
+        }
+        
+        $userId = $this->createSuperUserAccount($name, $email, $password);
+        
+        if (!$userId) {
+            return $this->handleSuperUserError('Failed to create super user account', $contentType);
+        }
+        
+        if ($contentType === 'application/json') {
+            $this->respondWithSuccess([
+                'redirect' => url('/auth'),
+                'message' => 'Super user account created successfully! You can now log in.'
+            ]);
+        } else {
+            $_SESSION['success_message'] = 'Super user account created successfully! You can now log in.';
+            redirect('/auth');
+        }
+    }
+    
+    public function verifyRegistrationKey() {
+        $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
+        
+        if ($contentType === 'application/json') {
+            $jsonData = file_get_contents('php://input');
+            $data = json_decode($jsonData, true);
+            $key = $data['key'] ?? '';
+        } else {
+            $key = $_POST['key'] ?? '';
+        }
+        
+        if (strlen($key) !== 8) {
+            return $this->respondWithError('Registration key must be 8 characters');
+        }
+        
+        // Check if it's the admin secret
+        if ($key === $this->getAdminSecret()) {
+            // Store the verified admin key in session
+            $_SESSION['verified_admin_key'] = $key;
+            
+            return $this->respondWithSuccess([
+                'keyType' => 'admin',
+                'redirect' => url('/create-superuser'),
+                'message' => 'Admin key verified'
+            ]);
+        }
+        
+        // TODO: Check if it's a valid student key in database
+        // For now, accept any 8-character key that's not the admin secret
+        return $this->respondWithSuccess([
+            'keyType' => 'student',
+            'message' => 'Student key verified'
+        ]);
+    }
+    
     /**
      * Verify user credentials
      * 
@@ -181,8 +296,28 @@ class AuthController {
             return 'Passwords do not match';
         }
         
-        if (strlen($registrationKey) !== 6) {
+        if (strlen($registrationKey) !== 8) {
             return 'Invalid registration key';
+        }
+        
+        return true;
+    }
+    
+    protected function validateSuperUserRegistration($name, $email, $password, $confirmPassword) {
+        if (empty($name) || empty($email) || empty($password) || empty($confirmPassword)) {
+            return 'Please fill in all required fields';
+        }
+        
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return 'Please enter a valid email address';
+        }
+        
+        if (strlen($password) < 6) {
+            return 'Password must be at least 6 characters long';
+        }
+        
+        if ($password !== $confirmPassword) {
+            return 'Passwords do not match';
         }
         
         return true;
@@ -230,6 +365,33 @@ class AuthController {
         }
     }
     
+    protected function createSuperUserAccount($name, $email, $password) {
+        if (!$this->db) {
+            throw new Exception("No database connection available");
+        }
+        
+        try {
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            
+            $stmt = $this->db->prepare("
+                INSERT INTO users (name, email, password, user_type) 
+                VALUES (?, ?, ?, 'super')
+            ");
+            
+            $result = $stmt->execute([$name, $email, $hashedPassword]);
+            if ($result) {
+                $userId = $this->db->lastInsertId();
+                error_log("createSuperUserAccount: Successfully created super user with ID: $userId");
+                return $userId;
+            } else {
+                throw new Exception("Failed to execute INSERT statement");
+            }
+        } catch (PDOException $e) {
+            error_log("createSuperUserAccount: Database error: " . $e->getMessage());
+            throw new Exception("Database error: " . $e->getMessage());
+        }
+    }
+    
     /**
      * Handle login error based on request type
      * 
@@ -258,6 +420,22 @@ class AuthController {
         } else {
             $_SESSION['register_error'] = $message;
             redirect('/auth');
+        }
+    }
+    
+    /**
+     * Handle super user creation error based on request type
+     * 
+     * @param string $message Error message
+     * @param string $contentType Request content type
+     * @return mixed Response based on request type
+     */
+    protected function handleSuperUserError($message, $contentType) {
+        if ($contentType === 'application/json') {
+            return $this->respondWithError($message);
+        } else {
+            $_SESSION['error_message'] = $message;
+            redirect('/create-superuser');
         }
     }
 
@@ -344,5 +522,23 @@ class AuthController {
         
         echo json_encode($result, JSON_PRETTY_PRINT);
         exit;
+    }
+
+    private function getAdminSecret() {
+        $envFile = dirname(__DIR__, 2) . '/.env';
+        if (file_exists($envFile)) {
+            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            foreach ($lines as $line) {
+                if (strpos($line, '=') !== false && !str_starts_with($line, '#')) {
+                    list($key, $value) = explode('=', $line, 2);
+                    if (trim($key) === 'ADMIN_SECRET') {
+                        return trim($value);
+                    }
+                }
+            }
+        }
+        
+        error_log("ADMIN_SECRET not found in .env file");
+        return 'SUPER_SECRET_ADMIN_2025'; // Fallback
     }
 }

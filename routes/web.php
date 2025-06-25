@@ -241,5 +241,40 @@ $routes['POST']['/api/register/'] = function() {
     return $auth->register();
 };
 
+// Create Super User page route (hidden)
+$routes['GET']['/create-superuser'] = function() {
+    return view('create_superuser');
+};
+
+$routes['GET']['/create-superuser/'] = function() {
+    return view('create_superuser');
+};
+
+// API Create Super User route
+$routes['POST']['/api/create-superuser'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->createSuperUser();
+};
+
+$routes['POST']['/api/create-superuser/'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->createSuperUser();
+};
+
+// API Verify Registration Key route
+$routes['POST']['/api/verify-key'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->verifyRegistrationKey();
+};
+
+$routes['POST']['/api/verify-key/'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->verifyRegistrationKey();
+};
+
 // Return the routes array to be processed by the router
 return $routes;

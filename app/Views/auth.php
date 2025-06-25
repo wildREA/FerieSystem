@@ -23,6 +23,7 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
         window.APP_URLS = {
             login: '<?= url('/api/login') ?>',
             register: '<?= url('/api/register') ?>',
+            verifyKey: '<?= url('/api/verify-key') ?>',
             auth: '<?= url('/auth') ?>'
         };
     </script>
@@ -110,6 +111,8 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
                             <input type="text" class="key-box" maxlength="1" id="key4" required>
                             <input type="text" class="key-box" maxlength="1" id="key5" required>
                             <input type="text" class="key-box" maxlength="1" id="key6" required>
+                            <input type="text" class="key-box" maxlength="1" id="key7" required>
+                            <input type="text" class="key-box" maxlength="1" id="key8" required>
                         </div>
                         <input type="hidden" id="registrationKey" name="registrationKey">
                     </div>

@@ -63,12 +63,36 @@ keyVerificationForm.addEventListener('submit', function(e) {
     e.preventDefault();
     const key = document.getElementById('registrationKey').value.trim();
     
-    if (key.length === 6) {
-        // Pass the registration key to the registration form
-        document.getElementById('regRegistrationKey').value = key;
-        showForm(registrationForm);
+    if (key.length === 8) {
+        // Make API call to verify the key
+        fetch(window.APP_URLS.verifyKey || 'index.php?route=/api/verify-key', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ key: key })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.keyType === 'admin') {
+                    // Admin key - store data and redirect to super user creation
+                    window.location.href = data.redirect;
+                } else {
+                    // Student key - proceed to normal registration
+                    document.getElementById('regRegistrationKey').value = key;
+                    showForm(registrationForm);
+                }
+            } else {
+                alert(data.message || 'Invalid registration key');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while verifying the key. Please try again.');
+        });
     } else {
-        alert('Please enter a complete 6-character registration key.');
+        alert('Please enter a complete 8-character registration key.');
     }
 });
 
@@ -179,8 +203,8 @@ registrationForm.addEventListener('submit', function(e) {
         return;
     }
     
-    if (password.length < 6) {
-        alert('Password must be at least 6 characters long!');
+    if (password.length < 8) {
+        alert('Password must be at least 8 characters long!');
         return;
     }
     
@@ -191,8 +215,8 @@ registrationForm.addEventListener('submit', function(e) {
         return;
     }
     
-    if (registrationKey.length !== 6) {
-        alert('Please enter a valid 6-character registration key.');
+    if (registrationKey.length !== 8) {
+        alert('Please enter a valid 8-character registration key.');
         return;
     }
     

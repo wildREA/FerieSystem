@@ -257,7 +257,7 @@ class SessionManager {
         ]);
     }
     
-    private function checkAuthentication() {
+    public function checkAuthentication() {
         if (isset($_SESSION[self::SESSION_USER_KEY])) {
             if (isset($_SESSION[self::SESSION_CREATED_AT])) {
                 $sessionAge = time() - $_SESSION[self::SESSION_CREATED_AT];
