@@ -1,5 +1,4 @@
 <?php
-// Key container component for API key management
 ?>
 
 <div class="key-container">

@@ -34,9 +34,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function setMinimumStartDateTime() {
         const now = new Date();
-        const minimumDateTime = new Date(now.getTime() + (48 * 60 * 60 * 1000)); // Add 48 hours
+        const minimumDateTime = new Date(now.getTime() + (48 * 60 * 60 * 1000)); // 48 hours = 2 days notice required
         
-        // Adjust to next working hours if needed
+        // Ensure request starts during business hours
         const adjustedDateTime = adjustToWorkingHours(minimumDateTime);
         
         // Use the already declared variables instead of redeclaring
@@ -78,11 +78,11 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     function adjustToWorkingHours(dateTime) {
-        const workingStartHour = 8; // 8 AM
-        const workingEndHour = 17; // 5 PM
+        const workingStartHour = 8; // 8:00 AM business hours start
+        const workingEndHour = 17; // 5:00 PM business hours end
         const result = new Date(dateTime);
         
-        const dayOfWeek = result.getDay();
+        const dayOfWeek = result.getDay(); // 0 = Sunday, 6 = Saturday
         const hour = result.getHours();
         
         // If it's weekend (Saturday = 6, Sunday = 0), move to next Monday

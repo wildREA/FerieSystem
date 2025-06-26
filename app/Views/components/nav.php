@@ -1,9 +1,4 @@
 <?php
-/**
- * Navigation Component
- * 
- * Example navigation using URL helper functions
- */
 ?>
 <nav class="navbar">
     <div class="navbar-brand">

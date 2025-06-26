@@ -1,10 +1,5 @@
 <?php
-/**
- * Shared header component with favicon links
- * Include this in all views using require_once
- */
-
-// This ensures all pages use the same favicon regardless of directory level
+// Shared header component - favicons work from any directory level
 ?>
 
 <meta charset="UTF-8">

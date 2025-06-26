@@ -1,9 +1,5 @@
 <?php
-/**
- * Simple error handler for debugging
- */
 
-// Create error display for debugging
 function debugError($message, $file = '', $line = '') {
     $errorMsg = "Error: " . $message;
     if ($file) {

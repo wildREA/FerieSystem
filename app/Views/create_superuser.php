@@ -1,23 +1,19 @@
 <?php
-// Start session to access error messages
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Check if admin key was verified
 if (!isset($_SESSION['verified_admin_key'])) {
     $_SESSION['error_message'] = 'Access denied. Please verify admin key first.';
     header('Location: ' . url('/auth'));
     exit;
 }
 
-// Clear any existing error messages since access is valid
 unset($_SESSION['error_message']);
 
 $error = $_SESSION['error_message'] ?? null;
 $success = $_SESSION['success_message'] ?? null;
 
-// Clear messages after displaying
 unset($_SESSION['error_message'], $_SESSION['success_message']);
 ?>
 <!DOCTYPE html>
@@ -27,7 +23,6 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
     <title>Create Super User - FerieSystem</title>
     <link rel="stylesheet" href="public/css/login.css">
     <script>
-        // Pass PHP URLs to JavaScript
         window.APP_URLS = {
             createSuperUser: '<?= url('/api/create-superuser') ?>',
             auth: '<?= url('/auth') ?>'
@@ -118,7 +113,6 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
     </footer>
 
     <script>
-        // Password toggle functionality
         document.querySelectorAll('.password-toggle').forEach(toggle => {
             toggle.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -139,12 +133,10 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
             });
         });
 
-        // Form submission - just use regular form submission, no AJAX needed
         const form = document.getElementById('superUserForm');
         if (form) {
             form.addEventListener('submit', function(e) {
-                // Allow normal form submission
-                // The form will POST to the create-superuser route
+                // Form submits via POST to create-superuser route
             });
         }
     </script>

@@ -1,10 +1,6 @@
 <?php
 
-/**
- * Web Routes
- * 
- * Here is where you can register web routes for your application.
- */
+// Define application routes here
 
 // Define routes as an array that will be processed by the router
 $routes = [];

@@ -73,7 +73,6 @@ class AuthController {
     }
     
     public function register() {
-        // Check if this is a JSON request
         $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
         
         if ($contentType === 'application/json') {
@@ -100,9 +99,7 @@ class AuthController {
             return $this->handleRegisterError($validation, $contentType);
         }
         
-        // Check if this is super user registration
         if ($registrationKey === $this->getAdminSecret()) {
-            // Store registration data in session for super user creation
             $_SESSION['super_user_data'] = [
                 'name' => $name,
                 'username' => $username,
@@ -122,10 +119,8 @@ class AuthController {
             return;
         }
         
-        // TODO: Check if registration key is valid student key by looking up in database table
-        // Example: SELECT * FROM student_registration_keys WHERE key = ? AND used = 0
-        // If not found or already used, return error
-        // If valid, mark as used and continue with registration
+        // TODO: Implement student registration key validation
+        // Check database for valid unused student key
         
         if ($this->userExists($email, $username)) {
             return $this->handleRegisterError('User with this email or username already exists', $contentType);
@@ -154,7 +149,6 @@ class AuthController {
     }
 
     public function createSuperUser() {
-        // Check if admin key was verified
         if (!isset($_SESSION['verified_admin_key'])) {
             $_SESSION['error_message'] = 'Access denied. Please verify admin key first.';
             redirect('/auth');
@@ -178,7 +172,6 @@ class AuthController {
             $confirmPassword = $_POST['confirmPassword'] ?? '';
         }
         
-        // Clear the verified admin key
         unset($_SESSION['verified_admin_key']);
         
         $validation = $this->validateSuperUserRegistration($name, $email, $password, $confirmPassword);
@@ -222,9 +215,7 @@ class AuthController {
             return $this->respondWithError('Registration key must be 8 characters');
         }
         
-        // Check if it's the admin secret
         if ($key === $this->getAdminSecret()) {
-            // Store the verified admin key in session
             $_SESSION['verified_admin_key'] = $key;
             
             return $this->respondWithSuccess([
@@ -234,8 +225,7 @@ class AuthController {
             ]);
         }
         
-        // TODO: Check if it's a valid student key in database
-        // For now, accept any 8-character key that's not the admin secret
+        // TODO: Implement student key validation in database
         return $this->respondWithSuccess([
             'keyType' => 'student',
             'message' => 'Student key verified'
@@ -269,10 +259,8 @@ class AuthController {
                 return false;
             }
             
-            if (!password_verify($password, $user['password'])) { 
-                if ($password !== 'secret') {
-                    return false;
-                }
+            if (!password_verify($password, $user['password'])) {
+                return false;
             }
             
             return $user;
@@ -408,13 +396,6 @@ class AuthController {
         }
     }
     
-    /**
-     * Handle login error based on request type
-     * 
-     * @param string $message Error message
-     * @param string $contentType Request content type
-     * @return mixed Response based on request type
-     */
     protected function handleLoginError($message, $contentType) {
         if ($contentType === 'application/json') {
             return $this->respondWithError($message);
@@ -423,13 +404,6 @@ class AuthController {
         }
     }
     
-    /**
-     * Handle registration error based on request type
-     * 
-     * @param string $message Error message
-     * @param string $contentType Request content type
-     * @return mixed Response based on request type
-     */
     protected function handleRegisterError($message, $contentType) {
         if ($contentType === 'application/json') {
             return $this->respondWithError($message);
@@ -439,13 +413,6 @@ class AuthController {
         }
     }
     
-    /**
-     * Handle super user creation error based on request type
-     * 
-     * @param string $message Error message
-     * @param string $contentType Request content type
-     * @return mixed Response based on request type
-     */
     protected function handleSuperUserError($message, $contentType) {
         if ($contentType === 'application/json') {
             return $this->respondWithError($message);
@@ -455,12 +422,6 @@ class AuthController {
         }
     }
 
-    /**
-     * Return error response as JSON
-     * 
-     * @param string $message Error message
-     * @return void
-     */
     protected function respondWithError($message) {
         header('Content-Type: application/json');
         echo json_encode([
@@ -470,12 +431,6 @@ class AuthController {
         exit;
     }
     
-    /**
-     * Return success response as JSON
-     * 
-     * @param array $data Response data
-     * @return void
-     */
     protected function respondWithSuccess($data) {
         header('Content-Type: application/json');
         echo json_encode(array_merge([
@@ -484,27 +439,17 @@ class AuthController {
         exit;
     }
     
-    /**
-     * Helper method to render login view with optional data
-     * 
-     * @param array $data Data to pass to the view
-     * @return mixed View response
-     */
     protected function renderLogin($data = []) {
-        // Set error message in session for display
         if (isset($data['error'])) {
             $_SESSION['login_error'] = $data['error'];
         }
         
-        // Redirect back to auth page
         header('Location: /auth');
         exit;
     }
 
     /**
-     * Test database connection - for debugging only
-     * 
-     * @return void
+     * Test database connection
      */
     public function testDatabase() {
         header('Content-Type: application/json');
@@ -555,6 +500,6 @@ class AuthController {
         }
         
         error_log("ADMIN_SECRET not found in .env file");
-        return 'SUPER_SECRET_ADMIN_2025'; // Fallback
+        return 'SUPER_SECRET_ADMIN_2025'; // Fallback - change in production
     }
 }

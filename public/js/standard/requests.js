@@ -1,9 +1,7 @@
-// Requests page specific functionality
 document.addEventListener("DOMContentLoaded", function() {
     
     const statusFilter = document.getElementById('statusFilter');
 
-    // Initialize requests page
     init();
 
     function init() {
@@ -12,7 +10,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function setupEventListeners() {
-        // Status filter
         if (statusFilter) {
             statusFilter.addEventListener('change', filterRequests);
         }

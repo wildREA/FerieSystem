@@ -9,10 +9,8 @@ class RequestController {
     private $db;
     
     public function __construct() {
-        // Initialize session manager
         $this->sessionManager = new \SessionManager();
         
-        // Get database connection
         try {
             $this->db = require dirname(__DIR__) . '/Core/connection.php';
         } catch (Exception $e) {
@@ -21,28 +19,21 @@ class RequestController {
         }
     }
 
-    /**
-     * Submit a new vacation request
-     */
     public function submitRequest() {
-        // Set JSON response header
         header('Content-Type: application/json');
         
         try {
-            // Check if user is authenticated
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
                 return json_encode(['error' => 'User not authenticated']);
             }
             
-            // Check if user is a standard user (student)
             $userType = $this->sessionManager->getUserType();
             if ($userType !== 'standard') {
                 http_response_code(403);
                 return json_encode(['error' => 'Only students can submit requests']);
             }
             
-            // Get JSON data from request
             $jsonData = file_get_contents('php://input');
             $data = json_decode($jsonData, true);
             
@@ -51,7 +42,6 @@ class RequestController {
                 return json_encode(['error' => 'Invalid JSON data']);
             }
             
-            // Validate required fields
             $requiredFields = ['requestType', 'startDate', 'endDate', 'reason'];
             foreach ($requiredFields as $field) {
                 if (!isset($data[$field]) || empty(trim($data[$field]))) {
@@ -60,7 +50,6 @@ class RequestController {
                 }
             }
             
-            // Validate dates
             $startDate = $data['startDate'];
             $endDate = $data['endDate'];
             
@@ -79,22 +68,18 @@ class RequestController {
                 return json_encode(['error' => 'Start date cannot be in the past']);
             }
             
-            // Get user ID from session
             $userId = $this->sessionManager->getUserId();
             
-            // Calculate number of days
             $start = new DateTime($startDate);
             $end = new DateTime($endDate);
             $interval = $start->diff($end);
-            $days = $interval->days + 1; // Include both start and end date
+            $days = $interval->days + 1; // Include both start and end dates in count
             
-            // Check database connection
             if (!$this->db) {
                 http_response_code(500);
                 return json_encode(['error' => 'Database connection failed']);
             }
             
-            // Insert request into database
             $stmt = $this->db->prepare("
                 INSERT INTO requests (
                     user_id, 
@@ -129,7 +114,6 @@ class RequestController {
             
             $requestId = $this->db->lastInsertId();
             
-            // Return success response
             return json_encode([
                 'success' => true,
                 'message' => 'Request submitted successfully',
@@ -152,22 +136,15 @@ class RequestController {
         }
     }
     
-    /**
-     * Validate date format (YYYY-MM-DD)
-     */
     private function isValidDate($date) {
         $d = DateTime::createFromFormat('Y-m-d', $date);
         return $d && $d->format('Y-m-d') === $date;
     }
     
-    /**
-     * Get user requests
-     */
     public function getUserRequests() {
         header('Content-Type: application/json');
         
         try {
-            // Check if user is authenticated
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
                 return json_encode(['error' => 'User not authenticated']);

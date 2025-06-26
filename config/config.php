@@ -1,21 +1,6 @@
 <?php
 
-/**
- * Main configuration file
- * 
- * This file contains all the configuration settings for the application.
- * It loads values from the .env file and provides default values when needed.
- */
-
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Application Settings
-    |--------------------------------------------------------------------------
-    |
-    | These are the core settings for the application.
-    |
-    */
     'app' => [
         'name' => 'Ferie System',
         'env' => $_ENV['APP_ENV'] ?? 'production',
@@ -26,14 +11,6 @@ return [
         'key' => $_ENV['APP_KEY'] ?? null,
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Database Settings
-    |--------------------------------------------------------------------------
-    |
-    | Database connection settings.
-    |
-    */
     'database' => [
         'default' => $_ENV['DB_CONNECTION'] ?? 'mysql',
         'connections' => [
@@ -53,28 +30,12 @@ return [
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Logging Settings
-    |--------------------------------------------------------------------------
-    |
-    | Configure logging behavior.
-    |
-    */
     'logging' => [
         'channel' => $_ENV['LOG_CHANNEL'] ?? 'stack',
         'level' => $_ENV['LOG_LEVEL'] ?? 'debug',
         'path' => __DIR__ . '/../storage/logs/app.log',
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Session Settings
-    |--------------------------------------------------------------------------
-    |
-    | Configure session behavior.
-    |
-    */
     'session' => [
         'driver' => 'file',
         'lifetime' => 120,

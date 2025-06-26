@@ -1,9 +1,4 @@
 <?php
-/**
- * Authentication Middleware
- * 
- * This middleware handles authentication checks for routes
- */
 
 namespace App\Middleware;
 
@@ -12,38 +7,20 @@ require_once dirname(__DIR__) . '/Helpers/UrlHelper.php';
 
 class AuthMiddleware
 {
-    /**
-     * Handle the request - check if user is authenticated
-     * 
-     * @param array $request Request data
-     * @param callable $next Next middleware
-     * @return mixed
-     */
     public function handle($request, $next)
     {
-        // Initialize session manager
         $sessionManager = new \SessionManager();
         
-        // Check if user is authenticated
         if (!$sessionManager->isAuthenticated()) {
-            // Remember the requested URL for redirect after login
             $_SESSION['requested_url'] = $_SERVER['REQUEST_URI'];
-            
-            // Redirect to login page
             header('Location: /auth.php');
             exit;
         }
         
-        // User is authenticated, proceed to next middleware/controller
         return $next($request);
     }
 }
 
-/**
- * Role Middleware
- * 
- * This middleware checks if the authenticated user has the required role
- */
 class RoleMiddleware
 {
     /**

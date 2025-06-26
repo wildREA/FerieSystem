@@ -4,19 +4,19 @@ require_once __DIR__ . '/../Helpers/UrlHelper.php';
 if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.use_only_cookies', 1);
     ini_set('session.use_strict_mode', 1);
-    ini_set('session.cookie_httponly', 1);
-    ini_set('session.cookie_secure', isset($_SERVER['HTTPS']));
-    ini_set('session.cookie_samesite', 'Strict');
-    ini_set('session.cookie_lifetime', 86400);
-    ini_set('session.gc_maxlifetime', 86400);
+    ini_set('session.cookie_httponly', 1); // Prevent XSS attacks
+    ini_set('session.cookie_secure', isset($_SERVER['HTTPS'])); // HTTPS only if available
+    ini_set('session.cookie_samesite', 'Strict'); // CSRF protection
+    ini_set('session.cookie_lifetime', 86400); // 24 hours
+    ini_set('session.gc_maxlifetime', 86400); // 24 hours cleanup
     
     session_start();
 }
 
 class SessionManager {
     const REMEMBER_COOKIE = 'remember_token';
-    const REMEMBER_EXPIRY = 2592000; // 30 days
-    const SESSION_EXPIRY = 86400; // 1 day
+    const REMEMBER_EXPIRY = 2592000; // 30 days in seconds
+    const SESSION_EXPIRY = 86400; // 1 day in seconds
     const SESSION_USER_KEY = 'user_id';
     const SESSION_USER_TYPE = 'user_type';
     const SESSION_CREATED_AT = 'session_created_at';
@@ -24,7 +24,6 @@ class SessionManager {
     private $db = null;
     
     public function __construct() {
-        // Get database connection
         try {
             $connectionPath = __DIR__ . '/connection.php';
             error_log("SessionManager: Attempting to load connection from: " . $connectionPath);
@@ -81,7 +80,6 @@ class SessionManager {
         
         session_regenerate_id(true);
         
-        // If remember me requested, create a persistent token
         if ($rememberMe) {
             $this->createRememberMeToken($userId);
         }
@@ -89,12 +87,6 @@ class SessionManager {
         return true;
     }
     
-    /**
-     * Create and store a new remember me token
-     * 
-     * @param int $userId User ID
-     * @return bool Success status
-     */
     private function createRememberMeToken($userId) {
         if (!$this->db) {
             return false;
@@ -120,9 +112,9 @@ class SessionManager {
             setcookie(self::REMEMBER_COOKIE, $cookieValue, [
                 'expires' => time() + self::REMEMBER_EXPIRY,
                 'path' => '/',
-                'secure' => isset($_SERVER['HTTPS']),
-                'httponly' => true,
-                'samesite' => 'Strict'
+                'secure' => isset($_SERVER['HTTPS']), // Only send over HTTPS if available
+                'httponly' => true, // Prevent XSS access to cookie
+                'samesite' => 'Strict' // CSRF protection
             ]);
             
             return true;
@@ -178,7 +170,7 @@ class SessionManager {
                 return false;
             }
             
-            // Verify token hash
+            // Verify token hash using timing-safe comparison to prevent timing attacks
             if (!hash_equals($tokenData['token_hash'], $tokenHash)) {
                 error_log('Token hash verification failed');
                 $this->clearRememberMeCookie();

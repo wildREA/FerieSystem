@@ -1,15 +1,12 @@
 <?php
-// Start session to access error messages
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Get error and success messages
 $error = $_SESSION['login_error'] ?? null;
 $regError = $_SESSION['registration_error'] ?? $_SESSION['register_error'] ?? null;
 $regSuccess = $_SESSION['registration_success'] ?? $_SESSION['success_message'] ?? null;
 
-// Clear messages after displaying
 unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['registration_success'], $_SESSION['register_error'], $_SESSION['success_message']);
 ?>
 <!DOCTYPE html>
@@ -19,7 +16,6 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
     <title>Login - FerieSystem</title>
     <link rel="stylesheet" href="public/css/login.css">
     <script>
-        // Pass PHP URLs to JavaScript
         window.APP_URLS = {
             login: '<?= url('/api/login') ?>',
             register: '<?= url('/api/register') ?>',
