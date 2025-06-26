@@ -9,7 +9,7 @@
     border-top: 1px solid #2c3142;
     padding: 6px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    z-index: 1000;
+    z-index: 10;
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
     cursor: pointer;
     pointer-events: none;
@@ -48,7 +48,7 @@
 }
 
 .key-label {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: #ffffff;
     line-height: 1.2;
@@ -59,7 +59,7 @@
 }
 
 .key-status {
-    font-size: 12px;
+    font-size: 14px;
     color: #b5bac1;
     line-height: 1.2;
     white-space: nowrap;
@@ -96,34 +96,6 @@
 .btn-key-control:hover {
     background-color: #5865f2;
     color: #ffffff;
-}
-
-.key-input {
-    position: absolute;
-    bottom: 60px;
-    left: 8px;
-    right: 8px;
-    background-color: #2c2f33;
-    border: 1px solid #40444b;
-    border-radius: 6px;
-    padding: 12px 16px;
-    color: #ffffff;
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
-    outline: none;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-}
-
-.key-input:focus {
-    border-color: #5865f2;
-    box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.3);
-}
-
-.key-input.hidden-key {
-    -webkit-text-security: disc;
-    letter-spacing: 2px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Animation for key generation */

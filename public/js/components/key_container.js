@@ -1,7 +1,6 @@
 // Discord-style Key Container Component JavaScript
 class KeyContainer {
     constructor() {
-        this.keyInput = document.getElementById('key_value');
         this.visibilityBtn = document.getElementById('visibility');
         this.generateBtn = document.getElementById('generate_key');
         this.keyStatus = document.getElementById('key_status');
@@ -16,31 +15,19 @@ class KeyContainer {
     
     init() {
         // Bind event listeners
-        this.visibilityBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.toggleVisibility();
-        });
-        this.generateBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.generateKey();
-        });
-        this.keyInput.addEventListener('click', () => this.copyToClipboard());
-        this.keyDisplay.addEventListener('click', () => this.toggleKeyInput());
+        // Later work after functions  <-- HERE
         
         // Initial state
-        this.updateVisibilityButton();
-        this.updateStatus();
+        // Later work after basic event listeners  <-- HERE
     }
 
     toggleVisibility() {
-        let visible = false
-
         if (!visible) {
-            console.log("Visible")
-            visibi = true;
+            console.log("Visible (state: " + this.isVisible + ")");
+            this.isVisible = true;
         } else {
-            console.log("Invisible")
-            visibi = false;
+            console.log("Invisible (state: " + this.isVisible + ")");
+            this.isVisible = false;
         }
     }
     

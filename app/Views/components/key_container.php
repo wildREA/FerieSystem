@@ -6,7 +6,7 @@
     <div class="key-display">
         <div class="key-section">
             <div class="key-info">
-                <div class="key-label">API Key</div>
+                <div class="key-label">Registration Key</div>
                 <div class="key-status" id="key_status">No key generated</div>
             </div>
         </div>
