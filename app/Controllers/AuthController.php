@@ -32,20 +32,20 @@ class AuthController {
             $jsonData = file_get_contents('php://input');
             $data = json_decode($jsonData, true);
             
-            $email = $data['email'] ?? '';
+            $emailOrUsername = $data['email'] ?? '';
             $password = $data['password'] ?? '';
             $remember = isset($data['remember']) ? (bool) $data['remember'] : false;
         } else {
-            $email = $_POST['email'] ?? '';
+            $emailOrUsername = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';
             $remember = isset($_POST['remember']) ? (bool) $_POST['remember'] : false;
         }
         
-        if (empty($email) || empty($password)) {
-            return $this->handleLoginError('Please enter email and password', $contentType);
+        if (empty($emailOrUsername) || empty($password)) {
+            return $this->handleLoginError('Please enter email/username and password', $contentType);
         }
         
-        $user = $this->verifyCredentials($email, $password);
+        $user = $this->verifyCredentials($emailOrUsername, $password);
         
         if (!$user) {
             return $this->handleLoginError('Invalid credentials', $contentType);
@@ -81,19 +81,21 @@ class AuthController {
             $data = json_decode($jsonData, true);
             
             $name = $data['name'] ?? '';
+            $username = $data['username'] ?? '';
             $email = $data['email'] ?? '';
             $password = $data['password'] ?? '';
             $confirmPassword = $data['confirmPassword'] ?? '';
             $registrationKey = $data['registrationKey'] ?? '';
         } else {
             $name = $_POST['name'] ?? '';
+            $username = $_POST['username'] ?? '';
             $email = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';
             $confirmPassword = $_POST['confirmPassword'] ?? '';
             $registrationKey = $_POST['registrationKey'] ?? '';
         }
         
-        $validation = $this->validateRegistration($name, $email, $password, $confirmPassword, $registrationKey);
+        $validation = $this->validateRegistration($name, $username, $email, $password, $confirmPassword, $registrationKey);
         if ($validation !== true) {
             return $this->handleRegisterError($validation, $contentType);
         }
@@ -103,6 +105,7 @@ class AuthController {
             // Store registration data in session for super user creation
             $_SESSION['super_user_data'] = [
                 'name' => $name,
+                'username' => $username,
                 'email' => $email,
                 'password' => $password,
                 'confirmPassword' => $confirmPassword
@@ -124,11 +127,11 @@ class AuthController {
         // If not found or already used, return error
         // If valid, mark as used and continue with registration
         
-        if ($this->userExists($email)) {
-            return $this->handleRegisterError('User with this email already exists', $contentType);
+        if ($this->userExists($email, $username)) {
+            return $this->handleRegisterError('User with this email or username already exists', $contentType);
         }
         
-        $userId = $this->createUser($name, $email, $password);
+        $userId = $this->createUser($name, $username, $email, $password);
         
         if (!$userId) {
             return $this->handleRegisterError('Failed to create user account - database connection issue', $contentType);
@@ -242,11 +245,11 @@ class AuthController {
     /**
      * Verify user credentials
      * 
-     * @param string $email User email
+     * @param string $emailOrUsername User email or username
      * @param string $password User password
      * @return array|false User data if valid, false otherwise
      */
-    protected function verifyCredentials($email, $password) {
+    protected function verifyCredentials($emailOrUsername, $password) {
         if (!$this->db) {
             error_log("verifyCredentials: No database connection available");
             return false;
@@ -254,12 +257,12 @@ class AuthController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT id, name, email, password, user_type
+                SELECT id, name, email, username, password, user_type
                 FROM users 
-                WHERE email = ?
+                WHERE email = ? OR username = ?
             ");
             
-            $stmt->execute([$email]);
+            $stmt->execute([$emailOrUsername, $emailOrUsername]);
             $user = $stmt->fetch();
             
             if (!$user) {
@@ -279,13 +282,21 @@ class AuthController {
         }
     }
     
-    protected function validateRegistration($name, $email, $password, $confirmPassword, $registrationKey) {
-        if (empty($name) || empty($email) || empty($password) || empty($confirmPassword)) {
+    protected function validateRegistration($name, $username, $email, $password, $confirmPassword, $registrationKey) {
+        if (empty($name) || empty($username) || empty($email) || empty($password) || empty($confirmPassword)) {
             return 'Please fill in all required fields';
         }
         
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return 'Please enter a valid email address';
+        }
+        
+        if (strlen($username) < 3) {
+            return 'Username must be at least 3 characters long';
+        }
+        
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
+            return 'Username can only contain letters, numbers, and underscores';
         }
         
         if (strlen($password) < 6) {
@@ -323,14 +334,19 @@ class AuthController {
         return true;
     }
     
-    protected function userExists($email) {
+    protected function userExists($email, $username = null) {
         if (!$this->db) {
             return false;
         }
         
         try {
-            $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ?");
-            $stmt->execute([$email]);
+            if ($username !== null) {
+                $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
+                $stmt->execute([$email, $username]);
+            } else {
+                $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ?");
+                $stmt->execute([$email]);
+            }
             return $stmt->fetch() !== false;
         } catch (PDOException $e) {
             error_log("Database error in userExists: " . $e->getMessage());
@@ -338,7 +354,7 @@ class AuthController {
         }
     }
     
-    protected function createUser($name, $email, $password) {
+    protected function createUser($name, $username, $email, $password) {
         if (!$this->db) {
             throw new Exception("No database connection available");
         }
@@ -347,11 +363,11 @@ class AuthController {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             
             $stmt = $this->db->prepare("
-                INSERT INTO users (name, email, password, user_type) 
-                VALUES (?, ?, ?, 'standard')
+                INSERT INTO users (name, username, email, password, user_type) 
+                VALUES (?, ?, ?, ?, 'standard')
             ");
             
-            $result = $stmt->execute([$name, $email, $hashedPassword]);
+            $result = $stmt->execute([$name, $username, $email, $hashedPassword]);
             if ($result) {
                 $userId = $this->db->lastInsertId();
                 error_log("createUser: Successfully created user with ID: $userId");

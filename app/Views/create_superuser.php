@@ -63,6 +63,10 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
                         <input type="text" id="name" name="name" placeholder="Full name" required>
                     </div>
                     <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" placeholder="Username" required>
+                    </div>
+                    <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" placeholder="Email address" required>
                     </div>

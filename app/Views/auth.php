@@ -57,8 +57,8 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
                 
                 <form action="<?= url('/login') ?>" method="post" id="loginForm">
                     <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" placeholder="Email address" required>
+                        <label for="email">User</label>
+                        <input type="text" id="email" name="email" placeholder="Email or username" required>
                     </div>
 
                     <div class="form-group">
@@ -131,6 +131,10 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
                     <div class="form-group">
                         <label for="registerName">Name</label>
                         <input type="text" id="registerName" name="name" placeholder="Full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerUsername">Username</label>
+                        <input type="text" id="registerUsername" name="username" placeholder="Choose a username" required>
                     </div>
                     <div class="form-group">
                         <label for="registerEmail">Email</label>

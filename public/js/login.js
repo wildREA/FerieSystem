@@ -187,13 +187,14 @@ registrationForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
     const name = document.getElementById('registerName').value.trim();
+    const username = document.getElementById('registerUsername').value.trim();
     const email = document.getElementById('registerEmail').value.trim();
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
     const registrationKey = document.getElementById('regRegistrationKey').value.trim();
     
     // Validation
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !username || !email || !password || !confirmPassword) {
         alert('Please fill in all fields.');
         return;
     }
@@ -234,6 +235,7 @@ registrationForm.addEventListener('submit', function(e) {
         },
         body: JSON.stringify({
             name: name,
+            username: username,
             email: email,
             password: password,
             confirmPassword: confirmPassword,
