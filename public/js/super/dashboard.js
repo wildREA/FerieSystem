@@ -25,6 +25,20 @@ document.addEventListener("DOMContentLoaded", function () {
       avatar: "EN",
     },
     {
+      id: "STU001",
+      name: "Emma Nielsen",
+      email: "emma.nielsen@student.dk",
+      course: "Computer Science",
+      year: 3,
+      status: "pending",
+      vacationDays: 25,
+      requestDate: "2025-06-01",
+      requestEndDate: "2025-06-16",
+      requestDays: 5,
+      requestReason: "Family vacation",
+      avatar: "EN",
+    },
+    {
       id: "STU002",
       name: "Lars Andersen",
       email: "lars.andersen@student.dk",
@@ -208,24 +222,49 @@ document.addEventListener("DOMContentLoaded", function () {
     setupEventListeners();
   }
 
+  // Create a debounced version of handleSearch inside setupEventListeners
   function setupEventListeners() {
-    // Search functionality
-    searchInput.addEventListener("input", window.handleSearch);
-    searchInput.addEventListener("focus", () => {
-      if (searchInput.value.trim()) {
-        searchResults.style.display = "block";
-      }
-    });
+    // Debounce function to prevent excessive search calls
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
 
-    // Hide search results when clicking outside
-    document.addEventListener("click", (e) => {
-      if (e.target && !e.target.closest(".search-wrapper")) {
-        searchResults.style.display = "none";
-      }
-    });
+    // Search functionality - only set up if search input exists
+    if (searchInput && searchResults) {
+      // Create debounced version here, after window.handleSearch is available
+      const debouncedHandleSearch = debounce((e) => {
+        if (typeof window.handleSearch === 'function') {
+          window.handleSearch(e);
+        }
+      }, 300);
+      
+      searchInput.addEventListener("input", debouncedHandleSearch);
+      searchInput.addEventListener("focus", () => {
+        if (searchInput.value.trim()) {
+          searchResults.style.display = "block";
+        }
+      });
 
-    // Set up keyboard navigation for search results
-    searchInput.addEventListener("keydown", window.handleSearchNavigation);
+      // Hide search results when clicking outside
+      document.addEventListener("click", (e) => {
+        if (e.target && !e.target.closest(".search-wrapper")) {
+          if (searchResults) {
+            searchResults.style.display = "none";
+          }
+        }
+      });
+
+      // Set up keyboard navigation for search results
+      searchInput.addEventListener("keydown", window.handleSearchNavigation);
+    }
 
     // Update the sidebar logo to navigate to home
     const logo = document.querySelector(".sidebar .logo");
@@ -260,6 +299,15 @@ document.addEventListener("DOMContentLoaded", function () {
    * @param {string} view - 'active' or 'inactive'
    */
   function toggleApprovedRequestsView(view) {
+    // Get button references dynamically in case they weren't available during initial load
+    const activeRequestsBtn = document.getElementById("activeRequestsBtn");
+    const inactiveRequestsBtn = document.getElementById("inactiveRequestsBtn");
+    
+    // Only proceed if buttons exist
+    if (!activeRequestsBtn || !inactiveRequestsBtn) {
+      return;
+    }
+
     // Update button styles - properly handle both btn-primary/btn-outline-primary and active class
     if (view === "active") {
       // Set active button styling
@@ -307,20 +355,25 @@ document.addEventListener("DOMContentLoaded", function () {
    * @param {string} status - 'active' or 'inactive'
    */
   function renderApprovedRequests(requests, status) {
+    const approvedRequestsGrid = document.getElementById("approvedRequestsGrid");
+    const noApprovedResults = document.getElementById("noApprovedResults");
+    
     if (!approvedRequestsGrid) return;
-
+    
     if (requests.length === 0) {
-      approvedRequestsGrid.style.display = "none";
-      noApprovedResults.style.display = "block";
+      approvedRequestsGrid.style.display = 'none';
+      if (noApprovedResults) {
+        noApprovedResults.style.display = 'block';
+      }
       return;
     }
 
-    approvedRequestsGrid.style.display = "grid";
-    noApprovedResults.style.display = "none";
-
-    approvedRequestsGrid.innerHTML = requests
-      .map((request) => createApprovedRequestCard(request, status))
-      .join("");
+    approvedRequestsGrid.style.display = 'grid';
+    if (noApprovedResults) {
+      noApprovedResults.style.display = 'none';
+    }
+    
+    approvedRequestsGrid.innerHTML = requests.map(request => createApprovedRequestCard(request, status)).join('');
   }
 
   /**
@@ -332,68 +385,62 @@ document.addEventListener("DOMContentLoaded", function () {
   function createApprovedRequestCard(request, status) {
     const startDate = new Date(request.requestDate);
     const endDate = new Date(request.requestEndDate);
-
+    
     // Calculate days remaining (for active requests) or days since completion (for inactive)
     let timeDescription;
-    if (status === "active") {
-      const daysRemaining = Math.ceil(
-        (endDate - today) / (1000 * 60 * 60 * 24)
-      );
+    if (status === 'active') {
+      const daysRemaining = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
       timeDescription = `${daysRemaining} days remaining`;
     } else {
-      const daysSinceCompletion = Math.ceil(
-        (today - endDate) / (1000 * 60 * 60 * 24)
-      );
+      const daysSinceCompletion = Math.ceil((today - endDate) / (1000 * 60 * 60 * 24));
       timeDescription = `Completed ${daysSinceCompletion} days ago`;
     }
-
+    
     return `
-            <div class="request-card ${status}" data-request-id="${request.id}">
-                <span class="request-status-badge ${status}">${status === "active" ? "Active" : "Completed"}</span>
-                
-                <div class="student-header">
-                    <div class="student-avatar status-approved" style="width: 40px; height: 40px;">
-                        ${request.avatar}
-                    </div>
-                    <div class="student-info">
-                        <h4>${request.name}</h4>
-                        <p class="student-id">${request.id}</p>
-                    </div>
-                </div>
-                
-                <div class="request-dates mt-3">
-                    <div class="date-block">
-                        <div class="date-label">Start Date</div>
-                        <div class="date-value">${startDate.toLocaleDateString()}</div>
-                    </div>
-                    <div class="date-block">
-                        <div class="date-label">End Date</div>
-                        <div class="date-value">${endDate.toLocaleDateString()}</div>
-                    </div>
-                    <div class="date-block">
-                        <div class="date-label">Days</div>
-                        <div class="date-value">${request.requestDays}</div>
-                    </div>
-                </div>
-                
-                <div class="mt-3">
-                    <div class="detail-label">Reason:</div>
-                    <div class="detail-value">${request.requestReason}</div>
-                </div>
-                
-                <div class="mt-3 text-end">
-                    <small class="text-muted">${timeDescription}</small>
-                </div>
-                
-                <div class="mt-3 d-flex justify-content-end">
-                    <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('${
-                      request.id
-                    }')">
-                        <i class="bi bi-eye"></i> Details
-                    </button>
-                </div>
-            </div>
-        `;
+      <div class="request-card ${status}" data-request-id="${request.id}">
+        <span class="request-status-badge ${status}">${status === 'active' ? 'Active' : 'Completed'}</span>
+        
+        <div class="student-header">
+          <div class="student-avatar status-approved" style="width: 40px; height: 40px;">
+            ${request.avatar}
+          </div>
+          <div class="student-info">
+            <h4>${request.name}</h4>
+            <p class="student-id">${request.id}</p>
+          </div>
+        </div>
+        
+        <div class="request-dates mt-3">
+          <div class="date-block">
+            <div class="date-label">Start Date</div>
+            <div class="date-value">${startDate.toLocaleDateString()}</div>
+          </div>
+          <div class="date-block">
+            <div class="date-label">End Date</div>
+            <div class="date-value">${endDate.toLocaleDateString()}</div>
+          </div>
+          <div class="date-block">
+            <div class="date-label">Days</div>
+            <div class="date-value">${request.requestDays}</div>
+          </div>
+        </div>
+        
+        <div class="mt-3">
+          <div class="detail-label">Reason:</div>
+          <div class="detail-value">${request.requestReason}</div>
+        </div>
+        
+        <div class="mt-3 text-end">
+          <small class="text-muted">${timeDescription}</small>
+        </div>
+        
+        <div class="mt-3 d-flex justify-content-end">
+          <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('${request.id}')">
+            <i class="bi bi-eye"></i> Details
+          </button>
+        </div>
+      </div>
+    `;
   }
 
   // Track currently selected search result index
@@ -465,6 +512,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (query === "") {
       searchResults.style.display = "none";
+      
+      // Clear any existing highlights
+      document.querySelectorAll(".student-card.highlighted, .request-card.highlighted").forEach((card) => {
+        card.classList.remove("highlighted");
+      });
 
       // Show appropriate data based on current page
       if (currentPage === "students") {
@@ -475,13 +527,13 @@ document.addEventListener("DOMContentLoaded", function () {
         );
         renderStudents(pendingStudents);
 
-        // Keep the approved requests section intact
-        if (
-          activeRequestsBtn &&
-          activeRequestsBtn.classList.contains("btn-primary")
-        ) {
+        // Keep the approved requests section intact - check if buttons exist first
+        const activeRequestsBtn = document.getElementById("activeRequestsBtn");
+        const inactiveRequestsBtn = document.getElementById("inactiveRequestsBtn");
+        
+        if (activeRequestsBtn && activeRequestsBtn.classList.contains("btn-primary")) {
           toggleApprovedRequestsView("active");
-        } else if (inactiveRequestsBtn) {
+        } else if (inactiveRequestsBtn && inactiveRequestsBtn.classList.contains("btn-primary")) {
           toggleApprovedRequestsView("inactive");
         }
       }
@@ -490,9 +542,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Perform fuzzy search on the appropriate dataset
     let dataToSearch = window.studentsData;
+    let approvedDataToSearch = [];
+    
     if (currentPage === "requests") {
+      // For requests page, search both pending and approved requests
       dataToSearch = window.studentsData.filter(
         (student) => student.status === "pending"
+      );
+      approvedDataToSearch = window.studentsData.filter(
+        (student) => student.status === "approved"
       );
     }
 
@@ -500,26 +558,57 @@ document.addEventListener("DOMContentLoaded", function () {
     const results = fuseForCurrentPage.search(query);
     const searchResultsData = results.map((result) => result.item);
 
-    // Update search dropdown
-    updateSearchDropdown(searchResultsData, query);
+    // Also search approved requests if on requests page
+    let approvedSearchResults = [];
+    if (currentPage === "requests" && approvedDataToSearch.length > 0) {
+      const fuseForApproved = new Fuse(approvedDataToSearch, fuseOptions);
+      const approvedResults = fuseForApproved.search(query);
+      approvedSearchResults = approvedResults.map((result) => result.item);
+    }
 
-    // Update main grid
+    // Update search dropdown - combine both pending and approved results for dropdown
+    const combinedDropdownResults = currentPage === "requests" 
+      ? [...searchResultsData, ...approvedSearchResults]
+      : searchResultsData;
+    updateSearchDropdown(combinedDropdownResults, query);
+
+    // Update main grid (only pending requests)
     renderStudents(searchResultsData);
 
-    // Keep the approved requests section visible if on requests page
-    if (currentPage === "requests" && approvedRequestsGrid) {
-      if (
-        activeRequestsBtn &&
-        activeRequestsBtn.classList.contains("btn-primary")
-      ) {
-        toggleApprovedRequestsView("active");
-      } else {
-        toggleApprovedRequestsView("inactive");
+    // Keep the approved requests section visible if on requests page and filter them too
+    if (currentPage === "requests") {
+      const approvedRequestsGrid = document.getElementById("approvedRequestsGrid");
+      const activeRequestsBtn = document.getElementById("activeRequestsBtn");
+      const inactiveRequestsBtn = document.getElementById("inactiveRequestsBtn");
+      
+      if (approvedRequestsGrid && activeRequestsBtn && inactiveRequestsBtn) {
+        // Filter the approved search results based on active/inactive status
+        const today = new Date("2025-06-11");
+        let filteredApprovedResults;
+        
+        if (activeRequestsBtn.classList.contains("btn-primary")) {
+          // Show active approved requests that match search
+          filteredApprovedResults = approvedSearchResults.filter((student) => {
+            const endDate = new Date(student.requestEndDate);
+            return endDate >= today;
+          });
+          renderApprovedRequests(filteredApprovedResults, "active");
+        } else {
+          // Show inactive approved requests that match search
+          filteredApprovedResults = approvedSearchResults.filter((student) => {
+            const endDate = new Date(student.requestEndDate);
+            return endDate < today;
+          });
+          renderApprovedRequests(filteredApprovedResults, "inactive");
+        }
       }
     }
   };
 
   function updateSearchDropdown(results, query) {
+    const searchResults = document.getElementById("searchResults");
+    if (!searchResults) return;
+    
     searchResults.innerHTML = "";
     // Reset the selected index when updating dropdown
     selectedSearchResultIndex = -1;
@@ -530,20 +619,25 @@ document.addEventListener("DOMContentLoaded", function () {
     if (results.length === 0) {
       searchResults.innerHTML = `<div class="search-result-item">${noResultsMessage}</div>`;
     } else {
-      results.slice(0, 5).forEach((student) => {
+      results.slice(0, 8).forEach((student) => { // Show more results (8 instead of 5)
         const item = document.createElement("div");
         item.className = "search-result-item";
+        
+        // Add a status indicator for requests page
+        const statusBadge = currentPage === "requests" ? 
+          `<span class="badge badge-${student.status} ms-1">${student.status}</span>` : '';
+        
         item.innerHTML = `
                     <div class="student-avatar status-${
                       student.status
                     }" style="width: 30px; height: 30px; font-size: 12px; margin-right: 10px;">
                         ${student.avatar}
                     </div>
-                    <div>
+                    <div style="flex-grow: 1;">
                         <div style="font-weight: 600;">${highlightMatch(
                           student.name,
                           query
-                        )}</div>
+                        )}${statusBadge}</div>
                         <div style="font-size: 12px; color: #6c757d;">${
                           student.course
                         } - Year ${student.year}</div>
@@ -553,8 +647,43 @@ document.addEventListener("DOMContentLoaded", function () {
         item.addEventListener("click", () => {
           searchInput.value = student.name;
           searchResults.style.display = "none";
-          renderStudents([student]);
-          highlightStudentCard(student.id);
+          
+          // Handle different behaviors based on student status and current page
+          if (currentPage === "requests") {
+            if (student.status === "pending") {
+              // Show only this pending student in main grid
+              renderStudents([student]);
+              highlightStudentCard(student.id);
+            } else if (student.status === "approved") {
+              // Show all pending students in main grid but highlight the approved request
+              const pendingStudents = window.studentsData.filter(s => s.status === "pending");
+              renderStudents(pendingStudents);
+              
+              // Also make sure the approved request is visible in the approved section
+              const today = new Date("2025-06-11");
+              const endDate = new Date(student.requestEndDate);
+              const isActive = endDate >= today;
+              
+              // Switch to the appropriate tab
+              const activeRequestsBtn = document.getElementById("activeRequestsBtn");
+              const inactiveRequestsBtn = document.getElementById("inactiveRequestsBtn");
+              
+              if (isActive && activeRequestsBtn) {
+                activeRequestsBtn.click();
+              } else if (!isActive && inactiveRequestsBtn) {
+                inactiveRequestsBtn.click();
+              }
+              
+              // Highlight the approved request card
+              setTimeout(() => {
+                highlightRequestCard(student.id);
+              }, 200);
+            }
+          } else {
+            // Students page behavior
+            renderStudents([student]);
+            highlightStudentCard(student.id);
+          }
         });
 
         // Add mouseover event to update selectedSearchResultIndex
@@ -583,7 +712,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function highlightStudentCard(studentId) {
     // Remove existing highlights
-    document.querySelectorAll(".student-card.highlighted").forEach((card) => {
+    document.querySelectorAll(".student-card.highlighted, .request-card.highlighted").forEach((card) => {
       card.classList.remove("highlighted");
     });
 
@@ -595,6 +724,34 @@ document.addEventListener("DOMContentLoaded", function () {
       if (targetCard) {
         targetCard.classList.add("highlighted");
         targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+        
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+          targetCard.classList.remove("highlighted");
+        }, 3000);
+      }
+    }, 100);
+  }
+
+  function highlightRequestCard(requestId) {
+    // Remove existing highlights
+    document.querySelectorAll(".student-card.highlighted, .request-card.highlighted").forEach((card) => {
+      card.classList.remove("highlighted");
+    });
+
+    // Add highlight to specific request card
+    setTimeout(() => {
+      const targetCard = document.querySelector(
+        `[data-request-id="${requestId}"]`
+      );
+      if (targetCard) {
+        targetCard.classList.add("highlighted");
+        targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+        
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+          targetCard.classList.remove("highlighted");
+        }, 3000);
       }
     }, 100);
   }

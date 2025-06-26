@@ -61,7 +61,22 @@
 /* Highlighted card style */
 .student-card.highlighted {
   border: 2px solid #3498db;
-  box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
+  box-shadow: 0 0 0 3px #007bff, 0 4px 16px rgba(0, 123, 255, 0.3);
+  transform: scale(1.02);
+  animation: highlightPulse 2s ease-in-out;
+}
+
+@keyframes highlightPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px #007bff, 0 4px 16px rgba(0, 123, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(0, 123, 255, 0.6), 0 4px 16px rgba(0, 123, 255, 0.4);
+  }
+}
+
+.student-card.highlighted {
+  transition: all 0.3s ease;
   background-color: #28303f;
 }
 

@@ -1,0 +1,8 @@
+
+
+
+1.When logged in, it should save userdata to session(already does), and use that data to show username etc. 
+2. Student should be able to make request and it should get saved in db(student side) - Mech654
+3. For super user view, make the request actually come from the db, remove mock data.
+
+more to come.

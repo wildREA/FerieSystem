@@ -128,3 +128,26 @@
 .date-value {
   font-weight: 500;
 }
+
+/* Highlighted card styles */
+.student-card.highlighted,
+.request-card.highlighted {
+  box-shadow: 0 0 0 3px #007bff, 0 4px 16px rgba(0, 123, 255, 0.3);
+  transform: scale(1.02);
+  animation: highlightPulse 2s ease-in-out;
+}
+
+@keyframes highlightPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px #007bff, 0 4px 16px rgba(0, 123, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(0, 123, 255, 0.6), 0 4px 16px rgba(0, 123, 255, 0.4);
+  }
+}
+
+/* Make highlighted cards stay highlighted for a bit longer */
+.student-card.highlighted,
+.request-card.highlighted {
+  transition: all 0.3s ease;
+}

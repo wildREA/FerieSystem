@@ -867,3 +867,26 @@ body {
   -moz-user-select: none !important;
   -ms-user-select: none !important;
 }
+
+/* Search result status badges */
+.search-result-item .badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.search-result-item .badge-pending {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.search-result-item .badge-approved {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.search-result-item .badge-denied {
+  background-color: #dc3545;
+  color: #fff;
+}
