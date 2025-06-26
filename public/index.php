@@ -57,6 +57,11 @@ class Router
             $uri = '/' . $uri;
         }
         
+        // Normalize URI by removing trailing slash (except for root)
+        if ($uri !== '/' && substr($uri, -1) === '/') {
+            $uri = rtrim($uri, '/');
+        }
+        
         // Special case for favicon.ico
         if ($uri === '/favicon.ico') {
             $faviconPath = __DIR__ . '/favicon.ico';
