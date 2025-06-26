@@ -11,11 +11,11 @@
             </div>
         </div>
         <div class="key-controls">
-            <button id="visibility" class="btn-key-control" title="Show/Hide Key" style="display: none;">
-                <i class="fas fa-eye"></i>
+            <button id="visibility" class="btn-key-control" title="Show/Hide Key" onclick="toggleVisibility()">
+                <i class="bi bi-eye"></i>
             </button>
-            <button id="generate_key" class="btn-key-control btn-generate" title="Generate New Key">
-                <i class="fas fa-plus"></i>
+            <button id="generate_key" class="btn-key-control" title="Generate New Key">
+                <i class="bi bi-plus"></i>
             </button>
         </div>
     </div>
@@ -23,3 +23,4 @@
 
 <link rel="stylesheet" href="/public/css/components/key_container.css">
 <script src="/public/js/components/key_container.js"></script>
+

@@ -5,27 +5,34 @@
     bottom: 0;
     left: 0;
     width: 280px; /* Same width as sidebar */
-    background-color: #232428;
+    background-color: #1a1f2c;
     border-top: 1px solid #2c3142;
-    padding: 8px;
+    padding: 6px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     z-index: 1000;
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    pointer-events: none;
 }
 
 .key-display {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px;
+    padding: 4px 10px;
     border-radius: 6px;
     background-color: rgba(79, 84, 92, 0.32);
     transition: background-color 0.2s ease;
     cursor: pointer;
+    pointer-events: none;
 }
 
-.key-display:hover {
-    background-color: rgba(79, 84, 92, 0.48);
+.key-code {
+
+}
+
+.key-code:hover {
+    /* Blur transition */
 }
 
 .key-section {
@@ -89,15 +96,6 @@
 .btn-key-control:hover {
     background-color: #5865f2;
     color: #ffffff;
-}
-
-.btn-generate {
-    background-color: #3ba55c;
-    color: #ffffff;
-}
-
-.btn-generate:hover {
-    background-color: #2d7d32;
 }
 
 .key-input {
