@@ -38,7 +38,7 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
     <div class="login-form">
         <div class="container">
             <header style="text-align: center;">
-                <h1 id="headerTitle">Create Super User</h1>
+                <h1 id="headerTitle">FerieSystem Registration</h1>
             </header>
 
             <div class="content">
@@ -55,7 +55,7 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
                 <?php endif; ?>
 
                 <form action="<?= url('/api/create-superuser') ?>" method="post" id="superUserForm">
-                    <h2 style="text-align: center;">Create Administrator Account</h2>
+                    <h2 style="text-align: center;">Create Super Account</h2>
                     <p class="form-description">Fill in your details to create super user</p>
                     
                     <div class="form-group">

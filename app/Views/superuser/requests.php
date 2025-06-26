@@ -56,6 +56,7 @@
             </a>
           </li>
         </ul>
+        <?php include dirname(__DIR__) . '/components/key_container.php'; ?>
       </div>
       
       <!-- Top Header -->

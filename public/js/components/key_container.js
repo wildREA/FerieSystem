@@ -1,9 +1,12 @@
-// Key Container Component JavaScript
+// Discord-style Key Container Component JavaScript
 class KeyContainer {
     constructor() {
         this.keyInput = document.getElementById('key_value');
         this.visibilityBtn = document.getElementById('visibility');
         this.generateBtn = document.getElementById('generate_key');
+        this.keyStatus = document.getElementById('key_status');
+        this.keyContainer = document.querySelector('.key-container');
+        this.keyDisplay = document.querySelector('.key-display');
         this.isVisible = false;
         this.currentKey = '';
         
@@ -12,12 +15,32 @@ class KeyContainer {
     
     init() {
         // Bind event listeners
-        this.visibilityBtn.addEventListener('click', () => this.toggleVisibility());
-        this.generateBtn.addEventListener('click', () => this.generateKey());
+        this.visibilityBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleVisibility();
+        });
+        this.generateBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.generateKey();
+        });
         this.keyInput.addEventListener('click', () => this.copyToClipboard());
+        this.keyDisplay.addEventListener('click', () => this.toggleKeyInput());
         
         // Initial state
         this.updateVisibilityButton();
+        this.updateStatus();
+    }
+    
+    toggleKeyInput() {
+        if (!this.currentKey) return;
+        
+        const isInputVisible = this.keyInput.style.display !== 'none';
+        this.keyInput.style.display = isInputVisible ? 'none' : 'block';
+        
+        if (!isInputVisible) {
+            this.keyInput.focus();
+            this.keyInput.select();
+        }
     }
     
     toggleVisibility() {
@@ -39,6 +62,16 @@ class KeyContainer {
         }
     }
     
+    updateStatus() {
+        if (this.currentKey) {
+            this.keyStatus.textContent = 'Key ready • Click to view';
+            this.keyStatus.classList.add('has-key');
+        } else {
+            this.keyStatus.textContent = 'No key generated';
+            this.keyStatus.classList.remove('has-key');
+        }
+    }
+    
     updateKeyDisplay() {
         if (!this.currentKey) return;
         
@@ -53,18 +86,25 @@ class KeyContainer {
     
     generateKey() {
         // Show loading state
-        this.keyInput.classList.add('generating');
+        this.keyContainer.classList.add('generating');
+        this.keyStatus.textContent = 'Generating key...';
         this.generateBtn.disabled = true;
         
         // Simulate API call delay
         setTimeout(() => {
             this.currentKey = this.createRandomKey();
-            this.isVisible = true; // Show key by default when generated
+            this.isVisible = false; // Hide by default for security
             this.updateKeyDisplay();
             this.updateVisibilityButton();
+            this.updateStatus();
+            
+            // Show visibility button and update UI
+            this.visibilityBtn.style.display = 'flex';
+            this.generateBtn.querySelector('i').className = 'fas fa-sync-alt';
+            this.generateBtn.title = 'Regenerate Key';
             
             // Remove loading state
-            this.keyInput.classList.remove('generating');
+            this.keyContainer.classList.remove('generating');
             this.generateBtn.disabled = false;
             
             // Show success message
