@@ -301,6 +301,86 @@ document.addEventListener("DOMContentLoaded", function() {
         return result;
     }
 
+    function updateEndTimeFromStart() {
+        console.log('updateEndTimeFromStart called');
+        
+        const startDate = startDateInput.value;
+        const startHour = document.getElementById('startHour').value;
+        const startMinute = document.getElementById('startMinute').value;
+        const endHourSelect = document.getElementById('endHour');
+        const endMinuteSelect = document.getElementById('endMinute');
+        
+        console.log('Start date:', startDate);
+        console.log('Start hour:', startHour);
+        console.log('Start minute:', startMinute);
+        console.log('End hour select:', endHourSelect);
+        console.log('End minute select:', endMinuteSelect);
+        console.log('End date input:', endDateInput);
+        
+        // Only update if start date and both start time fields have values
+        if (!startDate || !startHour || !startMinute || !endHourSelect || !endMinuteSelect) {
+            console.log('Missing required fields, returning');
+            return;
+        }
+        
+        console.log('Setting end date to:', startDate);
+        // Set end date to same as start date
+        if (endDateInput) {
+            endDateInput.value = startDate;
+            console.log('End date set to:', endDateInput.value);
+        }
+        
+        // Create a date object with the start time
+        const startTime = new Date();
+        startTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
+        
+        // Add 15 minutes
+        const endTime = new Date(startTime.getTime() + (15 * 60 * 1000));
+        
+        // Format the end time
+        const endHour = endTime.getHours().toString().padStart(2, '0');
+        const endMinute = endTime.getMinutes().toString().padStart(2, '0');
+        
+        console.log('Calculated end time:', endHour + ':' + endMinute);
+        
+        // Check if the calculated end time options exist in the selects
+        const endHourOption = endHourSelect.querySelector(`option[value="${endHour}"]`);
+        const endMinuteOption = endMinuteSelect.querySelector(`option[value="${endMinute}"]`);
+        
+        console.log('End hour option exists:', !!endHourOption);
+        console.log('End minute option exists:', !!endMinuteOption);
+        
+        // Set the end time values if the options exist
+        if (endHourOption) {
+            endHourSelect.value = endHour;
+            console.log('Set end hour to:', endHour);
+        } else {
+            // If hour doesn't exist (e.g., past business hours), set to last available hour
+            const lastHourOption = endHourSelect.querySelector('option:last-child');
+            if (lastHourOption) {
+                endHourSelect.value = lastHourOption.value;
+                console.log('Set end hour to last available:', lastHourOption.value);
+            }
+        }
+        
+        if (endMinuteOption) {
+            endMinuteSelect.value = endMinute;
+            console.log('Set end minute to:', endMinute);
+        } else {
+            // If exact minute doesn't exist, find the closest available minute
+            const availableMinutes = Array.from(endMinuteSelect.options).map(opt => opt.value);
+            const closestMinute = availableMinutes.reduce((closest, current) => {
+                return Math.abs(parseInt(current) - parseInt(endMinute)) < Math.abs(parseInt(closest) - parseInt(endMinute)) ? current : closest;
+            });
+            endMinuteSelect.value = closestMinute;
+            console.log('Set end minute to closest available:', closestMinute);
+        }
+        
+        // Trigger calculation update after setting end date and time
+        calculateRequestDuration();
+        console.log('Called calculateRequestDuration');
+    }
+
     function setupEventListeners() {
         // Helper function to safely add event listeners
         function safeAddListener(id, event, handler) {
@@ -328,6 +408,10 @@ document.addEventListener("DOMContentLoaded", function() {
         safeAddListener('startMinute', 'change', calculateRequestDuration);
         safeAddListener('endHour', 'change', calculateRequestDuration);
         safeAddListener('endMinute', 'change', calculateRequestDuration);
+        
+        // Auto-update end time when start time changes (15 minutes later)
+        safeAddListener('startHour', 'change', updateEndTimeFromStart);
+        safeAddListener('startMinute', 'change', updateEndTimeFromStart);
         
         // Real-time form validation
         safeAddListener('requestReason', 'input', validateForm);
@@ -687,16 +771,23 @@ document.addEventListener("DOMContentLoaded", function() {
         const endMinute = document.getElementById('endMinute').value;
         const reason = document.getElementById('requestReason').value;
         
-        if (!startDate || !endDate || !startHour || !startMinute || !endHour || !endMinute || !reason) {
-            StudentUtils.showNotification('Please fill in all fields to preview the request', 'warning');
+        // Only require start and end dates for preview
+        if (!startDate || !endDate) {
+            StudentUtils.showNotification('Please select start and end dates to preview', 'info');
             return;
         }
         
-        const start = new Date(`${startDate}T${startHour}:${startMinute}:00`);
-        const end = new Date(`${endDate}T${endHour}:${endMinute}:00`);
+        // Use default values for missing time fields
+        const defaultStartHour = startHour || '09';
+        const defaultStartMinute = startMinute || '00';
+        const defaultEndHour = endHour || '17';
+        const defaultEndMinute = endMinute || '00';
+        
+        const start = new Date(`${startDate}T${defaultStartHour}:${defaultStartMinute}:00`);
+        const end = new Date(`${endDate}T${defaultEndHour}:${defaultEndMinute}:00`);
         
         if (end <= start) {
-            StudentUtils.showNotification('End date must be after start date', 'danger');
+            StudentUtils.showNotification('End date must be after start date', 'warning');
             return;
         }
         
@@ -719,6 +810,10 @@ document.addEventListener("DOMContentLoaded", function() {
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Preview Mode:</strong> This shows your request details. You can modify the form and preview again.
+                            </div>
                             ${isShortNotice ? `
                                 <div class="alert alert-warning">
                                     <i class="bi bi-exclamation-triangle me-2"></i>
@@ -732,13 +827,15 @@ document.addEventListener("DOMContentLoaded", function() {
                                         <strong>Type:</strong> Vacation Request
                                     </div>
                                     <div class="preview-detail">
-                                        <strong>Start:</strong> ${StudentUtils.formatDate(startDate)} at ${startHour}:${startMinute}
+                                        <strong>Start:</strong> ${StudentUtils.formatDate(startDate)} at ${defaultStartHour}:${defaultStartMinute}
+                                        ${!startHour ? ' <small class="text-muted">(default time)</small>' : ''}
                                     </div>
                                     <div class="preview-detail">
-                                        <strong>End:</strong> ${StudentUtils.formatDate(endDate)} at ${endHour}:${endMinute}
+                                        <strong>End:</strong> ${StudentUtils.formatDate(endDate)} at ${defaultEndHour}:${defaultEndMinute}
+                                        ${!endHour ? ' <small class="text-muted">(default time)</small>' : ''}
                                     </div>
                                     <div class="preview-detail">
-                                        <strong>Reason:</strong> ${reason}
+                                        <strong>Reason:</strong> ${reason || '<em class="text-muted">Not specified</em>'}
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -756,8 +853,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-success" onclick="document.getElementById('newRequestForm').dispatchEvent(new Event('submit', {cancelable: true}));" data-bs-dismiss="modal">Submit Request</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close Preview</button>
+                            <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Continue Editing</button>
                         </div>
                     </div>
                 </div>

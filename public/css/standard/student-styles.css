@@ -1079,35 +1079,48 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .btn-group-custom .btn-success {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    border: none;
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    background: transparent !important;
+    border: 2px solid #28a745 !important;
+    color: #28a745 !important;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2) !important;
 }
 
 .btn-group-custom .btn-success:hover {
+    background: transparent !important;
+    border-color: #20c997 !important;
+    color: #20c997 !important;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4) !important;
 }
 
 .btn-group-custom .btn-secondary {
-    background: linear-gradient(135deg, #6c757d 0%, #5a636a 100%);
-    border: none;
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    background: transparent !important;
+    border: 2px solid #d1d5db !important;
+    color: #d1d5db !important;
+    box-shadow: 0 4px 12px rgba(209, 213, 219, 0.2) !important;
+}
+
+.btn-group-custom .btn-secondary:hover {
+    background: transparent !important;
+    border-color: #e5e7eb !important;
+    color: #e5e7eb !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(229, 231, 235, 0.3) !important;
 }
 
 .btn-group-custom .btn-outline-primary {
-    background: transparent;
-    border: 2px solid #007bff;
-    color: #007bff;
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+    background: transparent !important;
+    border: 2px solid #007bff !important;
+    color: #007bff !important;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2) !important;
 }
 
 .btn-group-custom .btn-outline-primary:hover {
-    background: transparent;
-    border-color: #0056b3;
-    color: #0056b3;
+    background: transparent !important;
+    border-color: #0056b3 !important;
+    color: #0056b3 !important;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4) !important;
 }
 
 /* Mobile responsiveness for enhanced calendar */
@@ -1536,4 +1549,90 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .summary-value.good {
     color: #28a745;
     font-weight: 700;
+}
+
+/* High specificity override for button styles */
+.dashboard-container .main-content .btn-group-custom .btn.btn-success {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: 2px solid #28a745 !important;
+    color: #28a745 !important;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2) !important;
+}
+
+.dashboard-container .main-content .btn-group-custom .btn.btn-success:hover,
+.dashboard-container .main-content .btn-group-custom .btn.btn-success:focus,
+.dashboard-container .main-content .btn-group-custom .btn.btn-success:active {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: #20c997 !important;
+    color: #20c997 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4) !important;
+}
+
+.dashboard-container .main-content .btn-group-custom .btn.btn-secondary {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: 2px solid #6c757d !important;
+    color: #6c757d !important;
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2) !important;
+}
+
+.dashboard-container .main-content .btn-group-custom .btn.btn-secondary:hover,
+.dashboard-container .main-content .btn-group-custom .btn.btn-secondary:focus,
+.dashboard-container .main-content .btn-group-custom .btn.btn-secondary:active {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: #5a636a !important;
+    color: #5a636a !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4) !important;
+}
+
+/* FINAL OVERRIDE - Maximum specificity for button styling */
+body .dashboard-container .main-content form .btn-group-custom button.btn.btn-success {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: 2px solid #28a745 !important;
+    color: #28a745 !important;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2) !important;
+}
+
+body .dashboard-container .main-content form .btn-group-custom button.btn.btn-success:hover,
+body .dashboard-container .main-content form .btn-group-custom button.btn.btn-success:focus,
+body .dashboard-container .main-content form .btn-group-custom button.btn.btn-success:active {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: #20c997 !important;
+    color: #20c997 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4) !important;
+}
+
+body .dashboard-container .main-content form .btn-group-custom button.btn.btn-secondary {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: 2px solid #d1d5db !important;
+    color: #d1d5db !important;
+    box-shadow: 0 4px 12px rgba(209, 213, 219, 0.2) !important;
+}
+
+body .dashboard-container .main-content form .btn-group-custom button.btn.btn-secondary:hover,
+body .dashboard-container .main-content form .btn-group-custom button.btn.btn-secondary:focus,
+body .dashboard-container .main-content form .btn-group-custom button.btn.btn-secondary:active {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: #e5e7eb !important;
+    color: #e5e7eb !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(229, 231, 235, 0.3) !important;
 }
