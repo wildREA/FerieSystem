@@ -1,4 +1,4 @@
--- Create table for storing vacation requests
+-- Vacation requests table
 CREATE TABLE IF NOT EXISTS requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,

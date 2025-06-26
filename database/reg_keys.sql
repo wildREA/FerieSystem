@@ -1,7 +1,6 @@
--- Standard user registration keys
+-- Registration keys table
 CREATE TABLE IF NOT EXISTS reg_keys (
-    id SERIAL PRIMARY KEY,
-    key VARCHAR(255) NOT NULL
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    key_value VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE UNIQUE INDEX idx_reg_keys_key ON reg_keys (key);

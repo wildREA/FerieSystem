@@ -1,2 +1,0 @@
--- Users table is now created in auth_tables.sql to ensure proper order
--- This file is kept for compatibility but the table creation is handled elsewhere
