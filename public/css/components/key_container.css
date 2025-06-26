@@ -1,153 +1,69 @@
-/* Discord-style Key Container Component */
+/* Simple Key Container Component */
 
 .key-container {
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 280px; /* Same width as sidebar */
-    background-color: #1a1f2c;
+    width: 100%;
+    background-color: #232428;
     border-top: 1px solid #2c3142;
     padding: 6px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    z-index: 10;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
-    pointer-events: none;
+    z-index: 1000;
 }
 
 .key-display {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 4px 10px;
-    border-radius: 6px;
-    background-color: rgba(79, 84, 92, 0.32);
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-    pointer-events: none;
-}
-
-.key-code {
-
-}
-
-.key-code:hover {
-    /* Blur transition */
+    padding: 4px 12px;
+    background-color: rgba(79, 84, 92, 0.3);
+    border-radius: 4px;
 }
 
 .key-section {
     display: flex;
     align-items: center;
     flex: 1;
-    min-width: 0; /* Allow text truncation */
 }
 
 .key-info {
     flex: 1;
-    min-width: 0;
 }
 
 .key-label {
     font-size: 12px;
     font-weight: 600;
     color: #ffffff;
-    line-height: 1.2;
     margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .key-status {
     font-size: 14px;
     color: #b5bac1;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.key-status.has-key {
-    color: #3ba55c;
 }
 
 .key-controls {
     display: flex;
     gap: 4px;
-    margin-left: 8px;
 }
 
 .btn-key-control {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     background-color: #4f545c;
     border: none;
     border-radius: 3px;
-    color: #b5bac1;
+    color: #ffffff;
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    font-size: 12px;
 }
 
 .btn-key-control:hover {
     background-color: #5865f2;
-    color: #ffffff;
-}
-
-/* Animation for key generation */
-.key-container.generating .key-avatar {
-    animation: spin 1s linear infinite;
-}
-
-.key-container.generating .key-status {
-    color: #faa61a;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* Toast notification styles */
-.toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background-color: #2c2f33;
-    border: 1px solid #40444b;
-    border-radius: 6px;
-    padding: 12px 16px;
-    color: #ffffff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 14px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    z-index: 10000;
-    opacity: 0;
-    transform: translateX(100%);
-    transition: all 0.3s ease;
-}
-
-.toast.show {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.toast-success {
-    border-left: 4px solid #3ba55c;
-}
-
-.toast-content {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.toast-content i {
-    color: #3ba55c;
 }
 
 /* Responsive adjustments */
@@ -159,11 +75,5 @@
         left: auto;
         border-top: none;
         border-bottom: 1px solid #2c3142;
-        box-shadow: none;
-    }
-    
-    .key-input {
-        position: static;
-        margin-top: 8px;
     }
 }

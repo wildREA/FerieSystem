@@ -15,14 +15,15 @@ class KeyContainer {
     
     init() {
         // Bind event listeners
-        // Later work after functions  <-- HERE
+        this.visibilityBtn.addEventListener('click', () => this.toggleVisibility());
+        this.generateBtn.addEventListener('click', () => this.toggleVisibility());
         
         // Initial state
         // Later work after basic event listeners  <-- HERE
     }
 
     toggleVisibility() {
-        if (!visible) {
+        if (!this.isVisible) {
             console.log("Visible (state: " + this.isVisible + ")");
             this.isVisible = true;
         } else {
