@@ -500,6 +500,38 @@ class AuthController {
         }
         
         error_log("ADMIN_SECRET not found in .env file");
-        return 'SUPER_SECRET_ADMIN_2025'; // Fallback - change in production
+        return null;
+    }
+
+    /**
+     * Get the current logged-in user's username from session
+     * 
+     * @return string|null The current user's username or null if not found
+     */
+    protected function getCurrentUserUsername() {
+        // Check if user is logged in
+        if (!isset($_SESSION['user_id'])) {
+            return null;
+        }
+        
+        if (!$this->db) {
+            error_log("getCurrentUserUsername: No database connection available");
+            return null;
+        }
+        
+        try {
+            $stmt = $this->db->prepare("SELECT username FROM users WHERE id = ?");
+            $stmt->execute([$_SESSION['user_id']]);
+            $result = $stmt->fetch();
+            
+            if ($result && isset($result['username'])) {
+                return $result['username'];
+            }
+            
+            return null;
+        } catch (PDOException $e) {
+            error_log("Database error in getCurrentUserUsername: " . $e->getMessage());
+            return null;
+        }
     }
 }
