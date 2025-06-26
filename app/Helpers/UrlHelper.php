@@ -119,3 +119,66 @@ if (!function_exists('redirect')) {
         return UrlHelper::redirect($route, $params);
     }
 }
+
+if (!function_exists('getCurrentUser')) {
+    /**
+     * Get current logged-in user data
+     */
+    function getCurrentUser() {
+        // Start session if not already started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        if (!isset($_SESSION['user_id'])) {
+            return null;
+        }
+
+        try {
+            // Use the connection from the Core directory
+            $connectionPath = dirname(__DIR__) . '/Core/connection.php';
+            if (!file_exists($connectionPath)) {
+                return null;
+            }
+            
+            $db = require $connectionPath;
+            if (!$db instanceof PDO) {
+                return null;
+            }
+
+            $stmt = $db->prepare("SELECT id, name, email, username, user_type FROM users WHERE id = ?");
+            $stmt->execute([$_SESSION['user_id']]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            return $user ?: null;
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+}
+
+if (!function_exists('getCurrentUserName')) {
+    /**
+     * Get current logged-in user's display name
+     */
+    function getCurrentUserName() {
+        $user = getCurrentUser();
+        if ($user && isset($user['name']) && !empty($user['name'])) {
+            return $user['name'];
+        }
+        return 'Unknown User';
+    }
+}
+
+if (!function_exists('getCurrentUsername')) {
+    /**
+     * Get current logged-in user's username
+     */
+    function getCurrentUsername() {
+        $user = getCurrentUser();
+        if ($user && isset($user['username']) && !empty($user['username'])) {
+            return $user['username'];
+        }
+        return 'unknown';
+    }
+}

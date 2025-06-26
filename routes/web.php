@@ -113,7 +113,7 @@ $routes['GET']['/dashboard'] = function() {
         redirect('/students');
     } else {
         $sessionManager->requireUserType(['standard'], '/auth');
-        return view('standarduser/index');
+        return view('standarduser/dashboard');
     }
 };
 
@@ -128,7 +128,7 @@ $routes['GET']['/dashboard/'] = function() {
         redirect('/students');
     } else {
         $sessionManager->requireUserType(['standard'], '/auth');
-        return view('standarduser/index');
+        return view('standarduser/dashboard');
     }
 };
 

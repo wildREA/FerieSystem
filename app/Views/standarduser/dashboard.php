@@ -1,3 +1,16 @@
+<?php
+// Load helper functions
+require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
+?>
+<?php
+// Test if helper functions work
+if (function_exists('getCurrentUserName')) {
+    $testUser = getCurrentUserName();
+    echo "<!-- Test: getCurrentUserName() = " . htmlspecialchars($testUser) . " -->";
+} else {
+    echo "<!-- Test: getCurrentUserName function not found -->";
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +25,6 @@
     <link rel="stylesheet" href="<?= asset('public/css/standard/student-styles.css') ?>">
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="<?= asset('public/js/standard/common.js') ?>" defer></script>
     <script src="<?= asset('public/js/standard/dashboard.js') ?>" defer></script>
 </head>
 <body>
@@ -25,7 +37,13 @@
                     <i class="bi bi-person-circle"></i>
                 </div>
                 <div class="user-role">Student</div>
-                <div class="user-name" id="studentName">Emma Nielsen</div>
+                <div class="user-name" id="studentName"><?php 
+                    if (function_exists('getCurrentUserName')) {
+                        echo getCurrentUserName();
+                    } else {
+                        echo 'User';
+                    }
+                ?></div>
             </div>
             <ul class="nav-menu">
                 <li class="nav-section active">
@@ -63,7 +81,13 @@
                     </i>
                 </div>
                 <div class="d-flex align-items-center" onclick="alert('Construction in progress 🚧')">
-                    <span  class="me-2" id="headerUserName">EMMA NIELSEN</span>
+                    <span  class="me-2" id="headerUserName"><?php 
+                        if (function_exists('getCurrentUserName')) {
+                            echo strtoupper(getCurrentUserName());
+                        } else {
+                            echo 'USER';
+                        }
+                    ?></span>
                     <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
                         <i class="bi bi-person text-white"></i>
                     </div>

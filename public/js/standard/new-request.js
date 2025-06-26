@@ -1,4 +1,191 @@
 // New Request page specific functionality
+
+// Student data and requests for calculations
+const studentData = {
+    id: "STU001",
+    name: "Emma Nielsen",
+    email: "emma.nielsen@student.dk",
+    course: "Computer Science",
+    year: 3,
+    totalVacationHours: 200
+};
+
+const requestsData = [
+    {
+        id: "REQ001",
+        startDate: "2025-06-15T09:00:00",
+        endDate: "2025-06-20T17:00:00",
+        reason: "Family vacation",
+        status: "pending",
+        submitDate: "2025-06-10T10:15:00",
+        hours: 40,
+        isShortNotice: false
+    },
+    {
+        id: "REQ002",
+        startDate: "2025-05-20T09:00:00",
+        endDate: "2025-05-23T17:00:00",
+        reason: "Medical appointment",
+        status: "approved",
+        submitDate: "2025-05-15T14:20:00",
+        hours: 32
+    },
+    {
+        id: "REQ003",
+        startDate: "2025-03-10T09:00:00",
+        endDate: "2025-03-14T17:00:00",
+        reason: "Spring break",
+        status: "approved",
+        submitDate: "2025-03-01T09:45:00",
+        hours: 40
+    },
+    {
+        id: "REQ004",
+        startDate: "2025-07-01T09:00:00",
+        endDate: "2025-07-08T17:00:00",
+        reason: "Summer break",
+        status: "denied",
+        submitDate: "2025-06-05T09:45:00",
+        hours: 56,
+        denyReason: "Overlaps with mandatory courses"
+    }
+];
+
+// Data manager for API calls
+const DataManager = {
+    init() {
+        // Initialize any data management setup if needed
+    },
+
+    async addRequest(newRequest) {
+        console.log('Adding new request:', newRequest);
+        try {
+            const requestData = {
+                requestType: 'vacation',
+                startDate: newRequest.startDate.split('T')[0],
+                endDate: newRequest.endDate.split('T')[0],
+                reason: newRequest.reason
+            };
+            
+            console.log('Request data to submit:', requestData);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+
+            const response = await fetch('/api/submit-request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Request submitted successfully:', result);
+            return result;
+        } catch (error) {
+            console.error('Error submitting request:', error);
+            throw error;
+        }
+    }
+};
+
+// Utility functions
+const StudentUtils = {
+    calculateVacationHours() {
+        const approvedRequests = requestsData.filter(r => r.status === 'approved');
+        const pendingRequests = requestsData.filter(r => r.status === 'pending');
+        
+        const usedHours = approvedRequests.reduce((sum, r) => sum + r.hours, 0);
+        const pendingHours = pendingRequests.reduce((sum, r) => sum + r.hours, 0);
+        const remainingHours = studentData.totalVacationHours - usedHours;
+        
+        return {
+            totalHours: studentData.totalVacationHours,
+            usedHours: usedHours,
+            pendingHours: pendingHours,
+            remainingHours: remainingHours
+        };
+    },
+
+    calculateWorkingHours(startDate, endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        
+        const workingStartHour = 8;
+        const workingEndHour = 17;
+        const maxDailyHours = workingEndHour - workingStartHour;
+        
+        let totalWorkingHours = 0;
+        const current = new Date(start);
+        
+        while (current < end) {
+            const dayOfWeek = current.getDay();
+            
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                let dayStart, dayEnd;
+                
+                if (current.toDateString() === start.toDateString()) {
+                    const startHour = Math.max(start.getHours(), workingStartHour);
+                    const startMinute = start.getHours() >= workingStartHour ? start.getMinutes() : 0;
+                    dayStart = startHour + (startMinute / 60);
+                } else {
+                    dayStart = workingStartHour;
+                }
+                
+                if (current.toDateString() === end.toDateString()) {
+                    const endHour = Math.min(end.getHours(), workingEndHour);
+                    const endMinute = end.getHours() <= workingEndHour ? end.getMinutes() : 0;
+                    dayEnd = endHour + (endMinute / 60);
+                } else {
+                    dayEnd = workingEndHour;
+                }
+                
+                const dailyHours = Math.max(0, dayEnd - dayStart);
+                totalWorkingHours += dailyHours;
+            }
+            
+            current.setDate(current.getDate() + 1);
+            current.setHours(0, 0, 0, 0);
+        }
+        
+        totalWorkingHours = Math.round(totalWorkingHours * 10) / 10;
+        
+        return { 
+            workingHours: Math.max(0.1, totalWorkingHours)
+        };
+    },
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 4000);
+    },
+
+    updateRequestsBadge() {
+        const requestsBadge = document.getElementById('requestsBadge');
+        if (requestsBadge) {
+            const pendingCount = requestsData.filter(r => r.status === 'pending').length;
+            requestsBadge.textContent = pendingCount;
+            requestsBadge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+        }
+    }
+};
+
 document.addEventListener("DOMContentLoaded", function() {
     
     // Form elements
@@ -11,9 +198,11 @@ document.addEventListener("DOMContentLoaded", function() {
     init();
 
     function init() {
+        DataManager.init();
         updateBalanceDisplay();
         setupEventListeners();
         setMinimumStartDateTime();
+        StudentUtils.updateRequestsBadge();
     }
 
     function updateBalanceDisplay() {

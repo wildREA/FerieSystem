@@ -1,4 +1,94 @@
 // Dashboard page specific functionality
+
+// Student data and utility functions for dashboard
+const studentData = {
+    id: "STU001",
+    name: "Emma Nielsen",
+    email: "emma.nielsen@student.dk",
+    course: "Computer Science",
+    year: 3,
+    totalVacationHours: 200
+};
+
+// Mock requests data
+const requestsData = [
+    {
+        id: "REQ001",
+        startDate: "2025-06-15T09:00:00",
+        endDate: "2025-06-20T17:00:00",
+        reason: "Family vacation",
+        status: "pending",
+        submitDate: "2025-06-10T10:15:00",
+        hours: 40,
+        isShortNotice: false
+    },
+    {
+        id: "REQ002",
+        startDate: "2025-05-20T09:00:00",
+        endDate: "2025-05-23T17:00:00",
+        reason: "Medical appointment",
+        status: "approved",
+        submitDate: "2025-05-15T14:20:00",
+        hours: 32
+    },
+    {
+        id: "REQ003",
+        startDate: "2025-03-10T09:00:00",
+        endDate: "2025-03-14T17:00:00",
+        reason: "Spring break",
+        status: "approved",
+        submitDate: "2025-03-01T09:45:00",
+        hours: 40
+    },
+    {
+        id: "REQ004",
+        startDate: "2025-07-01T09:00:00",
+        endDate: "2025-07-08T17:00:00",
+        reason: "Summer break",
+        status: "denied",
+        submitDate: "2025-06-05T09:45:00",
+        hours: 56,
+        denyReason: "Overlaps with mandatory courses"
+    }
+];
+
+// Utility functions for dashboard
+const StudentUtils = {
+    calculateVacationHours() {
+        const approvedRequests = requestsData.filter(r => r.status === 'approved');
+        const pendingRequests = requestsData.filter(r => r.status === 'pending');
+        
+        const usedHours = approvedRequests.reduce((sum, r) => sum + r.hours, 0);
+        const pendingHours = pendingRequests.reduce((sum, r) => sum + r.hours, 0);
+        const remainingHours = studentData.totalVacationHours - usedHours;
+        
+        return {
+            totalHours: studentData.totalVacationHours,
+            usedHours: usedHours,
+            pendingHours: pendingHours,
+            remainingHours: remainingHours
+        };
+    },
+
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    },
+
+    updateRequestsBadge() {
+        const requestsBadge = document.getElementById('requestsBadge');
+        if (requestsBadge) {
+            const pendingCount = requestsData.filter(r => r.status === 'pending').length;
+            requestsBadge.textContent = pendingCount;
+            requestsBadge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+        }
+    }
+};
+
 document.addEventListener("DOMContentLoaded", function() {
     
     // Initialize dashboard
@@ -10,6 +100,7 @@ document.addEventListener("DOMContentLoaded", function() {
         updateProgressBars();
         setupBalanceModal();
         updateStatCardBorderColor();
+        StudentUtils.updateRequestsBadge();
     }
 
     function setupBalanceModal() {

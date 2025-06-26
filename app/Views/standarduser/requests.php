@@ -1,3 +1,7 @@
+<?php
+// Load helper functions
+require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +16,6 @@
     <link rel="stylesheet" href="<?= asset('public/css/standard/student-styles.css') ?>">
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="<?= asset('public/js/standard/common.js') ?>" defer></script>
     <script src="<?= asset('public/js/standard/requests.js') ?>" defer></script>
 </head>
 <body>
@@ -25,7 +28,7 @@
                     <i class="bi bi-person-circle"></i>
                 </div>
                 <div class="user-role">Student</div>
-                <div class="user-name" id="studentName">Emma Nielsen</div>
+                <div class="user-name" id="studentName"><?= getCurrentUserName() ?></div>
             </div>
             <ul class="nav-menu">
                 <li class="nav-section">
@@ -63,7 +66,7 @@
                     </i>
                 </div>
                 <div class="d-flex align-items-center">
-                    <span class="me-2" id="headerUserName">EMMA NIELSEN</span>
+                    <span class="me-2" id="headerUserName"><?= strtoupper(getCurrentUserName()) ?></span>
                     <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
                         <i class="bi bi-person text-white"></i>
                     </div>
