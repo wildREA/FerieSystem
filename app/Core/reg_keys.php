@@ -23,8 +23,8 @@ class RegKeys {
     }
 
     public function generateKey() {
-        // First, clean up expired keys (older than 30 seconds, but keep the latest one)
-        $this->cleanupExpiredKeys();
+        // Delete all existing keys before generating a new one
+        $this->deleteAllKeys();
         
         // Generate a random key
         $key = bin2hex(random_bytes(4)); // 8 characters long
@@ -46,6 +46,20 @@ class RegKeys {
         // Retrieve the latest key from the database
         $stmt = $this->db->query("SELECT key_value FROM reg_keys ORDER BY created_at DESC LIMIT 1");
         return $stmt->fetchColumn();
+    }
+
+    /**
+     * Delete all existing registration keys from the database
+     * Used when generating a new key to ensure only one key exists
+     */
+    private function deleteAllKeys() {
+        try {
+            $stmt = $this->db->prepare("DELETE FROM reg_keys");
+            $stmt->execute();
+        } catch (Exception $e) {
+            error_log("Failed to delete all keys: " . $e->getMessage());
+            // Don't throw - we'll still try to generate the new key
+        }
     }
 
     /**

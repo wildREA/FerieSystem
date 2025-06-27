@@ -85,7 +85,7 @@ class RegKeysController {
                 exit;
             }
             
-            // Generate the key
+            // Generate the new key (this will automatically delete all old keys)
             $key = $this->regKeys->generateKey();
             
             // Return JSON response
