@@ -4,7 +4,7 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
 
 // Get requests data from route
 $requests = $requests ?? [];
-$userName = $userName ?? 'Student';
+$userName = function_exists('getCurrentUserName') ? getCurrentUserName() : 'Student';
 $requestCount = count($requests);
 $pendingCount = count(array_filter($requests, function($r) { return $r['status'] === 'pending'; }));
 
