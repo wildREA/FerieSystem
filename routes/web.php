@@ -197,7 +197,43 @@ $routes['POST']['/api/verify-key/'] = function() {
 };
 
 // Registration key for super users to generate and manage
-$routes
+$routes['POST']['/api/generate-key'] = function() {
+    $sessionManager = getSessionManager();
+    $sessionManager->requireAuth('/auth');
+    $sessionManager->requireUserType(['super'], '/auth');
+    
+    require_once BASE_PATH . '/app/Core/reg_keys.php';
+    try {
+        $regKeys = new App\Core\RegKeys();
+        $key = $regKeys->generateKey();
+        
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'key' => $key]);
+    } catch (Exception $e) {
+        header('Content-Type: application/json');
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+};
+
+$routes['GET']['/api/get-key'] = function() {
+    $sessionManager = getSessionManager();
+    $sessionManager->requireAuth('/auth');
+    $sessionManager->requireUserType(['super'], '/auth');
+    
+    require_once BASE_PATH . '/app/Core/reg_keys.php';
+    try {
+        $regKeys = new App\Core\RegKeys();
+        $key = $regKeys->getKey();
+        
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'key' => $key]);
+    } catch (Exception $e) {
+        header('Content-Type: application/json');
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+};
 
 // Return the routes array to be processed by the router
 return $routes;
