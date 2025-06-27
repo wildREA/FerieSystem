@@ -21,5 +21,6 @@
 </div>
 
 <link rel="stylesheet" href="/public/css/components/key_container.css">
+<link rel="stylesheet" href="/public/css/components/toast.css">
 <script src="/public/js/components/key_container.js"></script>
 

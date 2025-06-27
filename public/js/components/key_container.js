@@ -28,13 +28,6 @@ class KeyContainer {
     
     const toastContainer = document.createElement("div");
     toastContainer.className = "toast-container";
-    toastContainer.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 10000;
-      pointer-events: none;
-    `;
     document.body.appendChild(toastContainer);
   }
 
@@ -49,61 +42,20 @@ class KeyContainer {
 
     const toastContainer = document.querySelector(".toast-container");
     const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
     this.toastQueue.add(toast);
-
-    const baseStyles = `
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 16px 24px;
-      margin-bottom: 12px;
-      border-radius: 8px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(16px);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      min-width: 320px;
-      max-width: 400px;
-      transform: translateX(100%);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      pointer-events: auto;
-      cursor: pointer;
-    `;
-
-    const typeStyles = {
-      success: "background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);",
-      error: "background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);",
-      info: "background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);",
-      warning: "background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);",
-    };
-
-    toast.style.cssText = baseStyles + (typeStyles[type] || typeStyles.success);
 
     const icons = { success: "✓", error: "✕", info: "ℹ", warning: "⚠" };
 
     toast.innerHTML = `
-      <span style="
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        font-size: 12px;
-        font-weight: bold;
-      ">${icons[type] || icons.success}</span>
-      <span style="flex: 1;">${message}</span>
+      <span class="toast-icon">${icons[type] || icons.success}</span>
+      <span class="toast-message">${message}</span>
     `;
 
     toastContainer.appendChild(toast);
 
     requestAnimationFrame(() => {
-      toast.style.transform = "translateX(0)";
+      toast.classList.add("show");
     });
 
     const removeToastHandler = () => this.removeToast(toast);
@@ -120,8 +72,7 @@ class KeyContainer {
     if (!toast || !this.toastQueue.has(toast)) return;
 
     this.toastQueue.delete(toast);
-    toast.style.transform = "translateX(100%)";
-    toast.style.opacity = "0";
+    toast.classList.add("hide");
 
     setTimeout(() => {
       if (toast.parentNode) {
