@@ -7,13 +7,13 @@ class KeyContainer {
     this.keyContainer = document.querySelector(".key-container");
     this.keyDisplay = document.querySelector(".key-display");
     this.keyStatus = document.getElementById("key_status");
-    this.textWrapper = null; // Will be set after DOM manipulation
+    this.textWrapper = null;
     this.visibilityBtn = document.getElementById("visibility");
     this.generateBtn = document.getElementById("generate_key");
     this.visibilityIcon = this.visibilityBtn.querySelector("i");
     this.isVisible = false;
     this.currentKey = null;
-    this.toastQueue = new Set(); // Track active toasts
+    this.toastQueue = new Set();
     this.maxToasts = 3;
 
     this.init();
@@ -24,26 +24,24 @@ class KeyContainer {
    * Initialize toast notification container
    */
   initToastContainer() {
-    // Create toast container if it doesn't exist
-    if (!document.querySelector(".toast-container")) {
-      const toastContainer = document.createElement("div");
-      toastContainer.className = "toast-container";
-      toastContainer.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 10000;
-                pointer-events: none;
-            `;
-      document.body.appendChild(toastContainer);
-    }
+    if (document.querySelector(".toast-container")) return;
+    
+    const toastContainer = document.createElement("div");
+    toastContainer.className = "toast-container";
+    toastContainer.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      pointer-events: none;
+    `;
+    document.body.appendChild(toastContainer);
   }
 
   /**
    * Show toast notification
    */
   showToast(message, type = "success", duration = 3000) {
-    // Enforce maximum toast limit
     if (this.toastQueue.size >= this.maxToasts) {
       const oldestToast = this.toastQueue.values().next().value;
       this.removeToast(oldestToast);
@@ -51,35 +49,31 @@ class KeyContainer {
 
     const toastContainer = document.querySelector(".toast-container");
     const toast = document.createElement("div");
-
-    // Add to queue tracking
     this.toastQueue.add(toast);
 
-    // Toast styling
     const baseStyles = `
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 16px 24px;
-            margin-bottom: 12px;
-            border-radius: 8px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(16px);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 14px;
-            font-weight: 500;
-            min-width: 320px;
-            max-width: 400px;
-            transform: translateX(100%);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            pointer-events: auto;
-            cursor: pointer;
-        `;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 16px 24px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      min-width: 320px;
+      max-width: 400px;
+      transform: translateX(100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: auto;
+      cursor: pointer;
+    `;
 
-    // Type-specific styling
     const typeStyles = {
       success: "background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);",
       error: "background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);",
@@ -89,44 +83,31 @@ class KeyContainer {
 
     toast.style.cssText = baseStyles + (typeStyles[type] || typeStyles.success);
 
-    // Toast content with icon
-    const icons = {
-      success: "✓",
-      error: "✕",
-      info: "ℹ",
-      warning: "⚠",
-    };
+    const icons = { success: "✓", error: "✕", info: "ℹ", warning: "⚠" };
 
     toast.innerHTML = `
-            <span style="
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                width: 20px;
-                height: 20px;
-                border-radius: 50%;
-                background: rgba(255, 255, 255, 0.2);
-                font-size: 12px;
-                font-weight: bold;
-            ">${icons[type] || icons.success}</span>
-            <span style="flex: 1;">${message}</span>
-        `;
+      <span style="
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        font-size: 12px;
+        font-weight: bold;
+      ">${icons[type] || icons.success}</span>
+      <span style="flex: 1;">${message}</span>
+    `;
 
-    // Add to container
     toastContainer.appendChild(toast);
 
-    // Animate in
     requestAnimationFrame(() => {
       toast.style.transform = "translateX(0)";
     });
 
-    // Create removal function
     const removeToastHandler = () => this.removeToast(toast);
-
-    // Remove on click
     toast.addEventListener("click", removeToastHandler);
-
-    // Auto remove after duration
     setTimeout(removeToastHandler, duration);
 
     return toast;
@@ -138,14 +119,10 @@ class KeyContainer {
   removeToast(toast) {
     if (!toast || !this.toastQueue.has(toast)) return;
 
-    // Remove from tracking
     this.toastQueue.delete(toast);
-
-    // Animate out
     toast.style.transform = "translateX(100%)";
     toast.style.opacity = "0";
 
-    // Remove from DOM after animation
     setTimeout(() => {
       if (toast.parentNode) {
         toast.parentNode.removeChild(toast);
@@ -195,7 +172,6 @@ class KeyContainer {
     this.visibilityBtn.addEventListener("click", () => this.toggleVisibility());
     this.generateBtn.addEventListener("click", () => this.generateNewKey());
 
-    // Get or create textWrapper and bind click event to it
     this.textWrapper = this.keyStatus.querySelector(".textWrapper");
     if (this.textWrapper) {
       this.textWrapper.addEventListener("click", () => this.copyToClipboard());
@@ -207,7 +183,6 @@ class KeyContainer {
    */
   setInitialState() {
     // Initial state will be set after loading existing key
-    // This is just a placeholder to ensure proper initialization
   }
 
   /**
@@ -216,20 +191,14 @@ class KeyContainer {
   setKey(key) {
     this.currentKey = key;
 
-    // Update textWrapper content, create it if it doesn't exist
     if (!this.textWrapper) {
       this.textWrapper = this.keyStatus.querySelector(".textWrapper");
       if (!this.textWrapper) {
-        // Create textWrapper if it doesn't exist
         this.textWrapper = document.createElement("span");
         this.textWrapper.className = "textWrapper";
         this.keyStatus.innerHTML = "";
         this.keyStatus.appendChild(this.textWrapper);
-
-        // Bind click event to newly created textWrapper
-        this.textWrapper.addEventListener("click", () =>
-          this.copyToClipboard()
-        );
+        this.textWrapper.addEventListener("click", () => this.copyToClipboard());
       }
     }
 
@@ -256,10 +225,7 @@ class KeyContainer {
    * Hide the registration key
    */
   hideKey() {
-    // Only hide if there is a key to hide
-    if (!this.currentKey) {
-      return;
-    }
+    if (!this.currentKey) return;
     
     this.keyStatus.style.filter = "blur(4px)";
     this.isVisible = false;
@@ -280,16 +246,13 @@ class KeyContainer {
    */
   async generateNewKey() {
     try {
-      // Only hide the key before generating if there's currently a key
       if (this.currentKey) {
         this.hideKey();
       }
 
       const response = await fetch("/api/reg-key", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
@@ -300,7 +263,6 @@ class KeyContainer {
 
       if (data.success && data.key) {
         this.setKey(data.key);
-        // Hide the newly generated key
         this.hideKey();
       } else {
         throw new Error(data.error || "Failed to generate key");
@@ -326,7 +288,6 @@ class KeyContainer {
       await navigator.clipboard.writeText(this.currentKey);
       this.showToast("Registration key copied to clipboard", "success");
     } catch (err) {
-      // Fallback for older browsers
       try {
         this.fallbackCopyToClipboard(this.currentKey);
         this.showToast("Registration key copied to clipboard", "success");
@@ -344,12 +305,12 @@ class KeyContainer {
     const textArea = document.createElement("textarea");
     textArea.value = text;
     textArea.style.cssText = `
-            position: fixed;
-            top: -9999px;
-            left: -9999px;
-            opacity: 0;
-            pointer-events: none;
-        `;
+      position: fixed;
+      top: -9999px;
+      left: -9999px;
+      opacity: 0;
+      pointer-events: none;
+    `;
 
     document.body.appendChild(textArea);
     textArea.focus();
@@ -364,7 +325,6 @@ class KeyContainer {
   }
 }
 
-// Initialize when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   new KeyContainer();
 });
