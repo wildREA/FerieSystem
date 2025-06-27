@@ -59,6 +59,7 @@ class KeyContainer {
         this.visibilityIcon.className = 'bi bi-eye-slash-fill';
         this.visibilityIcon.style.color = 'red';
         this.visibilityBtn.title = 'Show';
+        this.keyStatus.style.filter = 'blur(4px)';
         
         // Load existing key on initialization
         this.loadExistingKey();
@@ -93,7 +94,7 @@ class KeyContainer {
 
     hideKey() {
         // Blur the keyStatus text
-        // this.keyStatus.style.filter = 'blur(4px)';
+        this.keyStatus.style.filter = 'blur(4px)';
 
         // Update visibility state
         this.isVisible = false;
