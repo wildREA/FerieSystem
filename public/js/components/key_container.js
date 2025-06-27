@@ -16,24 +16,25 @@ class KeyContainer {
 
     async loadExistingKey() {
         try {
-            const response = await fetch('/api/reg-key/');
-            if (!response.ok) throw new Error('Network response was not ok');
-            const data = await response.json();
+            const response = await fetch('/api/reg-key');
             
-            if (!data.key) {
-            this.keyStatus.textContent = 'No key generated';
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
             
-            this.currentKey = data.key;
-            // this.keyStatus.textContent = this.isVisible ? data.key : '••••••••••••••••';  Implement the tagged text after key works
-            this.keyStatus.textContent = data.key;
+            const data = await response.json();
+            
+            if (data.success && data.key) {
+                this.currentKey = data.key;
+                this.keyStatus.textContent = data.key;
+            } else {
+                this.currentKey = '';
+                this.keyStatus.textContent = 'No key generated';
+            }
         } catch (error) {
             console.error('Error fetching registration key:', error);
-            this.keyStatus.textContent = 'Error loading key';
-            
-            setTimeout(() => {
+            this.currentKey = '';
             this.keyStatus.textContent = 'No key generated';
-            }, 2000);
         }
     }
     
@@ -44,11 +45,12 @@ class KeyContainer {
         this.keyStatus.addEventListener('click', () => this.copyToClipboard());
 
         // Initial state
-        // WAIT A BIT WITH BLUR, FINISH API FIRST - this.keyStatus.style.filter = 'blur(4px)'; // Start with blurred text
-        this.visibilityIcon.className = 'bi bi-eye-slash-fill'; // Start with eye-slash icon
-        this.visibilityIcon.style.color = 'red'; // Set initial color to red
-        this.visibilityBtn.title = 'Show'; // Set initial tooltip
-        this.loadExistingKey();  // Load existing key on initialization if any
+        this.visibilityIcon.className = 'bi bi-eye-slash-fill';
+        this.visibilityIcon.style.color = 'red';
+        this.visibilityBtn.title = 'Show';
+        
+        // Load existing key on initialization
+        this.loadExistingKey();
     }
 
     toggleVisibility() {
@@ -91,25 +93,35 @@ class KeyContainer {
 
     async generateNewKey() {
         try {
-            const response = await fetch('/api/reg-key/', {
+            // Show loading state
+            this.keyStatus.textContent = 'Generating...';
+            this.generateBtn.disabled = true;
+
+            const response = await fetch('/api/reg-key', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
 
-            if (!response.ok) throw new Error('Network response was not ok');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
 
-            if (data.error) {
-                this.showToast(data.error, 'error');
-                return;
+            if (data.success && data.key) {
+                this.currentKey = data.key;
+                this.keyStatus.textContent = data.key;
+            } else {
+                throw new Error(data.error || 'Failed to generate key');
             }
-
-            this.currentKey = data.key;
-            this.keyStatus.textContent = this.isVisible ? data.key : '••••••••••••••••'; // Update key display
         } catch (error) {
             console.error('Error generating new key:', error);
+            this.keyStatus.textContent = 'Error generating key';
+        } finally {
+            // Re-enable the button
+            this.generateBtn.disabled = false;
         }
     }
 
@@ -118,7 +130,6 @@ class KeyContainer {
         
         try {
             await navigator.clipboard.writeText(this.currentKey);
-            // Success/Failure UI here
         } catch (err) {
             // Fallback for older browsers
             const textArea = document.createElement('textarea');
@@ -127,7 +138,6 @@ class KeyContainer {
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            // Success/Failure UI here
         }
     }
 }

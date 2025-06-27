@@ -196,30 +196,30 @@ $routes['POST']['/api/verify-key/'] = function() {
     return $auth->verifyRegistrationKey();
 };
 
-// Regostratopn ley retrieval for super users
+// Registration key retrieval for super users
 $routes['GET']['/api/reg-key'] = function() {
-    require_once BASE_PATH . '/app/Core/reg_keys.php';
-    $regKeys = new App\Core\RegKeys();
-    return $regKeys->getKey();
+    require_once BASE_PATH . '/app/Core/reg_keys_api.php';
+    $api = new App\Core\RegKeysAPI();
+    return $api->getKeyAPI();
 };
 
 $routes['GET']['/api/reg-key/'] = function() {
-    require_once BASE_PATH . '/app/Core/reg_keys.php';
-    $regKeys = new App\Core\RegKeys();
-    return $regKeys->getKey();
+    require_once BASE_PATH . '/app/Core/reg_keys_api.php';
+    $api = new App\Core\RegKeysAPI();
+    return $api->getKeyAPI();
 };
 
 // Registration key generation for super users
 $routes['POST']['/api/reg-key'] = function() {
-    require_once BASE_PATH . '/app/Core/reg_keys.php';
-    $regKeys = new App\Core\RegKeys();
-    return $regKeys->generateKey();
+    require_once BASE_PATH . '/app/Core/reg_keys_api.php';
+    $api = new App\Core\RegKeysAPI();
+    return $api->generateKeyAPI();
 };
 
 $routes['POST']['/api/reg-key/'] = function() {
-    require_once BASE_PATH . '/app/Core/reg_keys.php';
-    $regKeys = new App\Core\RegKeys();
-    return $regKeys->generateKey();
+    require_once BASE_PATH . '/app/Core/reg_keys_api.php';
+    $api = new App\Core\RegKeysAPI();
+    return $api->generateKeyAPI();
 };
 
 // Return the routes array to be processed by the router
