@@ -1,114 +1,125 @@
-// Discord-style Key Container Com
+/**
+ * Registration Key Container Component
+ * Handles the display, generation, and visibility toggling of registration keys
+ */
 class KeyContainer {
     constructor() {
         this.keyContainer = document.querySelector('.key-container');
         this.keyDisplay = document.querySelector('.key-display');
-        this.keyStatus = document.getElementById('key_status');  // The key itself
+        this.keyStatus = document.getElementById('key_status');
         this.visibilityBtn = document.getElementById('visibility');
         this.generateBtn = document.getElementById('generate_key');
         this.visibilityIcon = this.visibilityBtn.querySelector('i');
         this.isVisible = false;
-        this.currentKey = null; // Store the current key
+        this.currentKey = null;
         
         this.init();
-        this.loadExistingKey();
     }
 
+    /**
+     * Load existing registration key from the server
+     */
     async loadExistingKey() {
         try {
             const response = await fetch('/api/reg-key');
             
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`Failed to fetch key: ${response.status}`);
             }
             
-            // Get the raw response text first to see what we're actually receiving
-            const responseText = await response.text();
-            console.log('Raw response:', responseText);
-            
-            let data;
-            try {
-                data = JSON.parse(responseText);
-            } catch (jsonError) {
-                console.error('JSON parse error:', jsonError);
-                console.error('Response text:', responseText);
-                throw new Error('Invalid JSON response from server');
-            }
+            const data = await response.json();
             
             if (data.success && data.key) {
-                this.currentKey = data.key;
-                this.keyStatus.textContent = data.key;
+                this.setKey(data.key);
             } else {
-                this.currentKey = '';
-                this.keyStatus.textContent = 'No key generated';
+                this.setKey(null);
             }
         } catch (error) {
             console.error('Error fetching registration key:', error);
-            this.currentKey = '';
-            this.keyStatus.textContent = 'No key generated';
+            this.setKey(null);
         }
     }
-    
+    /**
+     * Initialize component - set up event listeners and load existing key
+     */
     init() {
-        // Bind event listeners
-        this.visibilityBtn.addEventListener('click', () => this.toggleVisibility());
-        this.generateBtn.addEventListener('click', () => this.generateNewKey());
-        this.keyStatus.addEventListener('click', () => this.copyToClipboard());
-
-        // Initial state
-        this.visibilityIcon.className = 'bi bi-eye-slash-fill';
-        this.visibilityIcon.style.color = 'red';
-        this.visibilityBtn.title = 'Show';
-        this.keyStatus.style.filter = 'blur(4px)';
-        
-        // Load existing key on initialization
+        this.bindEvents();
+        this.setInitialState();
         this.loadExistingKey();
     }
 
-    toggleVisibility() {
-        if (!this.isVisible) {
-            this.showKey();
-        } else {
-            this.isVisible = false;
-            console.log("Invisible state: " + this.isVisible);
-            this.hideKey();
-        }
+    /**
+     * Bind event listeners to UI elements
+     */
+    bindEvents() {
+        this.visibilityBtn.addEventListener('click', () => this.toggleVisibility());
+        this.generateBtn.addEventListener('click', () => this.generateNewKey());
+        this.keyStatus.addEventListener('click', () => this.copyToClipboard());
     }
 
-    showKey() {
-        if (!this.currentKey) {
-            this.keyStatus.textContent = 'No key generated';
-            return;
-        }
-
-        // Remove blur from the keyStatus text
-        this.keyStatus.style.filter = 'none';
-        
-        // Show the key in the keyStatus text
-        this.isVisible = true;
-        console.log("Visible state: " + this.isVisible);
-        this.visibilityIcon.className = 'bi bi-eye';
-        this.visibilityIcon.style.color = 'white';
-        this.visibilityBtn.title = 'Hide';
-    }
-
-    hideKey() {
-        // Blur the keyStatus text
-        this.keyStatus.style.filter = 'blur(4px)';
-
-        // Update visibility state
-        this.isVisible = false;
+    /**
+     * Set initial UI state
+     */
+    setInitialState() {
         this.visibilityIcon.className = 'bi bi-eye-slash-fill';
         this.visibilityIcon.style.color = 'red';
         this.visibilityBtn.title = 'Show';
+        this.keyStatus.style.filter = 'blur(4px)';
     }
 
+    /**
+     * Set the current key and update the display
+     */
+    setKey(key) {
+        this.currentKey = key;
+        this.keyStatus.textContent = key || 'No key generated';
+    }
+
+    /**
+     * Toggle key visibility
+     */
+    toggleVisibility() {
+        this.isVisible ? this.hideKey() : this.showKey();
+    }
+
+    /**
+     * Show the registration key
+     */
+    showKey() {
+        if (!this.currentKey) {
+            return;
+        }
+
+        this.keyStatus.style.filter = 'none';
+        this.isVisible = true;
+        this.updateVisibilityIcon('bi bi-eye', 'white', 'Hide');
+    }
+
+    /**
+     * Hide the registration key
+     */
+    hideKey() {
+        this.keyStatus.style.filter = 'blur(4px)';
+        this.isVisible = false;
+        this.updateVisibilityIcon('bi bi-eye-slash-fill', 'red', 'Show');
+    }
+
+    /**
+     * Update visibility icon appearance
+     */
+    updateVisibilityIcon(className, color, title) {
+        this.visibilityIcon.className = className;
+        this.visibilityIcon.style.color = color;
+        this.visibilityBtn.title = title;
+    }
+
+    /**
+     * Generate a new registration key
+     */
     async generateNewKey() {
         try {
-            // Show loading state
-            this.keyStatus.textContent = 'Generating...';
-            this.generateBtn.disabled = true;
-
+            this.setLoadingState(true);
+            
             const response = await fetch('/api/reg-key', {
                 method: 'POST',
                 headers: {
@@ -117,25 +128,13 @@ class KeyContainer {
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`Failed to generate key: ${response.status}`);
             }
             
-            // Get the raw response text first to see what we're actually receiving
-            const responseText = await response.text();
-            console.log('Raw response:', responseText);
-            
-            let data;
-            try {
-                data = JSON.parse(responseText);
-            } catch (jsonError) {
-                console.error('JSON parse error:', jsonError);
-                console.error('Response text:', responseText);
-                throw new Error('Invalid JSON response from server');
-            }
+            const data = await response.json();
 
             if (data.success && data.key) {
-                this.currentKey = data.key;
-                this.keyStatus.textContent = data.key;
+                this.setKey(data.key);
             } else {
                 throw new Error(data.error || 'Failed to generate key');
             }
@@ -143,29 +142,50 @@ class KeyContainer {
             console.error('Error generating new key:', error);
             this.keyStatus.textContent = 'Error generating key';
         } finally {
-            // Re-enable the button
+            this.setLoadingState(false);
+        }
+    }
+
+    /**
+     * Set loading state for the generate button
+     */
+    setLoadingState(isLoading) {
+        if (isLoading) {
+            this.keyStatus.textContent = 'Generating...';
+            this.generateBtn.disabled = true;
+        } else {
             this.generateBtn.disabled = false;
         }
     }
 
-     async copyToClipboard() {
+    /**
+     * Copy the current key to clipboard
+     */
+    async copyToClipboard() {
         if (!this.currentKey) return;
         
         try {
             await navigator.clipboard.writeText(this.currentKey);
         } catch (err) {
             // Fallback for older browsers
-            const textArea = document.createElement('textarea');
-            textArea.value = this.currentKey;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
+            this.fallbackCopyToClipboard(this.currentKey);
         }
+    }
+
+    /**
+     * Fallback method for copying to clipboard in older browsers
+     */
+    fallbackCopyToClipboard(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
     }
 }
 
-// Initialize when DOM is loaded
+// Initialize the KeyContainer when the DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     new KeyContainer();
 });
