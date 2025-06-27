@@ -78,7 +78,15 @@ class Router
 
             // If the handler is a closure, execute it
             if ($handler instanceof Closure) {
-                return $handler();
+                $result = $handler();
+                
+                // For API routes, output JSON directly without additional formatting
+                if (strpos($uri, '/api/') === 0) {
+                    echo $result;
+                    return null;
+                }
+                
+                return $result;
             }
 
             // If the handler is an array with controller and method, execute it
@@ -98,7 +106,15 @@ class Router
 
                     // If the handler is a closure, execute it with parameters
                     if ($handler instanceof Closure) {
-                        return call_user_func_array($handler, $matches);
+                        $result = call_user_func_array($handler, $matches);
+                        
+                        // For API routes, output JSON directly without additional formatting
+                        if (strpos($route, '/api/') === 0) {
+                            echo $result;
+                            return null;
+                        }
+                        
+                        return $result;
                     }
                 }
             }
@@ -106,6 +122,14 @@ class Router
 
         // No route found, return 404
         header("HTTP/1.0 404 Not Found");
+        
+        // For API routes, return JSON error
+        if (strpos($uri, '/api/') === 0) {
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'API endpoint not found']);
+            return null;
+        }
+        
         return "404 Not Found";
     }
 }
@@ -130,4 +154,9 @@ if (!function_exists('view')) {
 // Initialize router and dispatch the request
 $routesConfig = require_once BASE_PATH . '/config/routes.php';
 $router = new Router(['routes' => $routesConfig]);
-echo $router->dispatch();
+$result = $router->dispatch();
+
+// Only echo the result if it wasn't already output (for non-API routes)
+if ($result !== null) {
+    echo $result;
+}

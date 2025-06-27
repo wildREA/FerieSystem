@@ -20,17 +20,27 @@ class RequestController {
     }
 
     public function submitRequest() {
+        // Ensure we don't output anything before the JSON response
+        if (ob_get_length()) {
+            ob_clean();
+        }
         header('Content-Type: application/json');
         
         try {
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
+                if (ob_get_length()) {
+                    ob_clean();
+                }
                 return json_encode(['error' => 'User not authenticated']);
             }
             
             $userType = $this->sessionManager->getUserType();
             if ($userType !== 'standard') {
                 http_response_code(403);
+                if (ob_get_length()) {
+                    ob_clean();
+                }
                 return json_encode(['error' => 'Only students can submit requests']);
             }
             
@@ -39,44 +49,65 @@ class RequestController {
             
             if (json_last_error() !== JSON_ERROR_NONE) {
                 http_response_code(400);
+                if (ob_get_length()) {
+                    ob_clean();
+                }
                 return json_encode(['error' => 'Invalid JSON data']);
             }
             
-            $requiredFields = ['requestType', 'startDate', 'endDate', 'reason'];
+            $requiredFields = ['requestType', 'startDate', 'endDate'];
             foreach ($requiredFields as $field) {
                 if (!isset($data[$field]) || empty(trim($data[$field]))) {
                     http_response_code(400);
+                    if (ob_get_length()) {
+                        ob_clean();
+                    }
                     return json_encode(['error' => "Missing required field: $field"]);
                 }
             }
+            
+            // Handle optional reason field
+            $reason = isset($data['reason']) ? trim($data['reason']) : '';
             
             $startDate = $data['startDate'];
             $endDate = $data['endDate'];
             
             if (!$this->isValidDate($startDate) || !$this->isValidDate($endDate)) {
                 http_response_code(400);
+                if (ob_get_length()) {
+                    ob_clean();
+                }
                 return json_encode(['error' => 'Invalid date format']);
             }
             
             if (strtotime($startDate) > strtotime($endDate)) {
                 http_response_code(400);
+                if (ob_get_length()) {
+                    ob_clean();
+                }
                 return json_encode(['error' => 'Start date cannot be after end date']);
             }
             
             if (strtotime($startDate) < strtotime('today')) {
                 http_response_code(400);
+                if (ob_get_length()) {
+                    ob_clean();
+                }
                 return json_encode(['error' => 'Start date cannot be in the past']);
             }
             
             $userId = $this->sessionManager->getUserId();
             
-            $start = new DateTime($startDate);
-            $end = new DateTime($endDate);
+            $start = new \DateTime($startDate);
+            $end = new \DateTime($endDate);
             $interval = $start->diff($end);
             $days = $interval->days + 1; // Include both start and end dates in count
             
             if (!$this->db) {
                 http_response_code(500);
+                if (ob_get_length()) {
+                    ob_clean();
+                }
                 return json_encode(['error' => 'Database connection failed']);
             }
             
@@ -95,6 +126,9 @@ class RequestController {
             
             if (!$stmt) {
                 http_response_code(500);
+                if (ob_get_length()) {
+                    ob_clean();
+                }
                 return json_encode(['error' => 'Failed to prepare database statement']);
             }
             
@@ -104,11 +138,14 @@ class RequestController {
                 $startDate,
                 $endDate,
                 $days,
-                trim($data['reason'])
+                $reason
             ]);
             
             if (!$result) {
                 http_response_code(500);
+                if (ob_get_length()) {
+                    ob_clean();
+                }
                 return json_encode(['error' => 'Failed to save request to database']);
             }
             
@@ -123,7 +160,7 @@ class RequestController {
                     'startDate' => $startDate,
                     'endDate' => $endDate,
                     'days' => $days,
-                    'reason' => trim($data['reason']),
+                    'reason' => $reason,
                     'status' => 'pending',
                     'submittedAt' => date('Y-m-d H:i:s')
                 ]
@@ -132,16 +169,26 @@ class RequestController {
         } catch (Exception $e) {
             error_log("Error in RequestController::submitRequest: " . $e->getMessage());
             http_response_code(500);
+            
+            // Clean any previous output
+            if (ob_get_length()) {
+                ob_clean();
+            }
+            
             return json_encode(['error' => 'An unexpected error occurred']);
         }
     }
     
     private function isValidDate($date) {
-        $d = DateTime::createFromFormat('Y-m-d', $date);
+        $d = \DateTime::createFromFormat('Y-m-d', $date);
         return $d && $d->format('Y-m-d') === $date;
     }
     
     public function getUserRequests() {
+        // Ensure we don't output anything before the JSON response
+        if (ob_get_length()) {
+            ob_clean();
+        }
         header('Content-Type: application/json');
         
         try {

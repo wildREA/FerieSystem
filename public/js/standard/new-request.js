@@ -74,10 +74,22 @@ const DataManager = {
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                console.error('HTTP error response:', errorText);
+                throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
             }
 
-            const result = await response.json();
+            const responseText = await response.text();
+            console.log('Raw response:', responseText);
+            
+            let result;
+            try {
+                result = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('Failed to parse JSON response:', responseText);
+                throw new Error('Server returned invalid JSON response: ' + responseText.substring(0, 100));
+            }
+            
             console.log('Request submitted successfully:', result);
             return result;
         } catch (error) {
