@@ -1,16 +1,40 @@
-// Discord-style Key Container Component JavaScript
+// Discord-style Key Container Com
 class KeyContainer {
     constructor() {
         this.keyContainer = document.querySelector('.key-container');
         this.keyDisplay = document.querySelector('.key-display');
-        this.keyStatus = document.getElementById('key_status');
+        this.keyStatus = document.getElementById('key_status');  // The key itself
         this.visibilityBtn = document.getElementById('visibility');
         this.generateBtn = document.getElementById('generate_key');
         this.visibilityIcon = this.visibilityBtn.querySelector('i');
         this.isVisible = false;
-        this.currentKey = '';
+        this.currentKey = null; // Store the current key
         
         this.init();
+        this.loadExistingKey();
+    }
+
+    async loadExistingKey() {
+        try {
+            const response = await fetch('/api/reg-key/');
+            if (!response.ok) throw new Error('Network response was not ok');
+            const data = await response.json();
+            
+            if (!data.key) {
+            this.keyStatus.textContent = 'No key generated';
+            }
+            
+            this.currentKey = data.key;
+            // this.keyStatus.textContent = this.isVisible ? data.key : '••••••••••••••••';  Implement the tagged text after key works
+            this.keyStatus.textContent = data.key;
+        } catch (error) {
+            console.error('Error fetching registration key:', error);
+            this.keyStatus.textContent = 'Error loading key';
+            
+            setTimeout(() => {
+            this.keyStatus.textContent = 'No key generated';
+            }, 2000);
+        }
     }
     
     init() {
@@ -24,9 +48,7 @@ class KeyContainer {
         this.visibilityIcon.className = 'bi bi-eye-slash-fill'; // Start with eye-slash icon
         this.visibilityIcon.style.color = 'red'; // Set initial color to red
         this.visibilityBtn.title = 'Show'; // Set initial tooltip
-        
-        // Load existing key on initialization
-        this.loadExistingKey();
+        this.loadExistingKey();  // Load existing key on initialization if any
     }
 
     toggleVisibility() {
@@ -67,108 +89,28 @@ class KeyContainer {
         this.visibilityBtn.title = 'Show';
     }
 
-    async loadExistingKey() {
-        try {
-            const response = await fetch('/api/get-key', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            
-            if (data.success && data.key) {
-                this.currentKey = data.key;
-                this.keyStatus.textContent = data.key;
-            } else {
-                this.currentKey = '';
-                this.keyStatus.textContent = 'No key generated';
-            }
-        } catch (error) {
-            console.error('Error loading existing key:', error);
-            this.currentKey = '';
-            this.keyStatus.textContent = 'No key generated';
-        }
-    }
-
     async generateNewKey() {
         try {
-            // Show loading state
-            this.keyStatus.textContent = 'Generating...';
-            this.generateBtn.disabled = true;
-
-            const response = await fetch('/api/generate-key', {
+            const response = await fetch('/api/reg-key/', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 }
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
+            if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
-            
-            if (data.success) {
-                this.currentKey = data.key;
-                this.keyStatus.textContent = data.key;
-                this.showToast('New registration key generated successfully!', 'success');
-            } else {
-                throw new Error(data.error || 'Failed to generate key');
-            }
-        } catch (error) {
-            console.error('Error generating key:', error);
-            this.keyStatus.textContent = 'Error generating key';
-            this.showToast('Failed to generate registration key', 'error');
-        } finally {
-            // Re-enable the button
-            this.generateBtn.disabled = false;
-        }
-    }
 
-    showToast(message, type = 'info') {
-        // Create toast notification
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 24px;
-            background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
-            color: white;
-            border-radius: 4px;
-            z-index: 1000;
-            font-size: 14px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.3s ease;
-        `;
-        toast.textContent = message;
-        
-        document.body.appendChild(toast);
-        
-        // Animate in
-        setTimeout(() => {
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateX(0)';
-        }, 10);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                document.body.removeChild(toast);
-            }, 300);
-        }, 3000);
+            if (data.error) {
+                this.showToast(data.error, 'error');
+                return;
+            }
+
+            this.currentKey = data.key;
+            this.keyStatus.textContent = this.isVisible ? data.key : '••••••••••••••••'; // Update key display
+        } catch (error) {
+            console.error('Error generating new key:', error);
+        }
     }
 
      async copyToClipboard() {
@@ -176,7 +118,7 @@ class KeyContainer {
         
         try {
             await navigator.clipboard.writeText(this.currentKey);
-            this.showToast('Registration key copied to clipboard!', 'success');
+            // Success/Failure UI here
         } catch (err) {
             // Fallback for older browsers
             const textArea = document.createElement('textarea');
@@ -185,7 +127,7 @@ class KeyContainer {
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            this.showToast('Registration key copied to clipboard!', 'success');
+            // Success/Failure UI here
         }
     }
 }
