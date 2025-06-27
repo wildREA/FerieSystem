@@ -5,6 +5,26 @@
 // Define routes as an array that will be processed by the router
 $routes = [];
 
+$routes['GET']['/requests'] = function() {
+    $sessionManager = getSessionManager();
+    $sessionManager->requireAuth('/auth');
+    $sessionManager->requireUserType(['standard'], '/auth');
+    
+    // Get user requests from database
+    require_once BASE_PATH . '/app/Controllers/RequestController.php';
+    $controller = new App\Controllers\RequestController();
+    $requests = $controller->getUserRequestsForView();
+    
+    // Get current user info for the view
+    $userId = $sessionManager->getUserId();
+    $userName = 'Student'; // Default fallback
+    
+    return view('standarduser/requests', [
+        'requests' => $requests,
+        'userName' => $userName
+    ]);
+};
+
 // Helper function to get SessionManager
 function getSessionManager() {
     static $sessionManager = null;
@@ -97,7 +117,13 @@ $routes['GET']['/requests'] = function() {
         return view('superuser/requests');
     } else {
         $sessionManager->requireUserType(['standard'], '/auth');
-        return view('standarduser/requests');
+        
+        // Get user's requests from database
+        require_once BASE_PATH . '/app/Controllers/RequestController.php';
+        $controller = new App\Controllers\RequestController();
+        $requestsData = $controller->getUserRequestsForView();
+        
+        return view('standarduser/requests', ['requests' => $requestsData]);
     }
 };
 

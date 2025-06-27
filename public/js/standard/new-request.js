@@ -7,47 +7,6 @@ const studentData = {
     totalVacationHours: 200
 };
 
-const requestsData = [
-    {
-        id: "REQ001",
-        startDate: "2025-06-15T09:00:00",
-        endDate: "2025-06-20T17:00:00",
-        reason: "Family vacation",
-        status: "pending",
-        submitDate: "2025-06-10T10:15:00",
-        hours: 40,
-        isShortNotice: false
-    },
-    {
-        id: "REQ002",
-        startDate: "2025-05-20T09:00:00",
-        endDate: "2025-05-23T17:00:00",
-        reason: "Medical appointment",
-        status: "approved",
-        submitDate: "2025-05-15T14:20:00",
-        hours: 32
-    },
-    {
-        id: "REQ003",
-        startDate: "2025-03-10T09:00:00",
-        endDate: "2025-03-14T17:00:00",
-        reason: "Spring break",
-        status: "approved",
-        submitDate: "2025-03-01T09:45:00",
-        hours: 40
-    },
-    {
-        id: "REQ004",
-        startDate: "2025-07-01T09:00:00",
-        endDate: "2025-07-08T17:00:00",
-        reason: "Summer break",
-        status: "denied",
-        submitDate: "2025-06-05T09:45:00",
-        hours: 56,
-        denyReason: "Overlaps with mandatory courses"
-    }
-];
-
 const DataManager = {
     init() {
     },
@@ -57,8 +16,8 @@ const DataManager = {
         try {
             const requestData = {
                 requestType: 'vacation',
-                startDate: newRequest.startDate.split('T')[0],
-                endDate: newRequest.endDate.split('T')[0],
+                startDateTime: newRequest.startDate,
+                endDateTime: newRequest.endDate,
                 reason: newRequest.reason
             };
             
@@ -101,11 +60,9 @@ const DataManager = {
 
 const StudentUtils = {
     calculateVacationHours() {
-        const approvedRequests = requestsData.filter(r => r.status === 'approved');
-        const pendingRequests = requestsData.filter(r => r.status === 'pending');
-        
-        const usedHours = approvedRequests.reduce((sum, r) => sum + r.hours, 0);
-        const pendingHours = pendingRequests.reduce((sum, r) => sum + r.hours, 0);
+        // This would need to be fetched from server in a real implementation
+        const usedHours = 0; // Placeholder
+        const pendingHours = 0; // Placeholder
         const remainingHours = studentData.totalVacationHours - usedHours;
         
         return {
@@ -180,15 +137,6 @@ const StudentUtils = {
                 notification.remove();
             }
         }, 4000);
-    },
-
-    updateRequestsBadge() {
-        const requestsBadge = document.getElementById('requestsBadge');
-        if (requestsBadge) {
-            const pendingCount = requestsData.filter(r => r.status === 'pending').length;
-            requestsBadge.textContent = pendingCount;
-            requestsBadge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
-        }
     }
 };
 
@@ -205,12 +153,8 @@ document.addEventListener("DOMContentLoaded", function() {
         DataManager.init();
         updateBalanceDisplay();
         setupEventListeners();
-        setMinimumStartDateTime();
+        setMinimumStartDateTime(); // This will call updateEndTimeFromStart() at the end
         StudentUtils.updateRequestsBadge();
-        // Set initial end date/time after the start date/time is set
-        setTimeout(() => {
-            updateEndTimeFromStart();
-        }, 100); // Small delay to ensure start date/time is fully set
     }
 
     function updateBalanceDisplay() {
@@ -262,6 +206,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 startMinuteSelect.value = '00';
             }
         }
+        
+        // Auto-set end date/time after start date/time is set
+        setTimeout(() => {
+            updateEndTimeFromStart();
+        }, 50);
     }
     
     function adjustToWorkingHours(dateTime) {
@@ -629,7 +578,6 @@ document.addEventListener("DOMContentLoaded", function() {
         
         try {
             const newRequest = {
-                id: 'REQ' + String(requestsData.length + 1).padStart(3, '0'),
                 startDate: startDateTime,
                 endDate: endDateTime,
                 reason: reason,
