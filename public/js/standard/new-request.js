@@ -1,6 +1,3 @@
-// New Request page specific functionality
-
-// Student data and requests for calculations
 const studentData = {
     id: "STU001",
     name: "Emma Nielsen",
@@ -51,10 +48,8 @@ const requestsData = [
     }
 ];
 
-// Data manager for API calls
 const DataManager = {
     init() {
-        // Initialize any data management setup if needed
     },
 
     async addRequest(newRequest) {
@@ -92,7 +87,6 @@ const DataManager = {
     }
 };
 
-// Utility functions
 const StudentUtils = {
     calculateVacationHours() {
         const approvedRequests = requestsData.filter(r => r.status === 'approved');
@@ -188,13 +182,11 @@ const StudentUtils = {
 
 document.addEventListener("DOMContentLoaded", function() {
     
-    // Form elements
     const newRequestForm = document.getElementById('newRequestForm');
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
     const requestReasonInput = document.getElementById('requestReason');
 
-    // Initialize new request page
     init();
 
     function init() {
@@ -203,13 +195,15 @@ document.addEventListener("DOMContentLoaded", function() {
         setupEventListeners();
         setMinimumStartDateTime();
         StudentUtils.updateRequestsBadge();
+        // Set initial end date/time after the start date/time is set
+        setTimeout(() => {
+            updateEndTimeFromStart();
+        }, 100); // Small delay to ensure start date/time is fully set
     }
 
     function updateBalanceDisplay() {
-        // Get accurate vacation hour calculations
         const vacationHours = StudentUtils.calculateVacationHours();
         
-        // Helper function to safely update element
         function safeUpdate(id, value) {
             const element = document.getElementById(id);
             if (element) {
@@ -223,37 +217,29 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function setMinimumStartDateTime() {
         const now = new Date();
-        const minimumDateTime = new Date(now.getTime() + (48 * 60 * 60 * 1000)); // 48 hours = 2 days notice required
+        const minimumDateTime = new Date(now.getTime() + (48 * 60 * 60 * 1000));
         
-        // Ensure request starts during business hours
         const adjustedDateTime = adjustToWorkingHours(minimumDateTime);
         
-        // Use the already declared variables instead of redeclaring
         const startHourSelect = document.getElementById('startHour');
         const startMinuteSelect = document.getElementById('startMinute');
         
-        // Set the date input
         if (startDateInput) {
             startDateInput.value = adjustedDateTime.toISOString().split('T')[0];
         }
         
-        // Set the hour
         if (startHourSelect) {
             const hour = adjustedDateTime.getHours().toString().padStart(2, '0');
-            // Ensure the hour option exists in the select before setting it
             const hourOption = startHourSelect.querySelector(`option[value="${hour}"]`);
             if (hourOption) {
                 startHourSelect.value = hour;
             } else {
-                // Default to 09:00 if calculated hour doesn't exist in options
                 startHourSelect.value = '09';
             }
         }
         
-        // Set the minute
         if (startMinuteSelect) {
             const roundedMinute = Math.round(adjustedDateTime.getMinutes() / 15) * 15;
-            // Handle minute overflow (e.g., 60 minutes should become 0 of next hour)
             const finalMinute = roundedMinute >= 60 ? 0 : roundedMinute;
             const minuteValue = finalMinute.toString().padStart(2, '0');
             
@@ -267,22 +253,20 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     function adjustToWorkingHours(dateTime) {
-        const workingStartHour = 8; // 8:00 AM business hours start
-        const workingEndHour = 17; // 5:00 PM business hours end
+        const workingStartHour = 8;
+        const workingEndHour = 17;
         const result = new Date(dateTime);
         
-        const dayOfWeek = result.getDay(); // 0 = Sunday, 6 = Saturday
+        const dayOfWeek = result.getDay();
         const hour = result.getHours();
         
-        // If it's weekend (Saturday = 6, Sunday = 0), move to next Monday
-        if (dayOfWeek === 0) { // Sunday
-            result.setDate(result.getDate() + 1); // Move to Monday
+        if (dayOfWeek === 0) {
+            result.setDate(result.getDate() + 1);
             result.setHours(workingStartHour, 0, 0, 0);
-        } else if (dayOfWeek === 6) { // Saturday
-            result.setDate(result.getDate() + 2); // Move to Monday
+        } else if (dayOfWeek === 6) {
+            result.setDate(result.getDate() + 2);
             result.setHours(workingStartHour, 0, 0, 0);
         } else {
-            // It's a weekday, check if time is within working hours
             if (hour < workingStartHour) {
                 result.setHours(workingStartHour, 0, 0, 0);
             } else if (hour >= workingEndHour) {
@@ -290,10 +274,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 result.setHours(workingStartHour, 0, 0, 0);
                 
                 const nextDayOfWeek = result.getDay();
-                if (nextDayOfWeek === 0) { // Sunday
-                    result.setDate(result.getDate() + 1); // Move to Monday
-                } else if (nextDayOfWeek === 6) { // Saturday
-                    result.setDate(result.getDate() + 2); // Move to Monday
+                if (nextDayOfWeek === 0) {
+                    result.setDate(result.getDate() + 1);
+                } else if (nextDayOfWeek === 6) {
+                    result.setDate(result.getDate() + 2);
                 }
             }
         }
@@ -302,87 +286,65 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function updateEndTimeFromStart() {
-        console.log('updateEndTimeFromStart called');
-        
         const startDate = startDateInput.value;
         const startHour = document.getElementById('startHour').value;
         const startMinute = document.getElementById('startMinute').value;
         const endHourSelect = document.getElementById('endHour');
         const endMinuteSelect = document.getElementById('endMinute');
         
-        console.log('Start date:', startDate);
-        console.log('Start hour:', startHour);
-        console.log('Start minute:', startMinute);
-        console.log('End hour select:', endHourSelect);
-        console.log('End minute select:', endMinuteSelect);
-        console.log('End date input:', endDateInput);
-        
-        // Only update if start date and both start time fields have values
         if (!startDate || !startHour || !startMinute || !endHourSelect || !endMinuteSelect) {
-            console.log('Missing required fields, returning');
             return;
         }
         
-        console.log('Setting end date to:', startDate);
-        // Set end date to same as start date
         if (endDateInput) {
             endDateInput.value = startDate;
-            console.log('End date set to:', endDateInput.value);
         }
         
-        // Create a date object with the start time
-        const startTime = new Date();
-        startTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
+        // Create a proper date object with the selected start date
+        const startTime = new Date(`${startDate}T${startHour}:${startMinute}:00`);
         
-        // Add 15 minutes
+        // Add 15 minutes to get the end time
         const endTime = new Date(startTime.getTime() + (15 * 60 * 1000));
         
-        // Format the end time
-        const endHour = endTime.getHours().toString().padStart(2, '0');
-        const endMinute = endTime.getMinutes().toString().padStart(2, '0');
+        // Check if end time goes beyond the same day or working hours
+        let endHour = endTime.getHours().toString().padStart(2, '0');
+        let endMinute = endTime.getMinutes().toString().padStart(2, '0');
         
-        console.log('Calculated end time:', endHour + ':' + endMinute);
+        // If the end time goes beyond the same day, adjust accordingly
+        if (endTime.toDateString() !== startTime.toDateString()) {
+            // If it crosses to next day, set it to end of working hours on the same day
+            const adjustedEndTime = new Date(startTime);
+            adjustedEndTime.setHours(17, 0, 0, 0); // 17:00
+            endHour = adjustedEndTime.getHours().toString().padStart(2, '0');
+            endMinute = adjustedEndTime.getMinutes().toString().padStart(2, '0');
+        }
         
-        // Check if the calculated end time options exist in the selects
         const endHourOption = endHourSelect.querySelector(`option[value="${endHour}"]`);
         const endMinuteOption = endMinuteSelect.querySelector(`option[value="${endMinute}"]`);
         
-        console.log('End hour option exists:', !!endHourOption);
-        console.log('End minute option exists:', !!endMinuteOption);
-        
-        // Set the end time values if the options exist
         if (endHourOption) {
             endHourSelect.value = endHour;
-            console.log('Set end hour to:', endHour);
         } else {
-            // If hour doesn't exist (e.g., past business hours), set to last available hour
             const lastHourOption = endHourSelect.querySelector('option:last-child');
             if (lastHourOption) {
                 endHourSelect.value = lastHourOption.value;
-                console.log('Set end hour to last available:', lastHourOption.value);
             }
         }
         
         if (endMinuteOption) {
             endMinuteSelect.value = endMinute;
-            console.log('Set end minute to:', endMinute);
         } else {
-            // If exact minute doesn't exist, find the closest available minute
             const availableMinutes = Array.from(endMinuteSelect.options).map(opt => opt.value);
             const closestMinute = availableMinutes.reduce((closest, current) => {
                 return Math.abs(parseInt(current) - parseInt(endMinute)) < Math.abs(parseInt(closest) - parseInt(endMinute)) ? current : closest;
             });
             endMinuteSelect.value = closestMinute;
-            console.log('Set end minute to closest available:', closestMinute);
         }
         
-        // Trigger calculation update after setting end date and time
         calculateRequestDuration();
-        console.log('Called calculateRequestDuration');
     }
 
     function setupEventListeners() {
-        // Helper function to safely add event listeners
         function safeAddListener(id, event, handler) {
             const element = document.getElementById(id);
             if (element) {
@@ -390,12 +352,10 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        // Form submission
         if (newRequestForm) {
             newRequestForm.addEventListener('submit', handleRequestSubmission);
         }
         
-        // Date change listeners for duration calculation
         if (startDateInput) {
             startDateInput.addEventListener('change', calculateRequestDuration);
         }
@@ -403,17 +363,17 @@ document.addEventListener("DOMContentLoaded", function() {
             endDateInput.addEventListener('change', calculateRequestDuration);
         }
         
-        // Time change listeners
         safeAddListener('startHour', 'change', calculateRequestDuration);
         safeAddListener('startMinute', 'change', calculateRequestDuration);
         safeAddListener('endHour', 'change', calculateRequestDuration);
         safeAddListener('endMinute', 'change', calculateRequestDuration);
         
-        // Auto-update end time when start time changes (15 minutes later)
         safeAddListener('startHour', 'change', updateEndTimeFromStart);
         safeAddListener('startMinute', 'change', updateEndTimeFromStart);
+        if (startDateInput) {
+            startDateInput.addEventListener('change', updateEndTimeFromStart);
+        }
         
-        // Real-time form validation
         safeAddListener('requestReason', 'input', validateForm);
         if (startDateInput) {
             startDateInput.addEventListener('change', validateForm);
@@ -424,7 +384,6 @@ document.addEventListener("DOMContentLoaded", function() {
             endDateInput.addEventListener('change', validateForm);
         }
         
-        // Update form when dates change to check 48-hour advance notice
         if (startDateInput) {
             startDateInput.addEventListener('change', checkAdvanceNotice);
         }
@@ -440,13 +399,11 @@ document.addEventListener("DOMContentLoaded", function() {
         const endHour = document.getElementById('endHour').value;
         const endMinute = document.getElementById('endMinute').value;
         
-        // Reset displays
         const vacationHours = StudentUtils.calculateVacationHours();
         document.getElementById('requestDuration').textContent = 'Please select dates';
         document.getElementById('workingDays').textContent = '0ff';
         document.getElementById('balanceAfterRequest').textContent = vacationHours.remainingHours + 'ff';
         
-        // Hide warnings
         document.getElementById('balanceWarning').style.display = 'none';
         document.getElementById('balanceError').style.display = 'none';
         
@@ -454,7 +411,6 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
         
-        // Create full datetime objects
         const start = new Date(startDate);
         const end = new Date(endDate);
         
@@ -472,36 +428,30 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
         
-        // Calculate working hours and weekend hours
         const result = StudentUtils.calculateWorkingHours(start, end);
         const totalHours = result.workingHours;
         const totalCalendarDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         
-        // Update display
         document.getElementById('requestDuration').textContent = `${totalCalendarDays} calendar day${totalCalendarDays !== 1 ? 's' : ''}`;
         document.getElementById('requestDuration').style.color = '#ffffff';
         document.getElementById('workingDays').textContent = `${totalHours}ff (${(totalHours / 8).toFixed(1)} days)`;
         
-        // Calculate balance after request
         const balanceAfter = vacationHours.remainingHours - totalHours;
         const balanceElement = document.getElementById('balanceAfterRequest');
         balanceElement.textContent = `${balanceAfter}ff (${(balanceAfter / 8).toFixed(1)} days)`;
         
-        // Update balance display colors and warnings
         if (balanceAfter < 0) {
             balanceElement.className = 'summary-value insufficient';
             document.getElementById('balanceError').style.display = 'block';
-        } else if (balanceAfter <= 24) { // Less than 3 days (24 hours)
+        } else if (balanceAfter <= 24) {
             balanceElement.className = 'summary-value warning';
             document.getElementById('balanceWarning').style.display = 'block';
         } else {
             balanceElement.className = 'summary-value good';
         }
         
-        // Update preview
         updateRequestPreview();
         
-        // Check advance notice
         checkAdvanceNotice();
     }
     
@@ -510,7 +460,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const startHour = document.getElementById('startHour').value;
         const startMinute = document.getElementById('startMinute').value;
         
-        // Remove existing advance notice warning
         const existingWarning = document.getElementById('advanceNoticeWarning');
         if (existingWarning) {
             existingWarning.remove();
@@ -525,7 +474,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const hoursDifference = (requestStart - now) / (1000 * 60 * 60);
         
         if (hoursDifference < 48) {
-            // Create advance notice warning
             const warningHtml = `
                 <div id="advanceNoticeWarning" class="alert alert-warning mt-3">
                     <i class="bi bi-exclamation-triangle me-2"></i>
@@ -535,12 +483,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 </div>
             `;
             
-            // Insert after the request summary card
             const summaryCard = document.querySelector('.col-lg-4 .card');
             if (summaryCard) {
                 summaryCard.insertAdjacentHTML('afterend', warningHtml);
             } else {
-                // Fallback: insert after the form container
                 const formContainer = document.querySelector('#newRequestSection .col-lg-8');
                 if (formContainer) {
                     formContainer.insertAdjacentHTML('afterend', warningHtml);
@@ -559,7 +505,6 @@ document.addEventListener("DOMContentLoaded", function() {
         
         const previewDiv = document.getElementById('requestPreview');
         
-        // Only proceed if the preview elements exist
         if (!previewDiv) {
             return;
         }
@@ -588,7 +533,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const reason = document.getElementById('requestReason').value;
         const submitBtn = document.querySelector('button[type="submit"]');
         
-        // Basic validation
         let isValid = true;
         
         if (!startDate) {
@@ -607,7 +551,6 @@ document.addEventListener("DOMContentLoaded", function() {
             endDateInput.classList.add('is-valid');
         }
         
-        // Reason is optional, just mark as valid if provided
         document.getElementById('requestReason').classList.remove('is-invalid');
         if (reason && reason.trim().length > 0) {
             document.getElementById('requestReason').classList.add('is-valid');
@@ -615,14 +558,12 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('requestReason').classList.remove('is-valid');
         }
         
-        // Enable/disable submit button
         submitBtn.disabled = !isValid;
         
         return isValid;
     }    async function handleRequestSubmission(e) {
         e.preventDefault();
         
-        // Validate form first
         if (!validateForm()) {
             StudentUtils.showNotification('Please fill in all required fields correctly', 'warning');
             return;
@@ -636,7 +577,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const endMinute = document.getElementById('endMinute').value;
         const reason = document.getElementById('requestReason').value;
         
-        // Create full datetime strings
         const startDateTime = `${startDate}T${startHour}:${startMinute}:00`;
         const endDateTime = `${endDate}T${endHour}:${endMinute}:00`;
         
@@ -648,7 +588,6 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
         
-        // Calculate working hours
         const result = StudentUtils.calculateWorkingHours(start, end);
         const workingHours = result.workingHours;
         
@@ -658,7 +597,6 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
         
-        // Check if it's a short notice request
         const now = new Date();
         const hoursDifference = (start - now) / (1000 * 60 * 60);
         const isShortNotice = hoursDifference < 48;
@@ -668,19 +606,16 @@ document.addEventListener("DOMContentLoaded", function() {
             confirmMessage += '\n\nNote: This is a short notice request (less than 48 hours in advance).';
         }
         
-        // Show confirmation dialog
         if (!confirm(confirmMessage)) {
             return;
         }
 
-        // Disable submit button to prevent double submission
         const submitButton = document.querySelector('button[type="submit"]');
         const originalText = submitButton.textContent;
         submitButton.disabled = true;
         submitButton.textContent = 'Submitting...';
         
         try {
-            // Create new request
             const newRequest = {
                 id: 'REQ' + String(requestsData.length + 1).padStart(3, '0'),
                 startDate: startDateTime,
@@ -693,10 +628,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 totalCalendarDays: Math.ceil((end - start) / (1000 * 60 * 60 * 24))
             };
             
-            // Use DataManager to add request and update data
             const apiResult = await DataManager.addRequest(newRequest);
             
-            // Reset form
             resetForm();
             
             let successMessage = 'Request submitted successfully!';
@@ -705,16 +638,10 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             StudentUtils.showNotification(successMessage, 'success');
             
-            // Redirect to requests page after a short delay
-            // setTimeout(() => {
-            //     window.location.href = 'index.php?route=/requests';
-            // }, 2000);
-            
         } catch (error) {
             console.error('Error submitting request:', error);
             StudentUtils.showNotification('Failed to submit request: ' + error.message, 'danger');
         } finally {
-            // Re-enable submit button
             submitButton.disabled = false;
             submitButton.textContent = originalText;
         }
@@ -723,28 +650,23 @@ document.addEventListener("DOMContentLoaded", function() {
     function resetForm() {
         newRequestForm.reset();
         
-        // Set minimum start date/time instead of clearing
         setMinimumStartDateTime();
         
-        // Reset end date and reason
         document.getElementById('endDate').value = '';
         document.getElementById('endHour').value = '17';
         document.getElementById('endMinute').value = '00';
         document.getElementById('requestReason').value = '';
         
-        // Reset validation classes
         document.querySelectorAll('.form-control').forEach(control => {
             control.classList.remove('is-valid', 'is-invalid');
         });
         
-        // Reset summary displays
         const vacationHours = StudentUtils.calculateVacationHours();
         document.getElementById('requestDuration').textContent = 'Please select dates';
         document.getElementById('workingDays').textContent = '0ff';
         document.getElementById('balanceAfterRequest').textContent = vacationHours.remainingHours + 'ff';
         document.getElementById('balanceAfterRequest').className = 'summary-value';
         
-        // Hide preview and warnings
         const requestPreview = document.getElementById('requestPreview');
         if (requestPreview) {
             requestPreview.style.display = 'none';
@@ -752,13 +674,11 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('balanceWarning').style.display = 'none';
         document.getElementById('balanceError').style.display = 'none';
         
-        // Remove advance notice warning
         const advanceWarning = document.getElementById('advanceNoticeWarning');
         if (advanceWarning) {
             advanceWarning.remove();
         }
         
-        // Enable submit button
         document.querySelector('button[type="submit"]').disabled = false;
     }
     
@@ -771,13 +691,11 @@ document.addEventListener("DOMContentLoaded", function() {
         const endMinute = document.getElementById('endMinute').value;
         const reason = document.getElementById('requestReason').value;
         
-        // Only require start and end dates for preview
         if (!startDate || !endDate) {
             StudentUtils.showNotification('Please select start and end dates to preview', 'info');
             return;
         }
         
-        // Use default values for missing time fields
         const defaultStartHour = startHour || '09';
         const defaultStartMinute = startMinute || '00';
         const defaultEndHour = endHour || '17';
@@ -796,7 +714,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         const vacationHours = StudentUtils.calculateVacationHours();
         
-        // Check advance notice
         const now = new Date();
         const hoursDifference = (start - now) / (1000 * 60 * 60);
         const isShortNotice = hoursDifference < 48;
@@ -861,26 +778,21 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>
         `;
         
-        // Remove existing modal if any
         const existingModal = document.getElementById('requestPreviewModal');
         if (existingModal) {
             existingModal.remove();
         }
         
-        // Add modal to body
         document.body.insertAdjacentHTML('beforeend', previewHtml);
         
-        // Show modal
         const modal = new bootstrap.Modal(document.getElementById('requestPreviewModal'));
         modal.show();
         
-        // Clean up modal after hiding
         document.getElementById('requestPreviewModal').addEventListener('hidden.bs.modal', function() {
             this.remove();
         });
     }
 
-    // Make functions globally available
     window.resetForm = resetForm;
     window.previewRequest = previewRequest;
 });
