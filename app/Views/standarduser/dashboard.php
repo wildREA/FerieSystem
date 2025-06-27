@@ -75,11 +75,6 @@ if (function_exists('getCurrentUserName')) {
                 <p class="page-subtitle" id="pageSubtitle">Welcome back, manage your vacation requests</p>
             </div>
             <div class="user-actions d-flex align-items-center" onclick="alert('Construction in progress 🚧')" >
-                <div class="me-3">
-                    <i class="bi bi-bell position-relative">
-                        <span class="notification-dot" id="notificationDot" style="display: none;"></span>
-                    </i>
-                </div>
                 <div class="d-flex align-items-center" onclick="alert('Construction in progress 🚧')">
                     <span  class="me-2" id="headerUserName"><?php 
                         if (function_exists('getCurrentUserName')) {

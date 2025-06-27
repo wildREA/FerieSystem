@@ -60,11 +60,6 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
                 <p class="page-subtitle" id="pageSubtitle">Submit a new vacation request</p>
             </div>
             <div class="user-actions d-flex align-items-center">
-                <div class="me-3">
-                    <i class="bi bi-bell position-relative">
-                        <span class="notification-dot" id="notificationDot" style="display: none;"></span>
-                    </i>
-                </div>
                 <div class="d-flex align-items-center">
                     <span class="me-2" id="headerUserName"><?= strtoupper(getCurrentUserName()) ?></span>
                     <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">

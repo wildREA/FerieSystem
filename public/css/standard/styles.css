@@ -1,3 +1,10 @@
+/* Dashboard container for layout structure */
+.dashboard-container {
+  position: relative;
+  min-height: 100vh;
+  background-color: #1a1f2c;
+}
+
 /* Custom styles for the dashboard */
 body {
   background-color: #1a1f2c;
@@ -120,6 +127,11 @@ body {
   margin-left: 280px;
   border-bottom: 1px solid #2c3142;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 280px;
+  z-index: 100;
 }
 
 .search-container {
@@ -264,6 +276,7 @@ body {
 /* Main content area */
 .main-content {
   margin-left: 280px;
+  margin-top: 70px;
   padding: 30px;
   min-height: calc(100vh - 70px);
   background-color: #1a1f2c;
@@ -678,6 +691,10 @@ body {
     margin-left: 70px;
   }
   
+  .top-header {
+    left: 70px;
+  }
+  
   .search-container {
     max-width: 200px;
   }
@@ -695,6 +712,7 @@ body {
 @media (max-width: 480px) {
   .main-content {
     padding: 15px;
+    margin-top: 60px;
   }
   
   .top-header {

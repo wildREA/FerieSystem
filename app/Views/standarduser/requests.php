@@ -36,7 +36,7 @@ function getStatusBadgeClass($status) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/css/standard/styles.css">
-    <link rel="stylesheet" href="/css/standard/student-styles.css">>
+    <link rel="stylesheet" href="/css/standard/student-styles.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -81,13 +81,6 @@ function getStatusBadgeClass($status) {
                 <p class="page-subtitle">View and track your vacation requests</p>
             </div>
             <div class="user-actions d-flex align-items-center">
-                <div class="me-3">
-                    <i class="bi bi-bell position-relative">
-                        <?php if ($pendingCount > 0): ?>
-                        <span class="notification-dot"></span>
-                        <?php endif; ?>
-                    </i>
-                </div>
                 <div class="d-flex align-items-center">
                     <span class="me-2"><?= strtoupper(htmlspecialchars($userName)) ?></span>
                     <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
