@@ -137,6 +137,27 @@ const StudentUtils = {
                 notification.remove();
             }
         }, 4000);
+    },
+
+    updateRequestsBadge() {
+        // Update notification badge in navigation
+        // This would typically fetch the current pending request count from the server
+        const badgeElement = document.querySelector('.notification-badge');
+        if (badgeElement) {
+            // For now, just hide it since we removed notification symbols
+            badgeElement.style.display = 'none';
+        }
+    },
+
+    formatDate(date) {
+        if (!(date instanceof Date)) {
+            date = new Date(date);
+        }
+        return date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
     }
 };
 
@@ -146,8 +167,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
     const requestReasonInput = document.getElementById('requestReason');
-
-    init();
 
     function init() {
         DataManager.init();
@@ -755,4 +774,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     window.resetForm = resetForm;
     window.previewRequest = previewRequest;
+    
+    // Initialize the application after all functions are defined
+    init();
 });
