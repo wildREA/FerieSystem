@@ -26,8 +26,8 @@ class RegKeys {
         // Delete all existing keys before generating a new one
         $this->deleteAllKeys();
         
-        // Generate a random key
-        $key = bin2hex(random_bytes(4)); // 8 characters long
+        // Generate a random key and convert to uppercase
+        $key = strtoupper(bin2hex(random_bytes(4))); // 8 characters long, uppercase
         
         // Store the key in the database
         $stmt = $this->db->prepare("INSERT INTO reg_keys (key_value) VALUES (:key)");
