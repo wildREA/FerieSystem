@@ -190,12 +190,6 @@ $routes['POST']['/api/verify-key'] = function() {
     return $auth->verifyRegistrationKey();
 };
 
-$routes['POST']['/api/verify-key/'] = function() {
-    require_once BASE_PATH . '/app/Controllers/AuthController.php';
-    $auth = new App\Controllers\AuthController();
-    return $auth->verifyRegistrationKey();
-};
-
 // Registration key retrieval for super users
 $routes['GET']['/api/reg-key'] = function() {
     require_once BASE_PATH . '/app/Controllers/RegKeysController.php';
@@ -203,20 +197,8 @@ $routes['GET']['/api/reg-key'] = function() {
     $controller->getKeyAPI();
 };
 
-$routes['GET']['/api/reg-key/'] = function() {
-    require_once BASE_PATH . '/app/Controllers/RegKeysController.php';
-    $controller = new App\Controllers\RegKeysController();
-    $controller->getKeyAPI();
-};
-
 // Registration key generation for super users
 $routes['POST']['/api/reg-key'] = function() {
-    require_once BASE_PATH . '/app/Controllers/RegKeysController.php';
-    $controller = new App\Controllers\RegKeysController();
-    $controller->generateKeyAPI();
-};
-
-$routes['POST']['/api/reg-key/'] = function() {
     require_once BASE_PATH . '/app/Controllers/RegKeysController.php';
     $controller = new App\Controllers\RegKeysController();
     $controller->generateKeyAPI();
