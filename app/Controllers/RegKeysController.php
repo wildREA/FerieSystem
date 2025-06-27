@@ -1,6 +1,6 @@
 <?php
 /**
- * Registration Keys API Handler
+ * Registration Keys API Controller
  * 
  * This file provides API wrapper methods for the RegKeys class that:
  * - Handle authentication and authorization
@@ -11,18 +11,18 @@
  * maintaining clean separation of concerns.
  */
 
-namespace App\Core;
+namespace App\Controllers;
 
-require_once __DIR__ . '/reg_keys.php';
-require_once __DIR__ . '/sessions.php';
+require_once __DIR__ . '/../Core/reg_keys.php';
+require_once __DIR__ . '/../Core/sessions.php';
 
-class RegKeysAPI {
+class RegKeysController {
     private $regKeys;
     private $sessionManager;
 
     public function __construct() {
-        $this->regKeys = new RegKeys();
-        // SessionManager is in the global namespace, not App\Core
+        $this->regKeys = new \App\Core\RegKeys();
+        // SessionManager is in the global namespace
         $this->sessionManager = new \SessionManager();
     }
 
