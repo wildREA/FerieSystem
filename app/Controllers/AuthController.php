@@ -541,4 +541,22 @@ class AuthController {
         error_log("ADMIN_SECRET not found in .env file");
         return 'SUPER_SECRET_ADMIN_2025'; // Fallback
     }
+
+    private function saveRegistrationKey($key) {
+        if (!$this->db) {
+            error_log("saveRegistrationKey: No database connection available");
+            return false;
+        }
+        
+        try {
+            $stmt = $this->db->prepare("
+                INSERT INTO reg_keys (key_value, created_at) 
+                VALUES (?, NOW())
+            ");
+            return $stmt->execute([$key]);
+        } catch (PDOException $e) {
+            error_log("Database error in saveRegistrationKey: " . $e->getMessage());
+            return false;
+        }
+    }
 }

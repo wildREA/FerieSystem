@@ -276,5 +276,11 @@ $routes['POST']['/api/verify-key/'] = function() {
     return $auth->verifyRegistrationKey();
 };
 
+$routes['POST']['/api/register-key'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->saveRegistrationKey();
+};
+
 // Return the routes array to be processed by the router
 return $routes;
