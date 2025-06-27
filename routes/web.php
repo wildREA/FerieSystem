@@ -196,43 +196,30 @@ $routes['POST']['/api/verify-key/'] = function() {
     return $auth->verifyRegistrationKey();
 };
 
-// Registration key for super users to generate and manage
-$routes['POST']['/api/generate-key'] = function() {
-    $sessionManager = getSessionManager();
-    $sessionManager->requireAuth('/auth');
-    $sessionManager->requireUserType(['super'], '/auth');
-    
+// Regostratopn ley retrieval for super users
+$routes['GET']['/api/reg-key'] = function() {
     require_once BASE_PATH . '/app/Core/reg_keys.php';
-    try {
-        $regKeys = new App\Core\RegKeys();
-        $key = $regKeys->generateKey();
-        
-        header('Content-Type: application/json');
-        echo json_encode(['success' => true, 'key' => $key]);
-    } catch (Exception $e) {
-        header('Content-Type: application/json');
-        http_response_code(500);
-        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-    }
+    $regKeys = new App\Core\RegKeys();
+    return $regKeys->getKey();
 };
 
-$routes['GET']['/api/get-key'] = function() {
-    $sessionManager = getSessionManager();
-    $sessionManager->requireAuth('/auth');
-    $sessionManager->requireUserType(['super'], '/auth');
-    
+$routes['GET']['/api/reg-key/'] = function() {
     require_once BASE_PATH . '/app/Core/reg_keys.php';
-    try {
-        $regKeys = new App\Core\RegKeys();
-        $key = $regKeys->getKey();
-        
-        header('Content-Type: application/json');
-        echo json_encode(['success' => true, 'key' => $key]);
-    } catch (Exception $e) {
-        header('Content-Type: application/json');
-        http_response_code(500);
-        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-    }
+    $regKeys = new App\Core\RegKeys();
+    return $regKeys->getKey();
+};
+
+// Registration key generation for super users
+$routes['POST']['/api/reg-key'] = function() {
+    require_once BASE_PATH . '/app/Core/reg_keys.php';
+    $regKeys = new App\Core\RegKeys();
+    return $regKeys->generateKey();
+};
+
+$routes['POST']['/api/reg-key/'] = function() {
+    require_once BASE_PATH . '/app/Core/reg_keys.php';
+    $regKeys = new App\Core\RegKeys();
+    return $regKeys->generateKey();
 };
 
 // Return the routes array to be processed by the router
