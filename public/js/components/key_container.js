@@ -16,7 +16,8 @@ class KeyContainer {
     init() {
         // Bind event listeners
         this.visibilityBtn.addEventListener('click', () => this.toggleVisibility());
-        // this.generateBtn.addEventListener('click', () => this.generateKey());
+        this.generateBtn.addEventListener('click', () => ());  // Unfinished (placeholder) line of code for key generation event listener
+        this.keyStatus.addEventListener('click', () => this.copyToClipboard());
 
         // Initial state
         // WAIT A BIT WITH BLUR, FINISH API FIRST - this.keyStatus.style.filter = 'blur(4px)'; // Start with blurred text
@@ -32,27 +33,6 @@ class KeyContainer {
             this.isVisible = false;
             console.log("Invisible state: " + this.isVisible);
             this.hideKey();
-        }
-    }
-
-    async getRegistrationKey() {
-        try {
-            const response = await fetch('/auth/reg-key');
-            if (!response.ok) {
-                throw new Error('Network response was not ok: ' + response.statusText);
-            }
-            const data = await response.json();
-            if (data.key) {
-                this.currentKey = data.key;
-                this.keyStatus.textContent = this.currentKey;
-            } else {
-                this.keyStatus.textContent = 'No key generated';
-                this.currentKey = '';
-            }
-        } catch (error) {
-            console.error('Error fetching registration key:', error);
-            this.keyStatus.textContent = 'Error fetching key';
-            this.currentKey = '';
         }
     }
 
