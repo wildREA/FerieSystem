@@ -190,5 +190,18 @@ $routes['POST']['/api/verify-key'] = function() {
     return $auth->verifyRegistrationKey();
 };
 
+$routes['POST']['/api/verify-key/'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->verifyRegistrationKey();
+};
+
+// Register key for super users
+$routes['POST']['/api/reg-key'] = function() {
+    require_once BASE_PATH . '/app/Controllers/AuthController.php';
+    $auth = new App\Controllers\AuthController();
+    return $auth->saveRegistrationKey();
+};
+
 // Return the routes array to be processed by the router
 return $routes;

@@ -1,5 +1,6 @@
 <?php
-
+// Ensures only one instance of the connection exists throughout your application.
+// This helps centralize and reuse the database connection, improving efficiency and maintainability.
 class Database {
     private static $instance = null;
     private $pdo;
