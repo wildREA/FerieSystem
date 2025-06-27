@@ -17,9 +17,9 @@ class KeyContainer {
         // Bind event listeners
         this.visibilityBtn.addEventListener('click', () => this.toggleVisibility());
         this.generateBtn.addEventListener('click', () => this.toggleVisibility());
-        
+
         // Initial state
-        // Later work after basic event listeners  <-- HERE
+        this.keyStatus.textContent = 'No key generated';
     }
 
     toggleVisibility() {
