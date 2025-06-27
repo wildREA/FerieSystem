@@ -16,10 +16,10 @@ class KeyContainer {
     init() {
         // Bind event listeners
         this.visibilityBtn.addEventListener('click', () => this.toggleVisibility());
-        this.generateBtn.addEventListener('click', () => this.generateKey());
+        // this.generateBtn.addEventListener('click', () => this.generateKey());
 
         // Initial state
-        this.keyStatus.style.filter = 'blur(4px)'; // Start with blurred text
+        // WAIT A BIT WITH BLUR, FINISH API FIRST - this.keyStatus.style.filter = 'blur(4px)'; // Start with blurred text
         this.visibilityIcon.className = 'bi bi-eye-slash-fill'; // Start with eye-slash icon
         this.visibilityIcon.style.color = 'red'; // Set initial color to red
         this.visibilityBtn.title = 'Show'; // Set initial tooltip
@@ -75,7 +75,7 @@ class KeyContainer {
 
     hideKey() {
         // Blur the keyStatus text
-        this.keyStatus.style.filter = 'blur(4px)';
+        // this.keyStatus.style.filter = 'blur(4px)';
 
         // Update visibility state
         this.isVisible = false;
