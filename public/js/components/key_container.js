@@ -7,6 +7,7 @@ class KeyContainer {
         this.keyContainer = document.querySelector('.key-container');
         this.keyDisplay = document.querySelector('.key-display');
         this.keyStatus = document.getElementById('key_status');
+        this.textWrapper = null; // Will be set after DOM manipulation
         this.visibilityBtn = document.getElementById('visibility');
         this.generateBtn = document.getElementById('generate_key');
         this.visibilityIcon = this.visibilityBtn.querySelector('i');
@@ -190,7 +191,12 @@ class KeyContainer {
     bindEvents() {
         this.visibilityBtn.addEventListener('click', () => this.toggleVisibility());
         this.generateBtn.addEventListener('click', () => this.generateNewKey());
-        this.keyStatus.addEventListener('click', () => this.copyToClipboard());
+        
+        // Get or create textWrapper and bind click event to it
+        this.textWrapper = this.keyStatus.querySelector('.textWrapper');
+        if (this.textWrapper) {
+            this.textWrapper.addEventListener('click', () => this.copyToClipboard());
+        }
     }
 
     /**
@@ -201,18 +207,6 @@ class KeyContainer {
         this.visibilityIcon.style.color = 'red';
         this.visibilityBtn.title = 'Show';
         this.keyStatus.style.filter = 'blur(4px)';
-        
-        // Set cursor pointer for clickable key status
-        this.keyStatus.style.cursor = 'pointer';
-        
-        // Add hover effect for better UX
-        this.keyStatus.addEventListener('mouseenter', () => {
-            this.keyStatus.style.opacity = '0.8';
-        });
-        
-        this.keyStatus.addEventListener('mouseleave', () => {
-            this.keyStatus.style.opacity = '1';
-        });
     }
 
     /**
@@ -220,7 +214,23 @@ class KeyContainer {
      */
     setKey(key) {
         this.currentKey = key;
-        this.keyStatus.textContent = key || 'No key generated';
+        
+        // Update textWrapper content, create it if it doesn't exist
+        if (!this.textWrapper) {
+            this.textWrapper = this.keyStatus.querySelector('.textWrapper');
+            if (!this.textWrapper) {
+                // Create textWrapper if it doesn't exist
+                this.textWrapper = document.createElement('span');
+                this.textWrapper.className = 'textWrapper';
+                this.keyStatus.innerHTML = '';
+                this.keyStatus.appendChild(this.textWrapper);
+                
+                // Bind click event to newly created textWrapper
+                this.textWrapper.addEventListener('click', () => this.copyToClipboard());
+            }
+        }
+        
+        this.textWrapper.textContent = key || 'No key generated';
     }
 
     /**
@@ -234,10 +244,6 @@ class KeyContainer {
      * Show the registration key
      */
     showKey() {
-        if (!this.currentKey) {
-            return;
-        }
-
         this.keyStatus.style.filter = 'none';
         this.isVisible = true;
         this.updateVisibilityIcon('bi bi-eye', 'white', 'Hide');
@@ -266,7 +272,8 @@ class KeyContainer {
      */
     async generateNewKey() {
         try {
-            this.setLoadingState(true);
+            // Hide the key before generating a new one
+            this.hideKey();
             
             const response = await fetch('/api/reg-key', {
                 method: 'POST',
@@ -288,21 +295,9 @@ class KeyContainer {
             }
         } catch (error) {
             console.error('Error generating new key:', error);
-            this.keyStatus.textContent = 'Error generating key';
-        } finally {
-            this.setLoadingState(false);
-        }
-    }
-
-    /**
-     * Set loading state for the generate button
-     */
-    setLoadingState(isLoading) {
-        if (isLoading) {
-            this.keyStatus.textContent = 'Generating...';
-            this.generateBtn.disabled = true;
-        } else {
-            this.generateBtn.disabled = false;
+            if (this.textWrapper) {
+                this.textWrapper.textContent = 'Error generating key';
+            }
         }
     }
 

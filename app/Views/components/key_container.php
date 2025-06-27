@@ -6,7 +6,7 @@
         <div class="key-section">
             <div class="key-info">
                 <div class="key-label">Registration Key</div>
-                <div class="key-status" id="key_status">No key generated</div>
+                <div class="key-status" id="key_status"><span class="textWrapper">No key generated</span></div>
             </div>
         </div>
         <div class="key-controls">

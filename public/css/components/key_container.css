@@ -51,6 +51,15 @@
     line-height: 1.2;
 }
 
+.key-status .textWrapper {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.key-status .textWrapper:hover {
+    opacity: 0.8;
+}
+
 .key-controls {
     display: flex;
     gap: 4px;
