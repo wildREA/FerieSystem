@@ -42,7 +42,7 @@
 }
 
 .toast.warning {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  background: linear-gradient(135deg, #ecc050 0%, #dfab29 100%);
 }
 
 .toast-icon {

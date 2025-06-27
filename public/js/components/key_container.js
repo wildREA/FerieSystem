@@ -176,11 +176,18 @@ class KeyContainer {
    * Hide the registration key
    */
   hideKey() {
-    if (!this.currentKey) return;
+    if (!this.currentKey) { this.showCannotHideNotification(); return; }
     
     this.keyStatus.style.filter = "blur(4px)";
     this.isVisible = false;
     this.updateVisibilityIcon("bi bi-eye-slash-fill", "red", "Show");
+  }
+
+  /**
+   * Show notification when trying to hide without a key
+   */
+  showCannotHideNotification() {
+    this.showToast("Cannot hide without a key", "error");
   }
 
   /**
