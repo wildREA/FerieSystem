@@ -1,12 +1,12 @@
 // Discord-style Key Container Component JavaScript
 class KeyContainer {
     constructor() {
-        this.visibilityBtn = document.getElementById('visibility');
-        this.generateBtn = document.getElementById('generate_key');
-        this.keyStatus = document.getElementById('key_status');
         this.keyContainer = document.querySelector('.key-container');
         this.keyDisplay = document.querySelector('.key-display');
-        this.keyCode = document.querySelector('.key-code');
+        this.keyStatus = document.getElementById('key_status');
+        this.visibilityBtn = document.getElementById('visibility');
+        this.generateBtn = document.getElementById('generate_key');
+        this.visibilityIcon = this.visibilityBtn.querySelector('i');
         this.isVisible = false;
         this.currentKey = '';
         
@@ -16,7 +16,7 @@ class KeyContainer {
     init() {
         // Bind event listeners
         this.visibilityBtn.addEventListener('click', () => this.toggleVisibility());
-        this.generateBtn.addEventListener('click', () => this.toggleVisibility());
+        this.generateBtn.addEventListener('click', () => this.generateKey());
 
         // Initial state
         this.keyStatus.textContent = 'No key generated';
@@ -24,14 +24,27 @@ class KeyContainer {
 
     toggleVisibility() {
         if (!this.isVisible) {
-            console.log("Visible (state: " + this.isVisible + ")");
             this.isVisible = true;
+            console.log("Visible state: " + this.isVisible);
+            // Change icon to eye when visible
+            this.visibilityIcon.className = 'bi bi-eye';
+            // Change title to "Hide" when visible
+            this.visibilityBtn.title = 'Hide';
         } else {
-            console.log("Invisible (state: " + this.isVisible + ")");
             this.isVisible = false;
+            console.log("Invisible state: " + this.isVisible);
+            // Change icon to eye-slash-fill when hidden
+            this.visibilityIcon.className = 'bi bi-eye-slash-fill';
+            // Change title to "Show" when hidden
+            this.visibilityBtn.title = 'Show';
         }
     }
-    
+
+    generateKey() {
+        this.currentKey = Math.random().toString(36).substring(2, 10).toUpperCase();
+        this.keyStatus.textContent = this.currentKey;
+    }
+
     async copyToClipboard() {
         if (!this.currentKey) return;
         

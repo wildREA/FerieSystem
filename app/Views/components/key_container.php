@@ -11,11 +11,11 @@
             </div>
         </div>
         <div class="key-controls">
-            <button id="visibility" class="btn-key-control" title="Show/Hide Key" onclick="toggleVisibility()">
-                <i class="bi bi-eye"></i>
+            <button id="visibility" class="btn-key-control" title="Show">
+                <i class="bi bi-eye-slash-fill"></i>
             </button>
             <button id="generate_key" class="btn-key-control" title="Generate New Key">
-                <i class="bi bi-plus"></i>
+                <i class="bi bi-arrow-clockwise"></i>
             </button>
         </div>
     </div>
