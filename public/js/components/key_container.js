@@ -19,38 +19,40 @@ class KeyContainer {
         this.generateBtn.addEventListener('click', () => this.generateKey());
 
         // Initial state
-        this.keyStatus.textContent = 'No key generated';
+        this.keyStatus.style.filter = 'blur(4px)'; // Start with blurred text
+        this.visibilityIcon.className = 'bi bi-eye-slash-fill'; // Start with eye-slash icon
+        this.visibilityIcon.style.color = 'red'; // Set initial color to red
+        this.visibilityBtn.title = 'Show'; // Set initial tooltip
     }
 
     toggleVisibility() {
         if (!this.isVisible) {
             this.showKey();
+        } else {
             this.isVisible = false;
             console.log("Invisible state: " + this.isVisible);
             this.hideKey();
         }
     }
 
-    async generateKey() {
-        this.currentKey = Math.random().toString(36).substring(2, 10).toUpperCase();
-        this.keyStatus.textContent = this.currentKey;
-
-        // Send the registration key to the server
+    async getRegistrationKey() {
         try {
-            const response = await fetch('/api/reg-key', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ key: this.currentKey })
-            });
-            if (response.ok) {
-                this.showToast('Key saved to database!', 'success');
+            const response = await fetch('/auth/reg-key');
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.statusText);
+            }
+            const data = await response.json();
+            if (data.key) {
+                this.currentKey = data.key;
+                this.keyStatus.textContent = this.currentKey;
             } else {
-                this.showToast('Failed to save key.', 'error');
+                this.keyStatus.textContent = 'No key generated';
+                this.currentKey = '';
             }
         } catch (error) {
-            this.showToast('Error saving key.', 'error');
+            console.error('Error fetching registration key:', error);
+            this.keyStatus.textContent = 'Error fetching key';
+            this.currentKey = '';
         }
     }
 
@@ -64,7 +66,6 @@ class KeyContainer {
         this.keyStatus.style.filter = 'none';
         
         // Show the key in the keyStatus text
-        this.keyStatus.textContent = this.currentKey;
         this.isVisible = true;
         console.log("Visible state: " + this.isVisible);
         this.visibilityIcon.className = 'bi bi-eye';

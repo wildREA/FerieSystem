@@ -542,7 +542,7 @@ class AuthController {
         return 'SUPER_SECRET_ADMIN_2025'; // Fallback
     }
 
-    private function saveRegistrationKey($key) {
+    public function saveRegistrationKey($key) {
         if (!$this->db) {
             error_log("saveRegistrationKey: No database connection available");
             return false;
