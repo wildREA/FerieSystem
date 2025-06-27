@@ -22,7 +22,18 @@ class KeyContainer {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
-            const data = await response.json();
+            // Get the raw response text first to see what we're actually receiving
+            const responseText = await response.text();
+            console.log('Raw response:', responseText);
+            
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (jsonError) {
+                console.error('JSON parse error:', jsonError);
+                console.error('Response text:', responseText);
+                throw new Error('Invalid JSON response from server');
+            }
             
             if (data.success && data.key) {
                 this.currentKey = data.key;
@@ -108,7 +119,18 @@ class KeyContainer {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
-            const data = await response.json();
+            // Get the raw response text first to see what we're actually receiving
+            const responseText = await response.text();
+            console.log('Raw response:', responseText);
+            
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (jsonError) {
+                console.error('JSON parse error:', jsonError);
+                console.error('Response text:', responseText);
+                throw new Error('Invalid JSON response from server');
+            }
 
             if (data.success && data.key) {
                 this.currentKey = data.key;

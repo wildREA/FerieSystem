@@ -22,6 +22,7 @@ class RegKeysAPI {
 
     public function __construct() {
         $this->regKeys = new RegKeys();
+        // SessionManager is in the global namespace, not App\Core
         $this->sessionManager = new \SessionManager();
     }
 

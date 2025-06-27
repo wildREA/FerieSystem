@@ -4,11 +4,12 @@
 
 namespace App\Core;
 use App\Controllers\AuthController;
-use App\Core\Database;
 use Exception;
 
 // Ensure the database connection is established
 require_once __DIR__ . '/connection.php';
+// Ensure the Database class is included
+require_once __DIR__ . '/Database.php';
 // Ensure the AuthController is included for user authentication
 require_once __DIR__ . '/../Controllers/AuthController.php';
 
@@ -17,7 +18,7 @@ class RegKeys {
     private $authController;
 
     public function __construct() {
-        $this->db = Database::getInstance()->getConnection();
+        $this->db = \Database::getInstance()->getConnection();
         $this->authController = new AuthController();
     }
 
