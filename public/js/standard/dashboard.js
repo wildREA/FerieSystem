@@ -1,57 +1,3 @@
-// Dashboard page specific functionality
-
-// Student data and utility functions for dashboard
-const studentData = {
-    id: "STU001",
-    name: "Emma Nielsen",
-    email: "emma.nielsen@student.dk",
-    course: "Computer Science",
-    year: 3,
-    totalVacationHours: 200
-};
-
-// Mock requests data
-const requestsData = [
-    {
-        id: "REQ001",
-        startDate: "2025-06-15T09:00:00",
-        endDate: "2025-06-20T17:00:00",
-        reason: "Family vacation",
-        status: "pending",
-        submitDate: "2025-06-10T10:15:00",
-        hours: 40,
-        isShortNotice: false
-    },
-    {
-        id: "REQ002",
-        startDate: "2025-05-20T09:00:00",
-        endDate: "2025-05-23T17:00:00",
-        reason: "Medical appointment",
-        status: "approved",
-        submitDate: "2025-05-15T14:20:00",
-        hours: 32
-    },
-    {
-        id: "REQ003",
-        startDate: "2025-03-10T09:00:00",
-        endDate: "2025-03-14T17:00:00",
-        reason: "Spring break",
-        status: "approved",
-        submitDate: "2025-03-01T09:45:00",
-        hours: 40
-    },
-    {
-        id: "REQ004",
-        startDate: "2025-07-01T09:00:00",
-        endDate: "2025-07-08T17:00:00",
-        reason: "Summer break",
-        status: "denied",
-        submitDate: "2025-06-05T09:45:00",
-        hours: 56,
-        denyReason: "Overlaps with mandatory courses"
-    }
-];
-
 // Utility functions for dashboard
 const StudentUtils = {
     calculateVacationHours() {
@@ -90,88 +36,16 @@ const StudentUtils = {
 };
 
 document.addEventListener("DOMContentLoaded", function() {
-    
     // Initialize dashboard
     init();
 
     function init() {
-        updateDashboardStats();
         renderRecentRequests();
-        updateProgressBars();
-        setupBalanceModal();
         updateStatCardBorderColor();
         StudentUtils.updateRequestsBadge();
     }
 
-    function setupBalanceModal() {
-        // Update modal when it's shown
-        const balanceModal = document.getElementById('balanceModal');
-        if (balanceModal) {
-            balanceModal.addEventListener('show.bs.modal', function() {
-                renderModalBalanceHistory();
-            });
-        }
-    }
-
-    function renderModalBalanceHistory() {
-        // DISABLED: Balance history is now hardcoded in HTML
-        // const modalBalanceHistoryContainer = document.getElementById('modalBalanceHistory');
-        
-        // if (modalBalanceHistoryContainer) {
-        //     modalBalanceHistoryContainer.innerHTML = balanceHistory.map(entry => `
-        //         <div class="balance-history-item">
-        //             <div class="history-info">
-        //                 <div class="history-date">${StudentUtils.formatDate(entry.date)}</div>
-        //                 <div class="history-description">${entry.description}</div>
-        //             </div>
-        //             <div class="history-amount ${entry.amount > 0 ? 'positive' : 'negative'}">
-        //                 ${entry.amount > 0 ? '+' : ''}${entry.amount}ff (${Math.round(Math.abs(entry.amount) / 8)} day${Math.round(Math.abs(entry.amount) / 8) !== 1 ? 's' : ''})
-        //             </div>
-        //         </div>
-        //     `).join('');
-        // }
-    }
-
-    function updateDashboardStats() {
-        // DISABLED: Values are now hardcoded in HTML
-        // Get accurate vacation hour calculations
-        // const vacationHours = StudentUtils.calculateVacationHours();
-        
-        // Helper function to safely update element
-        // function safeUpdate(id, value) {
-        //     const element = document.getElementById(id);
-        //     if (element) {
-        //         element.textContent = value;
-        //     }
-        // }
-
-        // safeUpdate('totalBalance', `${vacationHours.totalHours}ff`);
-        // safeUpdate('pendingRequests', `${vacationHours.pendingHours}ff`);
-        // safeUpdate('remainingDays', `${vacationHours.remainingHours}ff`);
-        // safeUpdate('requestsBadge', requestsData.filter(r => r.status === 'pending').length);
-    }
-
-    function updateProgressBars() {
-        // DISABLED: Progress bars and values are now hardcoded in HTML
-        // Get accurate vacation hour calculations
-        // const vacationHours = StudentUtils.calculateVacationHours();
-        // const totalHours = vacationHours.totalHours;
-        // const usedPercent = (vacationHours.usedHours / totalHours) * 100;
-        // const pendingPercent = (vacationHours.pendingHours / totalHours) * 100;
-
-        // const usedBar = document.getElementById('usedProgressBar');
-        // const pendingBar = document.getElementById('pendingProgressBar');
-
-        // if (usedBar) {
-        //     usedBar.style.width = usedPercent + '%';
-        //     usedBar.textContent = `Used: ${vacationHours.usedHours}ff`;
-        // }
-        
-        // if (pendingBar) {
-        //     pendingBar.style.width = pendingPercent + '%';
-        //     pendingBar.textContent = `Pending: ${vacationHours.pendingHours}ff`;
-        // }
-    }
+ 
 
     function renderRecentRequests() {
         const recentRequestsList = document.getElementById('recentRequestsList');

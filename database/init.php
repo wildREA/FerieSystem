@@ -6,6 +6,7 @@ $sqlFiles = [
     'requests.sql',
     'reg_keys.sql',
     'ff_balance.sql',
+    'transactions.sql',
 ];
 
 try {

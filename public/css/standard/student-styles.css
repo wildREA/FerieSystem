@@ -321,15 +321,15 @@ textarea.form-control {
 }
 
 .btn-warning {
-    background-color: #ffc107;
-    border-color: #ffc107;
-    color: #212529;
+    background: transparent !important;
+    border: 2px solid #ffc107 !important;
+    color: #ffc107 !important;
 }
 
 .btn-warning:hover {
-    background-color: #e0a800;
-    border-color: #d39e00;
-    color: #212529;
+    background: transparent !important;
+    border-color: #e0a800 !important;
+    color: #e0a800 !important;
 }
 
 .btn-outline-primary {
@@ -669,6 +669,15 @@ textarea.form-control {
 .preview-detail strong {
     color: #a0a7b5;
     margin-right: 10px;
+}
+
+/* Fix black text in modal and dashboard */
+.modal-content.bg-dark .text-muted,
+.modal-content.bg-dark .small,
+.modal-content.bg-dark p,
+.balance-history-item .history-date,
+.balance-history-item .history-description {
+    color: #a0a7b5 !important;
 }
 
 /* Form submission states */

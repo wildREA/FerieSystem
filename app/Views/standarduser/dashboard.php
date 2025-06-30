@@ -1,6 +1,13 @@
 <?php
 // Load helper functions
 require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
+require_once dirname(__DIR__, 2) . '/Controllers/DashboardController.php';
+
+// Instantiate the controller and get data
+$dashboardController = new App\Controllers\DashboardController();
+$userId = $_SESSION['user_id']; // Assuming user ID is in session
+$balanceData = $dashboardController->getBalanceData($userId);
+$transactionHistory = $dashboardController->getTransactionHistory($userId);
 ?>
 <?php
 // Test if helper functions work
@@ -99,14 +106,15 @@ if (function_exists('getCurrentUserName')) {
                     <div class="col-auto mb-3">
                         <div class="stat-card blue clickable" id="balanceCard" data-bs-toggle="modal" data-bs-target="#balanceModal">
                             <div>
-                                <div class="value">128 timer 30 minutter</div>
-                                <div class="label">Total Allocated <small>(Click for details)</small></div>
+                                <div class="value"><?= htmlspecialchars($balanceData['currentBalance']) ?> timer</div>
+                                <div class="label">Vacation Balance <small>(Click for details)</small></div>
                             </div>
                             <div class="icon">
-                                <i class="bi bi-calendar-check"></i>
+                                <i class="bi bi-wallet2"></i>
                             </div>
                         </div>
                     </div>
+                </div>
                 </div>
 
                 <!-- Recent Requests -->
@@ -138,7 +146,7 @@ if (function_exists('getCurrentUserName')) {
                                 </a>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <a href="<?= url('/requests') ?>" class="btn btn-warning w-100">  <!-- MAKE WARNING BUTTON BETTER STYLING IN NEW CSS FILE WITH STYLES ON DISCORD -->>
+                                <a href="<?= url('/requests') ?>" class="btn btn-warning w-100">
                                     <i class="bi bi-list-ul me-2"></i>
                                     My Requests
                                 </a>
@@ -162,53 +170,54 @@ if (function_exists('getCurrentUserName')) {
                 </div>
                 <div class="modal-body">
                     <div class="row">
+                        <!-- Usage History / Transaction History -->
                         <div class="col-md-8">
                             <div class="card">
                                 <div class="card-header">
                                     <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Usage History</h6>
                                 </div>
                                 <div class="card-body">
+                                    <!-- Current Balance Summary -->
+                                    <div class="row mb-4">
+                                        <div class="col-6">
+                                            <div class="mb-2 text-muted small">Total Allocated</div>
+                                            <div class="h5">₣<?= htmlspecialchars($balanceData['totalAllocated']) ?></div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="mb-2 text-muted small">Total Used</div>
+                                            <div class="h5">₣<?= htmlspecialchars($balanceData['totalUsed']) ?></div>
+                                        </div>
+                                        <div class="col-6 mt-3">
+                                            <div class="mb-2 text-muted small">Pending Requests</div>
+                                            <div class="h5">₣<?= htmlspecialchars($balanceData['pendingHours']) ?></div>
+                                        </div>
+                                        <div class="col-6 mt-3">
+                                            <div class="mb-2 text-muted small fw-bold">Current Available Balance</div>
+                                            <div class="h5 fw-bold">₣<?= htmlspecialchars($balanceData['currentBalance']) ?></div>
+                                        </div>
+                                    </div>
+                                    <h6 class="mb-3">Transaction History</h6>
+                                    <!-- Transaction History (newest first) -->
                                     <div id="modalBalanceHistory">
-                                        <!-- Current Balance Summary -->
-                                        
-
-                                        <h6 class="mb-3">Transaction History</h6>
-                                        
-                                        <!-- Transaction History (newest first) -->
-                                        <div class="balance-history-item">
-                                            <div class="history-info">
-                                                <div class="history-date">May 20, 2025</div>
-                                                <div class="history-description">Medical appointment (Approved)</div>
+                                        <?php foreach ($transactionHistory as $transaction) : ?>
+                                            <div class="balance-history-item d-flex justify-content-between align-items-center py-2 border-bottom">
+                                                <div class="history-info">
+                                                    <div class="history-date small text-muted"><?= htmlspecialchars($transaction['date']) ?></div>
+                                                    <div class="history-description"><?= htmlspecialchars($transaction['description']) ?></div>
+                                                </div>
+                                                <div class="history-amount <?= $transaction['amount'] > 0 ? 'positive text-success' : 'negative text-danger' ?>">
+                                                    <?= $transaction['amount'] > 0 ? '+' : '' ?><?= htmlspecialchars($transaction['amount']) ?>ff
+                                                </div>
                                             </div>
-                                            <div class="history-amount negative">
-                                                -32ff (4 days)
-                                            </div>
-                                        </div>
-
-                                        <div class="balance-history-item">
-                                            <div class="history-info">
-                                                <div class="history-date">Mar 10, 2025</div>
-                                                <div class="history-description">Spring break (Approved)</div>
-                                            </div>
-                                            <div class="history-amount negative">
-                                                -40ff (5 days)
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="balance-history-item">
-                                            <div class="history-info">
-                                                <div class="history-date">Sep 1, 2024</div>
-                                                <div class="history-description">Annual vacation allocation</div>
-                                            </div>
-                                            <div class="history-amount positive">
-                                                +200ff (25 days)
-                                            </div>
-                                        </div>
+                                        <?php endforeach; ?>
+                                        <?php if (empty($transactionHistory)) : ?>
+                                            <div class="text-muted small">No transactions found.</div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
+                        <!-- Balance Information -->
                         <div class="col-md-4">
                             <div class="card">
                                 <div class="card-header">
@@ -242,5 +251,6 @@ if (function_exists('getCurrentUserName')) {
             </div>
         </div>
     </div>
+
 </body>
 </html>
