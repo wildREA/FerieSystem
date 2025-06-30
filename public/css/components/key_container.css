@@ -96,11 +96,75 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .key-container {
+        /* Keep absolute positioning to stay at bottom of sidebar */
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
         width: 100%;
-        position: relative;
-        bottom: auto;
-        left: auto;
-        border-top: none;
-        border-bottom: 1px solid #2c3142;
+        /* Reduce padding for smaller sidebar */
+        padding: 4px;
+    }
+    
+    .key-display {
+        padding: 2px 6px;
+        flex-direction: column;
+        gap: 4px;
+        align-items: stretch;
+    }
+    
+    .key-section {
+        justify-content: center;
+    }
+    
+    .key-info {
+        text-align: center;
+    }
+    
+    .key-label {
+        font-size: 10px;
+        margin-bottom: 1px;
+    }
+    
+    .key-status {
+        font-size: 12px;
+        word-break: break-all;
+    }
+    
+    .key-controls {
+        justify-content: center;
+        gap: 6px;
+    }
+    
+    .btn-key-control {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+    }
+}
+
+/* Extra small screens - stack vertically */
+@media (max-width: 480px) {
+    .key-container {
+        padding: 3px;
+    }
+    
+    .key-display {
+        padding: 2px 4px;
+        gap: 2px;
+    }
+    
+    .key-label {
+        font-size: 9px;
+    }
+    
+    .key-status {
+        font-size: 10px;
+    }
+    
+    .btn-key-control {
+        width: 18px;
+        height: 18px;
+        font-size: 9px;
     }
 }
