@@ -191,5 +191,12 @@ $routes['POST']['/api/reg-key'] = function() {
     $controller->generateKeyAPI();
 };
 
+// Balance API for students
+$routes['GET']['/api/balance'] = function() {
+    require_once BASE_PATH . '/app/Controllers/DashboardController.php';
+    $controller = new App\Controllers\DashboardController();
+    $controller->getBalanceAPI();
+};
+
 // Return the routes array to be processed by the router
 return $routes;

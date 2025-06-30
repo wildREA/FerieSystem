@@ -112,4 +112,36 @@ class DashboardController {
         $stmt->execute([$userId]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+    
+    public function getBalanceAPI() {
+        header('Content-Type: application/json');
+        
+        try {
+            if (!$this->sessionManager->isAuthenticated()) {
+                http_response_code(401);
+                echo json_encode(['error' => 'User not authenticated']);
+                return;
+            }
+            
+            $userType = $this->sessionManager->getUserType();
+            if ($userType !== 'standard') {
+                http_response_code(403);
+                echo json_encode(['error' => 'Only students can access balance data']);
+                return;
+            }
+            
+            $userId = $this->sessionManager->getUserId();
+            $balanceData = $this->getBalanceData($userId);
+            
+            echo json_encode([
+                'success' => true,
+                'balance' => $balanceData
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log("Error in getBalanceAPI: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['error' => 'Internal server error']);
+        }
+    }
 }

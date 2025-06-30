@@ -1,11 +1,5 @@
-const studentData = {
-    id: "STU001",
-    name: "Emma Nielsen",
-    email: "emma.nielsen@student.dk",
-    course: "Computer Science",
-    year: 3,
-    totalVacationHours: 200
-};
+// New Request page functionality
+// Removed mock data - now fetches real data from API
 
 const DataManager = {
     init() {
@@ -58,17 +52,46 @@ const DataManager = {
 };
 
 const StudentUtils = {
-    calculateVacationHours() {
-        // This would need to be fetched from server in a real implementation
-        const usedHours = 0; // Placeholder
-        const pendingHours = 0; // Placeholder
-        const remainingHours = studentData.totalVacationHours - usedHours;
+    currentBalanceData: null,
+
+    async fetchBalanceData() {
+        try {
+            const response = await fetch('/api/balance');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            if (data.success && data.balance) {
+                this.currentBalanceData = data.balance;
+                return data.balance;
+            } else {
+                throw new Error('Invalid balance data received');
+            }
+        } catch (error) {
+            console.error('Error fetching balance data:', error);
+            // Return default fallback data
+            return {
+                totalAllocated: 200,
+                totalUsed: 0,
+                currentBalance: 200,
+                pendingHours: 0
+            };
+        }
+    },
+
+    async calculateVacationHours() {
+        if (!this.currentBalanceData) {
+            await this.fetchBalanceData();
+        }
+        
+        const balance = this.currentBalanceData;
         
         return {
-            totalHours: studentData.totalVacationHours,
-            usedHours: usedHours,
-            pendingHours: pendingHours,
-            remainingHours: remainingHours
+            totalHours: balance.totalAllocated,
+            usedHours: Math.abs(balance.totalUsed), // totalUsed is negative, make it positive for display
+            pendingHours: balance.pendingHours,
+            remainingHours: balance.currentBalance
         };
     },
 
@@ -78,7 +101,7 @@ const StudentUtils = {
         
         const workingStartHour = 8;
         const workingEndHour = 17;
-        const maxDailyHours = workingEndHour - workingStartHour;
+        const maxDailyHours = workingEndHour - workingStartHour; // 9 hours per day
         
         let totalWorkingHours = 0;
         const current = new Date(start);
@@ -86,6 +109,7 @@ const StudentUtils = {
         while (current < end) {
             const dayOfWeek = current.getDay();
             
+            // Skip weekends (Sunday = 0, Saturday = 6)
             if (dayOfWeek !== 0 && dayOfWeek !== 6) {
                 let dayStart, dayEnd;
                 
@@ -113,10 +137,12 @@ const StudentUtils = {
             current.setHours(0, 0, 0, 0);
         }
         
-        totalWorkingHours = Math.round(totalWorkingHours * 10) / 10;
+        // Round to 2 decimal places for better precision
+        totalWorkingHours = Math.round(totalWorkingHours * 100) / 100;
         
+        // Don't force a minimum - if it's 0, it should be 0
         return { 
-            workingHours: Math.max(0.1, totalWorkingHours)
+            workingHours: Math.max(0, totalWorkingHours)
         };
     },
 
@@ -157,7 +183,31 @@ const StudentUtils = {
             month: '2-digit',
             year: 'numeric'
         });
-    }
+    },
+
+    formatHoursToDays(hours) {
+        if (hours === 0) return '0ff (0 days)';
+        
+        const days = hours / 8;
+        
+        // For very small values (less than 1 hour), just show hours
+        if (hours < 1) {
+            return `${hours.toFixed(2)}ff (${Math.round(hours * 60)} minutes)`;
+        }
+        
+        // For values less than 4 hours, show with 2 decimal places for hours
+        if (hours < 4) {
+            return `${hours.toFixed(2)}ff (${days.toFixed(2)} days)`;
+        }
+        
+        // For normal values, show 1 decimal place for hours and days
+        if (days < 1) {
+            return `${hours.toFixed(1)}ff (${days.toFixed(2)} days)`;
+        }
+        
+        // For full days or more, show appropriate precision
+        return `${hours.toFixed(1)}ff (${days.toFixed(1)} days)`;
+    },
 };
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -167,26 +217,31 @@ document.addEventListener("DOMContentLoaded", function() {
     const endDateInput = document.getElementById('endDate');
     const requestReasonInput = document.getElementById('requestReason');
 
-    function init() {
+    async function init() {
         DataManager.init();
-        updateBalanceDisplay();
+        await updateBalanceDisplay();
         setupEventListeners();
         setMinimumStartDateTime(); // This will call updateEndTimeFromStart() at the end
         StudentUtils.updateRequestsBadge();
     }
 
-    function updateBalanceDisplay() {
-        const vacationHours = StudentUtils.calculateVacationHours();
-        
-        function safeUpdate(id, value) {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
+    async function updateBalanceDisplay() {
+        try {
+            const vacationHours = await StudentUtils.calculateVacationHours();
+            
+            function safeUpdate(id, value) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                }
             }
-        }
 
-        safeUpdate('currentBalance', `${vacationHours.remainingHours}ff (${(vacationHours.remainingHours / 8).toFixed(1)} days)`);
-        safeUpdate('balanceAfterRequest', `${vacationHours.remainingHours}ff`);
+            safeUpdate('currentBalance', StudentUtils.formatHoursToDays(vacationHours.remainingHours));
+            safeUpdate('balanceAfterRequest', `${vacationHours.remainingHours}ff`);
+        } catch (error) {
+            console.error('Error updating balance display:', error);
+            StudentUtils.showNotification('Error loading balance data', 'warning');
+        }
     }
 
     function setMinimumStartDateTime() {
@@ -370,7 +425,7 @@ document.addEventListener("DOMContentLoaded", function() {
         safeAddListener('startMinute', 'change', checkAdvanceNotice);
     }
 
-    function calculateRequestDuration() {
+    async function calculateRequestDuration() {
         const startDate = startDateInput.value;
         const endDate = endDateInput.value;
         const startHour = document.getElementById('startHour').value;
@@ -378,60 +433,62 @@ document.addEventListener("DOMContentLoaded", function() {
         const endHour = document.getElementById('endHour').value;
         const endMinute = document.getElementById('endMinute').value;
         
-        const vacationHours = StudentUtils.calculateVacationHours();
-        document.getElementById('requestDuration').textContent = 'Please select dates';
-        document.getElementById('workingDays').textContent = '0ff';
-        document.getElementById('balanceAfterRequest').textContent = vacationHours.remainingHours + 'ff';
-        
-        document.getElementById('balanceWarning').style.display = 'none';
-        document.getElementById('balanceError').style.display = 'none';
-        
-        if (!startDate || !endDate) {
-            return;
+        try {
+            const vacationHours = await StudentUtils.calculateVacationHours();
+            document.getElementById('requestDuration').textContent = 'Please select dates';
+            document.getElementById('workingDays').textContent = '0ff';
+            document.getElementById('balanceAfterRequest').textContent = vacationHours.remainingHours + 'ff';
+            
+            document.getElementById('balanceWarning').style.display = 'none';
+            document.getElementById('balanceError').style.display = 'none';
+            
+            if (!startDate || !endDate) {
+                return;
+            }
+            
+            const start = new Date(startDate);
+            const end = new Date(endDate);            if (startHour && startMinute) {
+                start.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
+            }
+            
+            if (endHour && endMinute) {
+                end.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
+            }
+            
+            if (end <= start) {
+                document.getElementById('requestDuration').textContent = 'End must be after start';
+                document.getElementById('requestDuration').style.color = '#dc3545';
+                return;
+            }
+            
+            const result = StudentUtils.calculateWorkingHours(start, end);
+            const totalHours = result.workingHours;
+            const totalCalendarDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+            
+            document.getElementById('requestDuration').textContent = `${totalCalendarDays} calendar day${totalCalendarDays !== 1 ? 's' : ''}`;
+            document.getElementById('requestDuration').style.color = '#ffffff';
+            document.getElementById('workingDays').textContent = StudentUtils.formatHoursToDays(totalHours);
+            
+            const balanceAfter = vacationHours.remainingHours - totalHours;
+            const balanceElement = document.getElementById('balanceAfterRequest');
+            balanceElement.textContent = StudentUtils.formatHoursToDays(balanceAfter);
+            
+            if (balanceAfter < 0) {
+                balanceElement.className = 'summary-value insufficient';
+                document.getElementById('balanceError').style.display = 'block';
+            } else if (balanceAfter <= 24) {
+                balanceElement.className = 'summary-value warning';
+                document.getElementById('balanceWarning').style.display = 'block';
+            } else {
+                balanceElement.className = 'summary-value good';
+            }
+            
+            updateRequestPreview();
+            checkAdvanceNotice();
+        } catch (error) {
+            console.error('Error calculating request duration:', error);
+            document.getElementById('requestDuration').textContent = 'Error calculating duration';
         }
-        
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        
-        if (startHour && startMinute) {
-            start.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
-        }
-        
-        if (endHour && endMinute) {
-            end.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
-        }
-        
-        if (end <= start) {
-            document.getElementById('requestDuration').textContent = 'End must be after start';
-            document.getElementById('requestDuration').style.color = '#dc3545';
-            return;
-        }
-        
-        const result = StudentUtils.calculateWorkingHours(start, end);
-        const totalHours = result.workingHours;
-        const totalCalendarDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-        
-        document.getElementById('requestDuration').textContent = `${totalCalendarDays} calendar day${totalCalendarDays !== 1 ? 's' : ''}`;
-        document.getElementById('requestDuration').style.color = '#ffffff';
-        document.getElementById('workingDays').textContent = `${totalHours}ff (${(totalHours / 8).toFixed(1)} days)`;
-        
-        const balanceAfter = vacationHours.remainingHours - totalHours;
-        const balanceElement = document.getElementById('balanceAfterRequest');
-        balanceElement.textContent = `${balanceAfter}ff (${(balanceAfter / 8).toFixed(1)} days)`;
-        
-        if (balanceAfter < 0) {
-            balanceElement.className = 'summary-value insufficient';
-            document.getElementById('balanceError').style.display = 'block';
-        } else if (balanceAfter <= 24) {
-            balanceElement.className = 'summary-value warning';
-            document.getElementById('balanceWarning').style.display = 'block';
-        } else {
-            balanceElement.className = 'summary-value good';
-        }
-        
-        updateRequestPreview();
-        
-        checkAdvanceNotice();
     }
     
     function checkAdvanceNotice() {
@@ -540,7 +597,9 @@ document.addEventListener("DOMContentLoaded", function() {
         submitBtn.disabled = !isValid;
         
         return isValid;
-    }    async function handleRequestSubmission(e) {
+    }
+    
+    async function handleRequestSubmission(e) {
         e.preventDefault();
         
         if (!validateForm()) {
@@ -570,7 +629,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const result = StudentUtils.calculateWorkingHours(start, end);
         const workingHours = result.workingHours;
         
-        const vacationHours = StudentUtils.calculateVacationHours();
+        const vacationHours = await StudentUtils.calculateVacationHours();
         if (workingHours > vacationHours.remainingHours) {
             StudentUtils.showNotification('Request exceeds available vacation hours', 'danger');
             return;
@@ -580,7 +639,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const hoursDifference = (start - now) / (1000 * 60 * 60);
         const isShortNotice = hoursDifference < 48;
         
-        let confirmMessage = `Submit vacation request for ${workingHours}ff (${(workingHours / 8).toFixed(1)} days)?`;
+        let confirmMessage = `Submit vacation request for ${StudentUtils.formatHoursToDays(workingHours)}?`;
         if (isShortNotice) {
             confirmMessage += '\n\nNote: This is a short notice request (less than 48 hours in advance).';
         }
@@ -660,7 +719,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.querySelector('button[type="submit"]').disabled = false;
     }
     
-    function previewRequest() {
+    async function previewRequest() {
         const startDate = startDateInput.value;
         const endDate = endDateInput.value;
         const startHour = document.getElementById('startHour').value;
@@ -690,7 +749,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const result = StudentUtils.calculateWorkingHours(start, end);
         const workingHours = result.workingHours;
         const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-        const vacationHours = StudentUtils.calculateVacationHours();
+        const vacationHours = await StudentUtils.calculateVacationHours();
         
         const now = new Date();
         const hoursDifference = (start - now) / (1000 * 60 * 60);
@@ -739,10 +798,10 @@ document.addEventListener("DOMContentLoaded", function() {
                                         <strong>Total Calendar Days:</strong> ${totalDays}
                                     </div>
                                     <div class="preview-detail">
-                                        <strong>Working Hours:</strong> ${workingHours}ff (${(workingHours / 8).toFixed(1)} days)
+                                        <strong>Working Hours:</strong> ${StudentUtils.formatHoursToDays(workingHours)}
                                     </div>
                                     <div class="preview-detail">
-                                        <strong>Balance After:</strong> ${vacationHours.remainingHours - workingHours}ff (${((vacationHours.remainingHours - workingHours) / 8).toFixed(1)} days)
+                                        <strong>Balance After:</strong> ${StudentUtils.formatHoursToDays(vacationHours.remainingHours - workingHours)}
                                     </div>
                                 </div>
                             </div>
@@ -775,5 +834,5 @@ document.addEventListener("DOMContentLoaded", function() {
     window.previewRequest = previewRequest;
     
     // Initialize the application after all functions are defined
-    init();
+    (async () => { await init(); })();
 });
