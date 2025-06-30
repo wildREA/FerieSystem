@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * This file is supposed to handle authentication and role-based access control.
+ * It checks if the user is authenticated and has the required role to access certain resources.
+ * If not, it redirects them to the login page or an appropriate page based on their role
+*/
 namespace App\Middleware;
 
 require_once dirname(__DIR__) . '/Core/cookies.php';

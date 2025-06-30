@@ -118,9 +118,26 @@ class AuthController {
             }
             return;
         }
-        
-        // TODO: Implement student registration key validation
-        // Check database for valid unused student key
+
+        if ($registrationKey === $this->getStandardSecret()) {
+            $_SESSION['standard_user_data'] = [
+                'name' => $name,
+                'username' => $username,
+                'email' => $email,
+                'password' => $password,
+                'confirmPassword' => $confirmPassword
+            ];
+            
+            if ($contentType === 'application/json') {
+                $this->respondWithSuccess([
+                    'redirect' => url('/register'),
+                    'message' => 'Redirecting to standard user registration...'
+                ]);
+            } else {
+                redirect('/register');
+            }
+            return;
+        }
         
         if ($this->userExists($email, $username)) {
             return $this->handleRegisterError('User with this email or username already exists', $contentType);
@@ -222,6 +239,16 @@ class AuthController {
                 'keyType' => 'admin',
                 'redirect' => url('/create-superuser'),
                 'message' => 'Admin key verified'
+            ]);
+        }
+
+        if ($key === $this->getStandardSecret()) {
+            $_SESSION['verified_standard_key'] = $key;
+            
+            return $this->respondWithSuccess([
+                'keyType' => 'standard',
+                'redirect' => url('/register'),
+                'message' => 'Standard key verified'
             ]);
         }
         
@@ -501,6 +528,23 @@ class AuthController {
         
         error_log("ADMIN_SECRET not found in .env file");
         return null;
+    }
+
+    private function getStandardSecret() {
+        // Check if key is in database before retrieving as data
+        if (!$this->db) {
+            error_log('getStandardSecret: No database connection available');
+            return null;
+        }
+
+        try {
+            $stmt = $this->db->query("SELECT key_value FROM reg_keys ORDER BY created_at DESC LIMIT 1");
+            $result = $stmt->fetch();
+            return $result ? $result['key_value'] : null;
+        } catch (PDOException $e) {
+            error_log("Database error in getStandardSecret: " . $e->getMessage());
+            return null;
+        }
     }
 
     /**
