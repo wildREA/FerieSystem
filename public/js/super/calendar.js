@@ -28,7 +28,10 @@ document.addEventListener("DOMContentLoaded", function () {
     removeButton.addEventListener("click", removePdf);
   }
   if (fullscreenButton) {
+    console.log('Fullscreen button found, adding event listener');
     fullscreenButton.addEventListener("click", toggleFullscreen);
+  } else {
+    console.error('Fullscreen button not found');
   }
 
   // Check for existing PDF in session storage
@@ -273,6 +276,8 @@ document.addEventListener("DOMContentLoaded", function () {
    * Toggle fullscreen mode for the PDF viewer
    */
   function toggleFullscreen() {
+    console.log('Toggle fullscreen clicked, current mode:', isInFullscreenMode);
+    
     if (!isInFullscreenMode) {
       // Enter fullscreen mode
       enterFullscreenMode();
@@ -286,7 +291,20 @@ document.addEventListener("DOMContentLoaded", function () {
    * Enter fullscreen mode
    */
   function enterFullscreenMode() {
-    if (!pdfObjectUrl) return;
+    console.log('Entering fullscreen mode...');
+    
+    // Check if there's a PDF displayed (either from URL or blob)
+    const currentIframe = pdfEmbed.querySelector('#pdfViewer');
+    console.log('Current iframe:', currentIframe);
+    console.log('PDF embed display:', pdfEmbed.style.display);
+    
+    if (!currentIframe || pdfEmbed.style.display === 'none') {
+      console.warn('No PDF available for fullscreen view');
+      showUploadStatus("No PDF available for fullscreen view", "warning");
+      return;
+    }
+
+    console.log('Creating fullscreen container...');
 
     // Create fullscreen container
     const fullscreenContainer = document.createElement("div");
@@ -312,6 +330,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Add to document body
     document.body.appendChild(fullscreenContainer);
+    
+    console.log('Fullscreen container added to body');
 
     // Set up exit fullscreen button
     document
@@ -320,6 +340,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Update state
     isInFullscreenMode = true;
+    console.log('Fullscreen mode enabled');
   }
 
   /**
