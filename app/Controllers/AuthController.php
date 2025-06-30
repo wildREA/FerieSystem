@@ -73,6 +73,12 @@ class AuthController {
     }
     
     public function register() {
+        // Verify that a standard key was properly verified in the session
+        if (!isset($_SESSION['verified_standard_key'])) {
+            return $this->handleRegisterError('Access denied. Please verify your registration key first.', 
+                isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '');
+        }
+        
         $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
         
         if ($contentType === 'application/json') {
@@ -102,45 +108,16 @@ class AuthController {
         // Convert registration key to uppercase for comparison
         $registrationKey = strtoupper($registrationKey);
         
-        if ($registrationKey === $this->getAdminSecret()) {
-            $_SESSION['super_user_data'] = [
-                'name' => $name,
-                'username' => $username,
-                'email' => $email,
-                'password' => $password,
-                'confirmPassword' => $confirmPassword
-            ];
-            
-            if ($contentType === 'application/json') {
-                $this->respondWithSuccess([
-                    'redirect' => url('/create-superuser'),
-                    'message' => 'Redirecting to super user registration...'
-                ]);
-            } else {
-                redirect('/create-superuser');
-            }
-            return;
+        // Verify the registration key is valid and matches the session
+        $sessionKey = $_SESSION['verified_standard_key'];
+        if (!$this->isValidStandardKey($registrationKey) || $registrationKey !== $sessionKey) {
+            return $this->handleRegisterError('Invalid or unauthorized registration key', $contentType);
         }
+        
+        // Clear the verified key from session for security
+        unset($_SESSION['verified_standard_key']);
+        
 
-        if ($registrationKey === $this->getStandardSecret()) {
-            $_SESSION['standard_user_data'] = [
-                'name' => $name,
-                'username' => $username,
-                'email' => $email,
-                'password' => $password,
-                'confirmPassword' => $confirmPassword
-            ];
-            
-            if ($contentType === 'application/json') {
-                $this->respondWithSuccess([
-                    'redirect' => url('/register'),
-                    'message' => 'Redirecting to standard user registration...'
-                ]);
-            } else {
-                redirect('/register');
-            }
-            return;
-        }
         
         if ($this->userExists($email, $username)) {
             return $this->handleRegisterError('User with this email or username already exists', $contentType);
@@ -169,8 +146,19 @@ class AuthController {
     }
 
     public function createSuperUser() {
+        // Verify admin key was properly validated
         if (!isset($_SESSION['verified_admin_key'])) {
             $_SESSION['error_message'] = 'Access denied. Please verify admin key first.';
+            redirect('/auth');
+            return;
+        }
+        
+        // Additional security check - verify the stored key is actually the admin secret
+        $storedKey = $_SESSION['verified_admin_key'];
+        if ($storedKey !== $this->getAdminSecret()) {
+            error_log("Invalid admin key in session: " . $storedKey);
+            unset($_SESSION['verified_admin_key']);
+            $_SESSION['error_message'] = 'Access denied. Invalid admin credentials.';
             redirect('/auth');
             return;
         }
@@ -238,7 +226,9 @@ class AuthController {
         // Convert input key to uppercase for comparison
         $key = strtoupper($key);
         
-        if ($key === $this->getAdminSecret()) {
+        // Check admin key first
+        $adminSecret = $this->getAdminSecret();
+        if ($adminSecret && $key === $adminSecret) {
             $_SESSION['verified_admin_key'] = $key;
             
             return $this->respondWithSuccess([
@@ -248,7 +238,9 @@ class AuthController {
             ]);
         }
 
-        if ($key === $this->getStandardSecret()) {
+        // Check standard key
+        $standardSecret = $this->getStandardSecret();
+        if ($standardSecret && $key === $standardSecret) {
             $_SESSION['verified_standard_key'] = $key;
             
             return $this->respondWithSuccess([
@@ -258,6 +250,8 @@ class AuthController {
             ]);
         }
         
+        // Log the failed attempt for security monitoring
+        error_log("Failed registration key verification attempt: " . $key);
         return $this->respondWithError('Invalid registration key');
     }
     
@@ -516,19 +510,33 @@ class AuthController {
 
     private function getAdminSecret() {
         $envFile = dirname(__DIR__, 2) . '/.env';
-        if (file_exists($envFile)) {
+        if (!file_exists($envFile)) {
+            error_log("getAdminSecret: .env file not found at " . $envFile);
+            return null;
+        }
+        
+        try {
             $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             foreach ($lines as $line) {
                 if (strpos($line, '=') !== false && !str_starts_with($line, '#')) {
                     list($key, $value) = explode('=', $line, 2);
                     if (trim($key) === 'ADMIN_SECRET') {
-                        return strtoupper(trim($value));
+                        $secret = strtoupper(trim($value));
+                        if (strlen($secret) === 8) {
+                            return $secret;
+                        } else {
+                            error_log("getAdminSecret: ADMIN_SECRET length is not 8 characters");
+                            return null;
+                        }
                     }
                 }
             }
+        } catch (Exception $e) {
+            error_log("getAdminSecret: Error reading .env file: " . $e->getMessage());
+            return null;
         }
         
-        error_log("ADMIN_SECRET not found in .env file");
+        error_log("getAdminSecret: ADMIN_SECRET not found in .env file");
         return null;
     }
 
@@ -541,10 +549,21 @@ class AuthController {
         try {
             $stmt = $this->db->query("SELECT key_value FROM reg_keys ORDER BY created_at DESC LIMIT 1");
             $result = $stmt->fetch();
-            // Return uppercase key to match what we store in database
-            return $result ? strtoupper($result['key_value']) : null;
+            
+            if ($result && !empty($result['key_value'])) {
+                $key = strtoupper($result['key_value']);
+                if (strlen($key) === 8) {
+                    return $key;
+                } else {
+                    error_log("getStandardSecret: Key length is not 8 characters: " . $key);
+                    return null;
+                }
+            } else {
+                error_log("getStandardSecret: No registration key found in database");
+                return null;
+            }
         } catch (PDOException $e) {
-            error_log("Database error in getStandardSecret: " . $e->getMessage());
+            error_log("getStandardSecret: Database error: " . $e->getMessage());
             return null;
         }
     }
@@ -579,5 +598,29 @@ class AuthController {
             error_log("Database error in getCurrentUserUsername: " . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * Verify that the provided key is a valid standard registration key
+     * This prevents admin keys from being used for standard user registration
+     * 
+     * @param string $key The registration key to verify
+     * @return bool True if valid standard key, false otherwise
+     */
+    private function isValidStandardKey($key) {
+        // Check if key is the admin secret - should NOT be allowed for standard registration
+        if ($key === $this->getAdminSecret()) {
+            error_log("Attempt to use admin key for standard registration blocked");
+            return false;
+        }
+        
+        // Check if key matches a valid standard registration key
+        $standardKey = $this->getStandardSecret();
+        if ($standardKey && $key === $standardKey) {
+            return true;
+        }
+        
+        error_log("Invalid standard registration key provided: " . $key);
+        return false;
     }
 }
