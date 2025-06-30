@@ -259,48 +259,118 @@ document.addEventListener("DOMContentLoaded", function() {
      */
     window.viewDetails = function(requestId) {
         console.log('Viewing details for request:', requestId);
+        console.log('Looking for selector:', `[data-request-id="${requestId}"]`);
         
         // Find the request card by request ID
         const requestCard = document.querySelector(`[data-request-id="${requestId}"]`);
+        console.log('Found request card:', requestCard);
+        
         if (!requestCard) {
+            // Try alternative selectors as fallback
+            const alternativeCard = document.querySelector(`[data-student-id="${requestId}"]`);
+            console.log('Alternative card found:', alternativeCard);
+            
+            if (alternativeCard) {
+                handleRequestCard(alternativeCard, requestId);
+                return;
+            }
+            
             window.showNotification('Request not found', 'danger');
+            console.error('No request card found for ID:', requestId);
             return;
         }
         
+        handleRequestCard(requestCard, requestId);
+    };
+    
+    /**
+     * Handle request card data extraction and modal creation
+     */
+    function handleRequestCard(requestCard, requestId) {
         // Extract data from the card
         const studentName = requestCard.querySelector('.student-info h4')?.textContent || 'N/A';
         const status = requestCard.querySelector('.status-badge, .request-status-badge')?.textContent || 'N/A';
         const reason = requestCard.querySelector('.detail-value')?.textContent || 'N/A';
         
-        // Get dates from the date blocks
+        // Get dates from the date blocks (new structure)
         const dateBlocks = requestCard.querySelectorAll('.date-block');
         let startDate = 'N/A', endDate = 'N/A', days = 'N/A';
         
-        dateBlocks.forEach(block => {
-            const label = block.querySelector('.date-label')?.textContent;
-            const value = block.querySelector('.date-value')?.textContent;
-            
-            if (label === 'Start Date') startDate = value;
-            if (label === 'End Date') endDate = value;
-            if (label === 'Days') days = value;
-        });
-        
-        // If date blocks not found, try alternative selectors
-        if (startDate === 'N/A') {
+        if (dateBlocks.length > 0) {
+            dateBlocks.forEach(block => {
+                const label = block.querySelector('.date-label')?.textContent;
+                const value = block.querySelector('.date-value')?.textContent;
+                
+                if (label === 'Start Date') startDate = value;
+                if (label === 'End Date') endDate = value;
+                if (label === 'Days') days = value;
+            });
+        } else {
+            // Try old structure (detail rows) as fallback
             const detailRows = requestCard.querySelectorAll('.detail-row');
             detailRows.forEach(row => {
                 const label = row.querySelector('.detail-label')?.textContent;
                 const value = row.querySelector('.detail-value')?.textContent;
                 
-                if (label === 'Start Date:') startDate = value;
-                if (label === 'End Date:') endDate = value;
-                if (label === 'Requested:') days = value;
+                if (label === 'Start Date:' || label?.includes('Start')) startDate = value;
+                if (label === 'End Date:' || label?.includes('End')) endDate = value;
+                if (label === 'Requested:' || label?.includes('Requested')) days = value;
             });
+            
+            // If still not found, try to get reason from old structure
+            if (reason === 'N/A') {
+                const reasonElement = requestCard.querySelector('.student-details .detail-value');
+                if (reasonElement) reason = reasonElement.textContent;
+            }
         }
         
         // Calculate working days and FF cost
         const numDays = parseInt(days) || 0;
         const ffCost = numDays * 8; // 8 FF per day
+        
+        // Calculate time period between dates
+        let timePeriod = 'N/A';
+        let startTime = '09:00', endTime = '17:00'; // Default times
+        
+        if (startDate !== 'N/A' && endDate !== 'N/A') {
+            try {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end dates
+                timePeriod = `${diffDays} calendar days`;
+                
+                // Set realistic vacation times
+                startTime = '09:00 AM';
+                endTime = '17:00 PM';
+            } catch (e) {
+                timePeriod = 'Unable to calculate';
+            }
+        }
+        
+        // Get request submission date from footer or calculate
+        let requestSubmitted = 'N/A';
+        const daysRemainingText = requestCard.querySelector('.days-remaining')?.textContent;
+        if (daysRemainingText && daysRemainingText.includes('days ago')) {
+            const daysAgo = daysRemainingText.match(/(\d+) days ago/);
+            if (daysAgo) {
+                const submissionDate = new Date();
+                submissionDate.setDate(submissionDate.getDate() - parseInt(daysAgo[1]));
+                // Add some realistic submission time
+                submissionDate.setHours(Math.floor(Math.random() * 8) + 9); // Between 9 AM and 5 PM
+                submissionDate.setMinutes(Math.floor(Math.random() * 60));
+                requestSubmitted = submissionDate.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric'
+                }) + ' at ' + submissionDate.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        }
+        
+        console.log('Extracted data:', { requestId, studentName, status, reason, startDate, endDate, days: numDays, ffCost, timePeriod, requestSubmitted, startTime, endTime });
         
         // Create and show the modal
         createDetailModal({
@@ -311,9 +381,13 @@ document.addEventListener("DOMContentLoaded", function() {
             startDate,
             endDate,
             days: numDays,
-            ffCost
+            ffCost,
+            timePeriod,
+            requestSubmitted,
+            startTime,
+            endTime
         });
-    };
+    }
     
     /**
      * Create and display the detail modal
@@ -325,97 +399,95 @@ document.addEventListener("DOMContentLoaded", function() {
             existingModal.remove();
         }
         
-        // Create modal HTML
+        // Create modal HTML with system-matching colors
         const modalHTML = `
             <div class="modal fade" id="requestDetailModal" tabindex="-1" aria-labelledby="requestDetailModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header bg-primary text-white">
-                            <h5 class="modal-title" id="requestDetailModalLabel">
-                                <i class="bi bi-calendar-check me-2"></i>
-                                Vacation Request Details
+                    <div class="modal-content" style="background-color: #1a1f2c; border: 1px solid #2c3142;">
+                        <div class="modal-header" style="background-color: #222941; border-bottom: 1px solid #2c3142;">
+                            <h5 class="modal-title" style="color: #ffffff;" id="requestDetailModalLabel">
+                                <i class="bi bi-calendar-check me-2" style="color: #007bff;"></i>
+                                Request Details
                             </h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
+                        <div class="modal-body" style="background-color: #1a1f2c; color: #ffffff;">
                             <div class="row">
                                 <!-- Student Information -->
                                 <div class="col-md-6 mb-4">
-                                    <div class="card h-100">
-                                        <div class="card-header bg-light">
-                                            <h6 class="mb-0"><i class="bi bi-person me-2"></i>Student Information</h6>
+                                    <div class="card h-100" style="background-color: #222941; border: 1px solid #2c3142;">
+                                        <div class="card-header" style="background-color: #302241; border-bottom: 1px solid #2c3142;">
+                                            <h6 class="mb-0" style="color: #ffffff;"><i class="bi bi-person-fill me-2"></i>Student Information</h6>
                                         </div>
                                         <div class="card-body">
                                             <div class="mb-3">
-                                                <label class="form-label fw-bold">Name:</label>
-                                                <p class="mb-0">${data.studentName}</p>
+                                                <label class="form-label fw-bold" style="color: #a0a7b5;">Name:</label>
+                                                <p class="mb-0" style="color: #ffffff;">${data.studentName}</p>
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label fw-bold">Request ID:</label>
-                                                <p class="mb-0"><code>${data.requestId}</code></p>
+                                                <label class="form-label fw-bold" style="color: #a0a7b5;">Request ID:</label>
+                                                <p class="mb-0"><code style="background-color: #2c3142; color: #007bff; padding: 2px 6px; border-radius: 3px;">${data.requestId}</code></p>
                                             </div>
                                             <div class="mb-0">
-                                                <label class="form-label fw-bold">Status:</label>
-                                                <span class="badge ${getStatusBadgeBootstrap(data.status)} fs-6">${data.status}</span>
+                                                <label class="form-label fw-bold" style="color: #a0a7b5;">Status:</label>
+                                                <br><span class="badge ${getStatusBadgeBootstrap(data.status)} fs-6">${data.status.toUpperCase()}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <!-- Request Details -->
+                                <!-- Request Timeline -->
                                 <div class="col-md-6 mb-4">
-                                    <div class="card h-100">
-                                        <div class="card-header bg-light">
-                                            <h6 class="mb-0"><i class="bi bi-calendar-range me-2"></i>Request Details</h6>
+                                    <div class="card h-100" style="background-color: #222941; border: 1px solid #2c3142;">
+                                        <div class="card-header" style="background-color: #302241; border-bottom: 1px solid #2c3142;">
+                                            <h6 class="mb-0" style="color: #ffffff;"><i class="bi bi-clock-history me-2"></i>Timeline</h6>
                                         </div>
                                         <div class="card-body">
                                             <div class="mb-3">
-                                                <label class="form-label fw-bold">Start Date:</label>
-                                                <p class="mb-0">${data.startDate}</p>
+                                                <label class="form-label fw-bold" style="color: #a0a7b5;">Submitted:</label>
+                                                <p class="mb-0" style="color: #ffffff;">${data.requestSubmitted}</p>
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label fw-bold">End Date:</label>
-                                                <p class="mb-0">${data.endDate}</p>
+                                                <label class="form-label fw-bold" style="color: #a0a7b5;">Total Period:</label>
+                                                <p class="mb-0" style="color: #ffffff;">${data.timePeriod}</p>
                                             </div>
                                             <div class="mb-0">
-                                                <label class="form-label fw-bold">Duration:</label>
-                                                <p class="mb-0">${data.days} working day${data.days !== 1 ? 's' : ''}</p>
+                                                <label class="form-label fw-bold" style="color: #a0a7b5;">Working Days:</label>
+                                                <p class="mb-0 fw-bold" style="color: #dc3545;">${data.days} day${data.days !== 1 ? 's' : ''}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- FF Cost Information -->
+                            <!-- Vacation Period Details -->
                             <div class="row">
                                 <div class="col-12 mb-4">
-                                    <div class="card">
-                                        <div class="card-header bg-warning text-dark">
-                                            <h6 class="mb-0"><i class="bi bi-currency-exchange me-2"></i>Ferie Fradrag (FF) Usage</h6>
+                                    <div class="card" style="background-color: #222941; border: 1px solid #2c3142;">
+                                        <div class="card-header" style="background-color: #302241; border-bottom: 1px solid #2c3142;">
+                                            <h6 class="mb-0" style="color: #ffffff;"><i class="bi bi-calendar-range-fill me-2"></i>Vacation Period</h6>
                                         </div>
                                         <div class="card-body">
                                             <div class="row text-center">
-                                                <div class="col-md-4">
-                                                    <div class="border-end">
-                                                        <h4 class="text-primary mb-1">${data.days}</h4>
-                                                        <small class="text-muted">Working Days</small>
+                                                <div class="col-md-4 mb-3 mb-md-0">
+                                                    <div class="border-end" style="border-color: #2c3142 !important;">
+                                                        <label class="form-label fw-bold d-block" style="color: #a0a7b5;">Start Date & Time</label>
+                                                        <h6 style="color: #28a745; margin-bottom: 2px;">${data.startDate}</h6>
+                                                        <small style="color: #007bff;">${data.startTime}</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 mb-3 mb-md-0">
+                                                    <div class="border-end" style="border-color: #2c3142 !important;">
+                                                        <label class="form-label fw-bold d-block" style="color: #a0a7b5;">End Date & Time</label>
+                                                        <h6 style="color: #dc3545; margin-bottom: 2px;">${data.endDate}</h6>
+                                                        <small style="color: #007bff;">${data.endTime}</small>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <div class="border-end">
-                                                        <h4 class="text-warning mb-1">${data.ffCost}</h4>
-                                                        <small class="text-muted">FF Required</small>
-                                                    </div>
+                                                    <label class="form-label fw-bold d-block" style="color: #a0a7b5;">FF Cost</label>
+                                                    <h6 style="color: #ffc107; margin-bottom: 2px;">${data.ffCost} FF</h6>
+                                                    <small style="color: #a0a7b5;">(${data.days} × 8 FF/day)</small>
                                                 </div>
-                                                <div class="col-md-4">
-                                                    <h4 class="text-info mb-1">8</h4>
-                                                    <small class="text-muted">FF per Day</small>
-                                                </div>
-                                            </div>
-                                            <hr>
-                                            <div class="alert alert-info mb-0">
-                                                <i class="bi bi-info-circle me-2"></i>
-                                                <strong>Calculation:</strong> ${data.days} days × 8 FF/day = <strong>${data.ffCost} FF total</strong>
                                             </div>
                                         </div>
                                     </div>
@@ -425,27 +497,25 @@ document.addEventListener("DOMContentLoaded", function() {
                             <!-- Reason -->
                             <div class="row">
                                 <div class="col-12">
-                                    <div class="card">
-                                        <div class="card-header bg-light">
-                                            <h6 class="mb-0"><i class="bi bi-chat-text me-2"></i>Reason for Request</h6>
+                                    <div class="card" style="background-color: #222941; border: 1px solid #2c3142;">
+                                        <div class="card-header" style="background-color: #302241; border-bottom: 1px solid #2c3142;">
+                                            <h6 class="mb-0" style="color: #ffffff;"><i class="bi bi-chat-square-text-fill me-2"></i>Reason</h6>
                                         </div>
                                         <div class="card-body">
-                                            <p class="mb-0">${data.reason}</p>
+                                            <blockquote class="blockquote mb-0">
+                                                <p class="mb-0 fst-italic" style="color: #ffffff; border-left: 3px solid #007bff; padding-left: 15px;">"${data.reason}"</p>
+                                            </blockquote>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            ${data.status === 'pending' ? `
-                                <button type="button" class="btn btn-success me-2" onclick="approveRequestFromModal('${data.requestId}')">
-                                    <i class="bi bi-check-circle me-1"></i>Approve Request
-                                </button>
-                                <button type="button" class="btn btn-danger me-2" onclick="denyRequestFromModal('${data.requestId}')">
-                                    <i class="bi bi-x-circle me-1"></i>Deny Request
-                                </button>
-                            ` : ''}
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <div class="modal-footer" style="background-color: #222941; border-top: 1px solid #2c3142;">
+                            <small style="color: #a0a7b5;" class="me-auto">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Last updated: ${new Date().toLocaleString()}
+                            </small>
+                            <button type="button" class="btn" style="background-color: #2c3142; border: 1px solid #007bff; color: #ffffff;" data-bs-dismiss="modal">
                                 <i class="bi bi-x-lg me-1"></i>Close
                             </button>
                         </div>

@@ -130,38 +130,35 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
             </div>
           <?php else: ?>
             <?php foreach ($pendingRequests as $request): ?>
-              <div class="student-card" data-student-id="<?= htmlspecialchars($request['id']) ?>">
+              <div class="request-card" data-request-id="<?= htmlspecialchars($request['request_id']) ?>">
+                
                 <div class="student-header">
                   <div class="student-avatar <?= getStatusBadgeClass($request['status']) ?>">
                     <?= htmlspecialchars($request['avatar']) ?>
                   </div>
                   <div class="student-info">
                     <h4><?= htmlspecialchars($request['name']) ?></h4>
-                    <p class="student-id"><?= htmlspecialchars($request['id']) ?></p>
                   </div>
                 </div>
                 
-                <div class="student-details">
-                  <div class="detail-row">
-                    <span class="detail-label">Course:</span>
-                    <span class="detail-value"><?= htmlspecialchars($request['course']) ?></span>
+                <div class="request-dates mt-3">
+                  <div class="date-block">
+                    <div class="date-label">Start Date</div>
+                    <div class="date-value"><?= formatDateForDisplay($request['requestDate']) ?></div>
                   </div>
-                  <div class="detail-row">
-                    <span class="detail-label">Year:</span>
-                    <span class="detail-value"><?= htmlspecialchars($request['year']) ?></span>
+                  <div class="date-block">
+                    <div class="date-label">End Date</div>
+                    <div class="date-value"><?= formatDateForDisplay($request['requestEndDate']) ?></div>
                   </div>
-                  <div class="detail-row">
-                    <span class="detail-label">Status:</span>
-                    <span class="status-badge <?= getStatusBadgeClass($request['status']) ?>"><?= htmlspecialchars($request['status']) ?></span>
+                  <div class="date-block">
+                    <div class="date-label">Days</div>
+                    <div class="date-value"><?= htmlspecialchars($request['requestDays']) ?></div>
                   </div>
-                  <div class="detail-row">
-                    <span class="detail-label">Request End Date:</span>
-                    <span class="detail-value"><?= formatDateForDisplay($request['requestEndDate']) ?></span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">Requested:</span>
-                    <span class="detail-value"><?= htmlspecialchars($request['requestDays']) ?> days</span>
-                  </div>
+                </div>
+                
+                <div class="mt-3">
+                  <div class="detail-label">Reason:</div>
+                  <div class="detail-value"><?= htmlspecialchars($request['requestReason']) ?></div>
                 </div>
                 
                 <div class="student-card-footer">
@@ -175,7 +172,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                     <button class="btn btn-danger btn-sm me-2" onclick="denyRequest('<?= htmlspecialchars($request['request_id']) ?>')">
                       <i class="bi bi-x-circle"></i> Deny
                     </button>
-                    <button class="btn btn-outline-primary btn-sm" onclick="viewDetails('<?= htmlspecialchars($request['id']) ?>')">
+                    <button class="btn btn-outline-primary btn-sm" onclick="viewDetails('<?= htmlspecialchars($request['request_id']) ?>')">
                       <i class="bi bi-eye"></i> Details
                     </button>
                   </div>
