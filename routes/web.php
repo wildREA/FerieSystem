@@ -191,6 +191,42 @@ $routes['POST']['/api/reg-key'] = function() {
     $controller->generateKeyAPI();
 };
 
+// Calendar management routes
+$routes['POST']['/api/calendar/upload'] = function() {
+    require_once BASE_PATH . '/app/Controllers/CalendarController.php';
+    $controller = new App\Controllers\CalendarController();
+    $controller->uploadCalendar();
+};
+
+$routes['GET']['/api/calendar/info'] = function() {
+    require_once BASE_PATH . '/app/Controllers/CalendarController.php';
+    $controller = new App\Controllers\CalendarController();
+    $controller->getCalendarInfo();
+};
+
+$routes['DELETE']['/api/calendar'] = function() {
+    require_once BASE_PATH . '/app/Controllers/CalendarController.php';
+    $controller = new App\Controllers\CalendarController();
+    $controller->deleteCalendar();
+};
+
+// Serve uploaded calendar PDF
+$routes['GET']['/uploads/calendar/calendar.pdf'] = function() {
+    $filePath = BASE_PATH . '/public/uploads/calendar/calendar.pdf';
+    
+    if (file_exists($filePath)) {
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="calendar.pdf"');
+        header('Content-Length: ' . filesize($filePath));
+        readfile($filePath);
+        exit;
+    } else {
+        http_response_code(404);
+        echo 'Calendar file not found';
+        exit;
+    }
+};
+
 // Balance API for students
 $routes['GET']['/api/balance'] = function() {
     require_once BASE_PATH . '/app/Controllers/DashboardController.php';

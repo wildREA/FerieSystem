@@ -15,7 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script src="<?= asset('public/js/super/dashboard.js') ?>" defer></script>
     <!-- Hidden input to identify current page -->
-    <input type="hidden" id="currentPage" value="requests">
+    <input type="hidden" id="currentPage" value="calendar">
   </head>
   <body>
     <div class="dashboard-container">
@@ -103,7 +103,7 @@
                     </button>
                   </div>
                   
-                  <button class="btn btn-outline-danger" type="button" id="removeCalendarButton">
+                  <button class="btn btn-outline-danger" type="button" id="removeCalendarButton" style="display: none;">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
@@ -151,6 +151,6 @@
     </div>
     
     <!-- Add JavaScript for PDF handling -->
-    <script src="js/calendar.js" defer></script>
+    <script src="<?= asset('public/js/super/calendar.js') ?>" defer></script>
   </body>
 </html>

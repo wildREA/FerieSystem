@@ -16,10 +16,20 @@ document.addEventListener("DOMContentLoaded", function () {
   let pdfObjectUrl = null;
   let isInFullscreenMode = false;
 
+  // Check if all required elements exist
+  if (!fileInput || !uploadButton || !uploadStatus || !uploadStatusText || !noPdfMessage || !pdfEmbed) {
+    console.error("Calendar.js: Required DOM elements not found");
+    return;
+  }
+
   // Set up event listeners
-  uploadButton.addEventListenzer("click", uploadPdf);
-  removeButton.addEventListener("click", removePdf);
-  fullscreenButton.addEventListener("click", toggleFullscreen);
+  uploadButton.addEventListener("click", uploadPdf);
+  if (removeButton) {
+    removeButton.addEventListener("click", removePdf);
+  }
+  if (fullscreenButton) {
+    fullscreenButton.addEventListener("click", toggleFullscreen);
+  }
 
   // Check for existing PDF in session storage
   checkForExistingPdf();
@@ -40,28 +50,58 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Create a hidden iframe instead of using blob URL directly for better security
-    createPdfIframe(file);
+    // Show uploading status
+    showUploadStatus("Uploading calendar...", "info");
+    uploadButton.disabled = true;
 
-    // Store file name in session storage
-    sessionStorage.setItem("calendarPdfName", file.name);
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('calendar', file);
 
-    // Show success message
-    showUploadStatus("Calendar uploaded successfully", "success");
+    // Upload file to server
+    fetch('/api/calendar/upload', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        // Create iframe to display the uploaded PDF
+        createPdfIframe(data.url);
+        showUploadStatus("Calendar uploaded successfully", "success");
+        
+        // Show remove button
+        if (removeButton) {
+          removeButton.style.display = 'inline-block';
+        }
+      } else {
+        showUploadStatus(data.message || "Upload failed", "danger");
+      }
+    })
+    .catch(error => {
+      console.error('Upload error:', error);
+      showUploadStatus("Upload failed: " + error.message, "danger");
+    })
+    .finally(() => {
+      uploadButton.disabled = false;
+    });
   }
 
   /**
    * Create an iframe to display the PDF
-   * This is more secure than using blob URLs directly
+   * @param {File|string} source - Either a File object or a URL string
    */
-  function createPdfIframe(file) {
+  function createPdfIframe(source) {
     // Revoke previous object URL if exists to prevent memory leaks
     if (pdfObjectUrl) {
       URL.revokeObjectURL(pdfObjectUrl);
+      pdfObjectUrl = null;
     }
-
-    // Create object URL
-    pdfObjectUrl = URL.createObjectURL(file);
 
     // Create iframe element
     const iframe = document.createElement("iframe");
@@ -70,8 +110,15 @@ document.addEventListener("DOMContentLoaded", function () {
     iframe.style.height = "600px";
     iframe.style.border = "none";
 
-    // Set iframe source
-    iframe.src = pdfObjectUrl;
+    // Set iframe source based on the type of source
+    if (typeof source === 'string') {
+      // It's a URL string from the server
+      iframe.src = source;
+    } else {
+      // It's a File object, create object URL
+      pdfObjectUrl = URL.createObjectURL(source);
+      iframe.src = pdfObjectUrl;
+    }
 
     // Clear pdfEmbed and add the iframe
     pdfEmbed.innerHTML = "";
@@ -100,41 +147,126 @@ document.addEventListener("DOMContentLoaded", function () {
    * Remove the current PDF
    */
   function removePdf() {
-    // Clear file input
-    fileInput.value = "";
+    // Show removing status
+    showUploadStatus("Removing calendar...", "info");
+    removeButton.disabled = true;
 
-    // Hide PDF embed, show no PDF message
-    pdfEmbed.style.display = "none";
-    noPdfMessage.style.display = "flex";
+    // Call delete API
+    fetch('/api/calendar', {
+      method: 'DELETE'
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        // Clear file input
+        fileInput.value = "";
 
-    // Revoke object URL
-    if (pdfObjectUrl) {
-      URL.revokeObjectURL(pdfObjectUrl);
-      pdfObjectUrl = null;
-    }
+        // Hide PDF embed, show no PDF message
+        pdfEmbed.style.display = "none";
+        noPdfMessage.style.display = "flex";
 
-    // Clear session storage
-    sessionStorage.removeItem("calendarPdfName");
+        // Revoke object URL
+        if (pdfObjectUrl) {
+          URL.revokeObjectURL(pdfObjectUrl);
+          pdfObjectUrl = null;
+        }
 
-    // Show status message
-    showUploadStatus("Calendar has been removed", "success");
+        showUploadStatus("Calendar has been removed", "success");
 
-    // Exit fullscreen mode if active
-    if (isInFullscreenMode) {
-      exitFullscreenMode();
-    }
+        // Hide remove button
+        if (removeButton) {
+          removeButton.style.display = 'none';
+        }
+
+        // Exit fullscreen mode if active
+        if (isInFullscreenMode) {
+          exitFullscreenMode();
+        }
+      } else {
+        showUploadStatus(data.message || "Failed to remove calendar", "danger");
+      }
+    })
+    .catch(error => {
+      console.error('Delete error:', error);
+      showUploadStatus("Failed to remove calendar: " + error.message, "danger");
+    })
+    .finally(() => {
+      removeButton.disabled = false;
+    });
   }
 
   /**
-   * Check for an existing PDF in session storage
+   * Check for an existing PDF on the server
    */
   function checkForExistingPdf() {
-    const savedPdfName = sessionStorage.getItem("calendarPdfName");
-
-    if (savedPdfName && fileInput.files && fileInput.files[0]) {
-      // We have a file selected and stored in session
-      uploadPdf();
-    }
+    fetch('/api/calendar/info')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      // Check if response is empty
+      if (response.headers.get('content-length') === '0') {
+        throw new Error('Empty response from server');
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Response is not JSON');
+      }
+      
+      return response.json();
+    })
+    .then(data => {
+      if (data.success && data.exists) {
+        // Display the existing PDF from server
+        createPdfIframe(data.url);
+        showUploadStatus(`Calendar loaded (uploaded: ${data.uploadTime})`, "success");
+        
+        // Show remove button
+        if (removeButton) {
+          removeButton.style.display = 'inline-block';
+        }
+      } else if (data.success && !data.exists) {
+        // No existing PDF, show the default message
+        noPdfMessage.style.display = "flex";
+        pdfEmbed.style.display = "none";
+        
+        // Hide remove button
+        if (removeButton) {
+          removeButton.style.display = 'none';
+        }
+      } else {
+        // API returned success: false
+        console.warn('Calendar API returned error:', data.message);
+        noPdfMessage.style.display = "flex";
+        pdfEmbed.style.display = "none";
+        
+        if (removeButton) {
+          removeButton.style.display = 'none';
+        }
+      }
+    })
+    .catch(error => {
+      console.error('Error checking for existing PDF:', error);
+      // Show default state on error
+      noPdfMessage.style.display = "flex";
+      pdfEmbed.style.display = "none";
+      
+      if (removeButton) {
+        removeButton.style.display = 'none';
+      }
+      
+      // Only show error message if it's not a common "no file" scenario
+      if (!error.message.includes('404') && !error.message.includes('Empty response')) {
+        showUploadStatus("Could not check for existing calendar: " + error.message, "warning");
+      }
+    });
   }
 
   /**
