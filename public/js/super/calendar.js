@@ -16,10 +16,20 @@ document.addEventListener("DOMContentLoaded", function () {
   let pdfObjectUrl = null;
   let isInFullscreenMode = false;
 
+  // Check if all required elements exist
+  if (!fileInput || !uploadButton || !uploadStatus || !uploadStatusText || !noPdfMessage || !pdfEmbed) {
+    console.error("Calendar.js: Required DOM elements not found");
+    return;
+  }
+
   // Set up event listeners
-  uploadButton.addEventListenzer("click", uploadPdf);
-  removeButton.addEventListener("click", removePdf);
-  fullscreenButton.addEventListener("click", toggleFullscreen);
+  uploadButton.addEventListener("click", uploadPdf);
+  if (removeButton) {
+    removeButton.addEventListener("click", removePdf);
+  }
+  if (fullscreenButton) {
+    fullscreenButton.addEventListener("click", toggleFullscreen);
+  }
 
   // Check for existing PDF in session storage
   checkForExistingPdf();
