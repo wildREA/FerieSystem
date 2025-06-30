@@ -22,7 +22,6 @@ const DataManager = {
             };
             
             console.log('Request data to submit:', requestData);
-            await new Promise(resolve => setTimeout(resolve, 5000));
 
             const response = await fetch('/api/submit-request', {
                 method: 'POST',

@@ -8,6 +8,26 @@ $dashboardController = new App\Controllers\DashboardController();
 $userId = $_SESSION['user_id']; // Assuming user ID is in session
 $balanceData = $dashboardController->getBalanceData($userId);
 $transactionHistory = $dashboardController->getTransactionHistory($userId);
+$recentRequests = $dashboardController->getRecentRequests($userId);
+
+// Helper function to format dates
+function formatDate($datetime) {
+    if (empty($datetime)) return '';
+    $date = new DateTime($datetime);
+    return $date->format('M j, Y');
+}
+
+// Helper function to get status badge class and text
+function getStatusInfo($status) {
+    $statusMap = [
+        'pending' => ['class' => 'status-pending', 'text' => 'Pending'],
+        'approved' => ['class' => 'status-approved', 'text' => 'Approved'],
+        'rejected' => ['class' => 'status-rejected', 'text' => 'Rejected'],
+        'cancelled' => ['class' => 'status-cancelled', 'text' => 'Cancelled']
+    ];
+    
+    return $statusMap[$status] ?? ['class' => 'status-pending', 'text' => ucfirst($status)];
+}
 ?>
 <?php
 // Test if helper functions work
@@ -127,7 +147,25 @@ if (function_exists('getCurrentUserName')) {
                     </div>
                     <div class="card-body">
                         <div id="recentRequestsList">
-                            <!-- Recent requests will be populated here -->
+                            <?php if (empty($recentRequests)): ?>
+                                <div class="no-requests">
+                                    <i class="bi bi-calendar-x"></i>
+                                    <p>No recent requests</p>
+                                </div>
+                            <?php else: ?>
+                                <?php foreach (array_slice($recentRequests, 0, 3) as $request): ?>
+                                    <?php $statusInfo = getStatusInfo($request['status']); ?>
+                                    <div class="recent-request-item">
+                                        <div class="recent-request-info">
+                                            <div class="recent-request-dates">
+                                                <?= formatDate($request['start_datetime']) ?> - <?= formatDate($request['end_datetime']) ?>
+                                            </div>
+                                            <div class="recent-request-reason"><?= htmlspecialchars($request['reason']) ?></div>
+                                        </div>
+                                        <div class="status-badge <?= $statusInfo['class'] ?>"><?= $statusInfo['text'] ?></div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

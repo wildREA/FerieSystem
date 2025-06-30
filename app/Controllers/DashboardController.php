@@ -88,14 +88,14 @@ class DashboardController {
         ];
     }
     
-    private function getRecentRequests($userId) {
+    public function getRecentRequests($userId) {
         $stmt = $this->db->prepare("
             SELECT id, start_datetime, end_datetime, reason, status, 
                    created_at, total_hours
             FROM requests 
             WHERE user_id = ? 
             ORDER BY created_at DESC 
-            LIMIT 5
+            LIMIT 3
         ");
         $stmt->execute([$userId]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
