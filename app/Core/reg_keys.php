@@ -28,7 +28,7 @@ class RegKeys {
         
         // Generate a random key and convert to uppercase
         $key = strtoupper(bin2hex(random_bytes(4))); // 8 characters long, uppercase
-        
+            
         // Store the key in the database
         $stmt = $this->db->prepare("INSERT INTO reg_keys (key_value) VALUES (:key)");
         $stmt->bindParam(':key', $key);

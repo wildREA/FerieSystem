@@ -99,6 +99,9 @@ class AuthController {
             return $this->handleRegisterError($validation, $contentType);
         }
         
+        // Convert registration key to uppercase for comparison
+        $registrationKey = strtoupper($registrationKey);
+        
         if ($registrationKey === $this->getAdminSecret()) {
             $_SESSION['super_user_data'] = [
                 'name' => $name,
@@ -118,9 +121,26 @@ class AuthController {
             }
             return;
         }
-        
-        // TODO: Implement student registration key validation
-        // Check database for valid unused student key
+
+        if ($registrationKey === $this->getStandardSecret()) {
+            $_SESSION['standard_user_data'] = [
+                'name' => $name,
+                'username' => $username,
+                'email' => $email,
+                'password' => $password,
+                'confirmPassword' => $confirmPassword
+            ];
+            
+            if ($contentType === 'application/json') {
+                $this->respondWithSuccess([
+                    'redirect' => url('/register'),
+                    'message' => 'Redirecting to standard user registration...'
+                ]);
+            } else {
+                redirect('/register');
+            }
+            return;
+        }
         
         if ($this->userExists($email, $username)) {
             return $this->handleRegisterError('User with this email or username already exists', $contentType);
@@ -215,6 +235,9 @@ class AuthController {
             return $this->respondWithError('Registration key must be 8 characters');
         }
         
+        // Convert input key to uppercase for comparison
+        $key = strtoupper($key);
+        
         if ($key === $this->getAdminSecret()) {
             $_SESSION['verified_admin_key'] = $key;
             
@@ -224,12 +247,18 @@ class AuthController {
                 'message' => 'Admin key verified'
             ]);
         }
+
+        if ($key === $this->getStandardSecret()) {
+            $_SESSION['verified_standard_key'] = $key;
+            
+            return $this->respondWithSuccess([
+                'keyType' => 'standard',
+                'redirect' => url('/register'),
+                'message' => 'Standard key verified'
+            ]);
+        }
         
-        // TODO: Implement student key validation in database
-        return $this->respondWithSuccess([
-            'keyType' => 'student',
-            'message' => 'Student key verified'
-        ]);
+        return $this->respondWithError('Invalid registration key');
     }
     
     /**
@@ -493,7 +522,7 @@ class AuthController {
                 if (strpos($line, '=') !== false && !str_starts_with($line, '#')) {
                     list($key, $value) = explode('=', $line, 2);
                     if (trim($key) === 'ADMIN_SECRET') {
-                        return trim($value);
+                        return strtoupper(trim($value));
                     }
                 }
             }
@@ -501,6 +530,23 @@ class AuthController {
         
         error_log("ADMIN_SECRET not found in .env file");
         return null;
+    }
+
+    private function getStandardSecret() {
+        if (!$this->db) {
+            error_log('getStandardSecret: No database connection available');
+            return null;
+        }
+
+        try {
+            $stmt = $this->db->query("SELECT key_value FROM reg_keys ORDER BY created_at DESC LIMIT 1");
+            $result = $stmt->fetch();
+            // Return uppercase key to match what we store in database
+            return $result ? strtoupper($result['key_value']) : null;
+        } catch (PDOException $e) {
+            error_log("Database error in getStandardSecret: " . $e->getMessage());
+            return null;
+        }
     }
 
     /**
