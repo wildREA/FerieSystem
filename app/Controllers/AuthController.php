@@ -170,11 +170,13 @@ class AuthController {
             $data = json_decode($jsonData, true);
             
             $name = $data['name'] ?? '';
+            $username = $data['username'] ?? '';
             $email = $data['email'] ?? '';
             $password = $data['password'] ?? '';
             $confirmPassword = $data['confirmPassword'] ?? '';
         } else {
             $name = $_POST['name'] ?? '';
+            $username = $_POST['username'] ?? '';
             $email = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';
             $confirmPassword = $_POST['confirmPassword'] ?? '';
@@ -182,16 +184,16 @@ class AuthController {
         
         unset($_SESSION['verified_admin_key']);
         
-        $validation = $this->validateSuperUserRegistration($name, $email, $password, $confirmPassword);
+        $validation = $this->validateSuperUserRegistration($name, $username, $email, $password, $confirmPassword);
         if ($validation !== true) {
             return $this->handleSuperUserError($validation, $contentType);
         }
         
-        if ($this->userExists($email)) {
-            return $this->handleSuperUserError('User with this email already exists', $contentType);
+        if ($this->userExists($email, $username)) {
+            return $this->handleSuperUserError('User with this email or username already exists', $contentType);
         }
         
-        $userId = $this->createSuperUserAccount($name, $email, $password);
+        $userId = $this->createSuperUserAccount($name, $username, $email, $password);
         
         if (!$userId) {
             return $this->handleSuperUserError('Failed to create super user account', $contentType);
@@ -325,13 +327,21 @@ class AuthController {
         return true;
     }
     
-    protected function validateSuperUserRegistration($name, $email, $password, $confirmPassword) {
-        if (empty($name) || empty($email) || empty($password) || empty($confirmPassword)) {
+    protected function validateSuperUserRegistration($name, $username, $email, $password, $confirmPassword) {
+        if (empty($name) || empty($username) || empty($email) || empty($password) || empty($confirmPassword)) {
             return 'Please fill in all required fields';
         }
         
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return 'Please enter a valid email address';
+        }
+        
+        if (strlen($username) < 3) {
+            return 'Username must be at least 3 characters long';
+        }
+        
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
+            return 'Username can only contain letters, numbers, and underscores';
         }
         
         if (strlen($password) < 6) {
@@ -392,7 +402,7 @@ class AuthController {
         }
     }
     
-    protected function createSuperUserAccount($name, $email, $password) {
+    protected function createSuperUserAccount($name, $username, $email, $password) {
         if (!$this->db) {
             throw new Exception("No database connection available");
         }
@@ -401,11 +411,11 @@ class AuthController {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             
             $stmt = $this->db->prepare("
-                INSERT INTO users (name, email, password, user_type) 
-                VALUES (?, ?, ?, 'super')
+                INSERT INTO users (name, username, email, password, user_type) 
+                VALUES (?, ?, ?, ?, 'super')
             ");
             
-            $result = $stmt->execute([$name, $email, $hashedPassword]);
+            $result = $stmt->execute([$name, $username, $email, $hashedPassword]);
             if ($result) {
                 $userId = $this->db->lastInsertId();
                 error_log("createSuperUserAccount: Successfully created super user with ID: $userId");

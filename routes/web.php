@@ -94,7 +94,16 @@ $routes['GET']['/requests'] = function() {
     // Route super users to super requests, standard users to standard requests
     $userType = $sessionManager->getUserType();
     if ($userType === 'super') {
-        return view('superuser/requests');
+        require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+        $controller = new App\Controllers\SuperuserController();
+        
+        $pendingRequests = $controller->getPendingRequests();
+        $approvedRequests = $controller->getApprovedRequests();
+        
+        return view('superuser/requests', [
+            'pendingRequests' => $pendingRequests,
+            'approvedRequests' => $approvedRequests
+        ]);
     } else {
         $sessionManager->requireUserType(['standard'], '/auth');
         
@@ -232,6 +241,20 @@ $routes['GET']['/api/balance'] = function() {
     require_once BASE_PATH . '/app/Controllers/DashboardController.php';
     $controller = new App\Controllers\DashboardController();
     $controller->getBalanceAPI();
+};
+
+// Approve request API for superusers
+$routes['POST']['/api/approve-request'] = function() {
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->approveRequestAPI();
+};
+
+// Deny request API for superusers
+$routes['POST']['/api/deny-request'] = function() {
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->denyRequestAPI();
 };
 
 // Return the routes array to be processed by the router

@@ -1,3 +1,35 @@
+<?php
+// Helper functions for request formatting
+function formatDateForDisplay($dateString) {
+    $date = new DateTime($dateString);
+    return $date->format('M j, Y');
+}
+
+function calculateDaysSince($dateString) {
+    $date = new DateTime($dateString);
+    $today = new DateTime();
+    return $today->diff($date)->days;
+}
+
+function calculateDaysRemaining($dateString) {
+    $endDate = new DateTime($dateString);
+    $today = new DateTime();
+    return ceil(($endDate->getTimestamp() - $today->getTimestamp()) / (60 * 60 * 24));
+}
+
+function getStatusBadgeClass($status) {
+    switch ($status) {
+        case 'pending': return 'status-pending';
+        case 'approved': return 'status-approved';
+        case 'rejected': return 'status-rejected';
+        default: return 'status-pending';
+    }
+}
+
+// Default empty arrays if not provided
+$pendingRequests = $pendingRequests ?? [];
+$approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
+?>
 <!DOCTYPE html>
 <html>
   <head>
@@ -13,8 +45,7 @@
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-    <script src="<?= asset('public/js/super/dashboard.js') ?>" defer></script>
-    <script src="<?= asset('public/js/super/requests.js') ?>" defer></script>
+    <script src="<?= asset('public/js/super/requests-ssr.js') ?>" defer></script>
     <!-- Hidden input to identify current page -->
     <input type="hidden" id="currentPage" value="requests">
   </head>
@@ -89,9 +120,72 @@
         </div>
         
         <div class="students-grid" id="studentsGrid">
-          <!-- Student request cards will be generated here -->
+          <?php if (empty($pendingRequests)): ?>
+            <div class="no-results" style="display: block;">
+              <div class="text-center py-5">
+                <i class="bi bi-search fs-1 text-muted"></i>
+                <h4 class="mt-3 text-muted user-select-none">No pending requests</h4>
+                <p class="text-muted user-select-none">All requests have been processed</p>
+              </div>
+            </div>
+          <?php else: ?>
+            <?php foreach ($pendingRequests as $request): ?>
+              <div class="student-card" data-student-id="<?= htmlspecialchars($request['id']) ?>">
+                <div class="student-header">
+                  <div class="student-avatar <?= getStatusBadgeClass($request['status']) ?>">
+                    <?= htmlspecialchars($request['avatar']) ?>
+                  </div>
+                  <div class="student-info">
+                    <h4><?= htmlspecialchars($request['name']) ?></h4>
+                    <p class="student-id"><?= htmlspecialchars($request['id']) ?></p>
+                  </div>
+                </div>
+                
+                <div class="student-details">
+                  <div class="detail-row">
+                    <span class="detail-label">Course:</span>
+                    <span class="detail-value"><?= htmlspecialchars($request['course']) ?></span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Year:</span>
+                    <span class="detail-value"><?= htmlspecialchars($request['year']) ?></span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="status-badge <?= getStatusBadgeClass($request['status']) ?>"><?= htmlspecialchars($request['status']) ?></span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Request End Date:</span>
+                    <span class="detail-value"><?= formatDateForDisplay($request['requestEndDate']) ?></span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Requested:</span>
+                    <span class="detail-value"><?= htmlspecialchars($request['requestDays']) ?> days</span>
+                  </div>
+                </div>
+                
+                <div class="student-card-footer">
+                  <div class="days-remaining">
+                    <?= calculateDaysSince($request['requestDate']) ?> days ago • Ends: <?= formatDateForDisplay($request['requestEndDate']) ?>
+                  </div>
+                  <div class="action-buttons">
+                    <button class="btn btn-success btn-sm me-2" onclick="approveRequest('<?= htmlspecialchars($request['request_id']) ?>')">
+                      <i class="bi bi-check-circle"></i> Approve
+                    </button>
+                    <button class="btn btn-danger btn-sm me-2" onclick="denyRequest('<?= htmlspecialchars($request['request_id']) ?>')">
+                      <i class="bi bi-x-circle"></i> Deny
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="viewDetails('<?= htmlspecialchars($request['id']) ?>')">
+                      <i class="bi bi-eye"></i> Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
         </div>
         
+        <!-- No results div for search -->
         <div class="no-results" id="noResults" style="display: none;">
           <div class="text-center py-5">
             <i class="bi bi-search fs-1 text-muted"></i>
@@ -121,7 +215,128 @@
         <!-- Approved requests container -->
         <div id="approvedRequestsContainer">
           <div class="approved-requests-grid" id="approvedRequestsGrid">
-            <!-- Approved request cards will be generated here -->
+            <?php if (empty($approvedRequests['active'])): ?>
+              <div class="no-approved-results" id="noApprovedResults" style="display: block;">
+                <div class="text-center py-4">
+                  <i class="bi bi-clipboard-check fs-1 text-muted"></i>
+                  <h4 class="mt-3 text-muted user-select-none">No active approved requests</h4>
+                  <p class="text-muted user-select-none">There are currently no active approved requests to display</p>
+                </div>
+              </div>
+            <?php else: ?>
+              <?php foreach ($approvedRequests['active'] as $request): ?>
+                <?php 
+                  $daysRemaining = calculateDaysRemaining($request['requestEndDate']);
+                  $timeDescription = $daysRemaining . ' days remaining';
+                ?>
+                <div class="request-card active" data-request-id="<?= htmlspecialchars($request['request_id']) ?>">
+                  <span class="request-status-badge active">Active</span>
+                  
+                  <div class="student-header">
+                    <div class="student-avatar status-approved" style="width: 40px; height: 40px;">
+                      <?= htmlspecialchars($request['avatar']) ?>
+                    </div>
+                    <div class="student-info">
+                      <h4><?= htmlspecialchars($request['name']) ?></h4>
+                      <p class="student-id"><?= htmlspecialchars($request['id']) ?></p>
+                    </div>
+                  </div>
+                  
+                  <div class="request-dates mt-3">
+                    <div class="date-block">
+                      <div class="date-label">Start Date</div>
+                      <div class="date-value"><?= formatDateForDisplay($request['requestDate']) ?></div>
+                    </div>
+                    <div class="date-block">
+                      <div class="date-label">End Date</div>
+                      <div class="date-value"><?= formatDateForDisplay($request['requestEndDate']) ?></div>
+                    </div>
+                    <div class="date-block">
+                      <div class="date-label">Days</div>
+                      <div class="date-value"><?= htmlspecialchars($request['requestDays']) ?></div>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-3">
+                    <div class="detail-label">Reason:</div>
+                    <div class="detail-value"><?= htmlspecialchars($request['requestReason']) ?></div>
+                  </div>
+                  
+                  <div class="mt-3 text-end">
+                    <small class="text-muted"><?= $timeDescription ?></small>
+                  </div>
+                  
+                  <div class="mt-3 d-flex justify-content-end">
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('<?= htmlspecialchars($request['id']) ?>')">
+                      <i class="bi bi-eye"></i> Details
+                    </button>
+                  </div>
+                </div>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </div>
+          
+          <!-- Hidden completed requests section (will be shown via JavaScript toggle) -->
+          <div class="approved-requests-grid" id="completedRequestsGrid" style="display: none;">
+            <?php if (empty($approvedRequests['completed'])): ?>
+              <div class="no-approved-results">
+                <div class="text-center py-4">
+                  <i class="bi bi-clipboard-check fs-1 text-muted"></i>
+                  <h4 class="mt-3 text-muted user-select-none">No completed requests</h4>
+                  <p class="text-muted user-select-none">There are no completed requests to display</p>
+                </div>
+              </div>
+            <?php else: ?>
+              <?php foreach ($approvedRequests['completed'] as $request): ?>
+                <?php 
+                  $daysSinceCompletion = calculateDaysSince($request['requestEndDate']);
+                  $timeDescription = 'Completed ' . $daysSinceCompletion . ' days ago';
+                ?>
+                <div class="request-card inactive" data-request-id="<?= htmlspecialchars($request['request_id']) ?>">
+                  <span class="request-status-badge inactive">Completed</span>
+                  
+                  <div class="student-header">
+                    <div class="student-avatar status-approved" style="width: 40px; height: 40px;">
+                      <?= htmlspecialchars($request['avatar']) ?>
+                    </div>
+                    <div class="student-info">
+                      <h4><?= htmlspecialchars($request['name']) ?></h4>
+                      <p class="student-id"><?= htmlspecialchars($request['id']) ?></p>
+                    </div>
+                  </div>
+                  
+                  <div class="request-dates mt-3">
+                    <div class="date-block">
+                      <div class="date-label">Start Date</div>
+                      <div class="date-value"><?= formatDateForDisplay($request['requestDate']) ?></div>
+                    </div>
+                    <div class="date-block">
+                      <div class="date-label">End Date</div>
+                      <div class="date-value"><?= formatDateForDisplay($request['requestEndDate']) ?></div>
+                    </div>
+                    <div class="date-block">
+                      <div class="date-label">Days</div>
+                      <div class="date-value"><?= htmlspecialchars($request['requestDays']) ?></div>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-3">
+                    <div class="detail-label">Reason:</div>
+                    <div class="detail-value"><?= htmlspecialchars($request['requestReason']) ?></div>
+                  </div>
+                  
+                  <div class="mt-3 text-end">
+                    <small class="text-muted"><?= $timeDescription ?></small>
+                  </div>
+                  
+                  <div class="mt-3 d-flex justify-content-end">
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('<?= htmlspecialchars($request['id']) ?>')">
+                      <i class="bi bi-eye"></i> Details
+                    </button>
+                  </div>
+                </div>
+              <?php endforeach; ?>
+            <?php endif; ?>
           </div>
           
           <div class="no-approved-results" id="noApprovedResults" style="display: none;">
