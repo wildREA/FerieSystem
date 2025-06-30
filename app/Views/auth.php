@@ -180,7 +180,7 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
     </div>
 
     <footer>
-        <p>&copy; 2025 FerieSystem. All rights reserved.</p>
+        <p>&copy; 2025 FerieSystem. All rights reserved. Developed by Thunderclaw Industries™</p>
     </footer>
 </body>
 </html>

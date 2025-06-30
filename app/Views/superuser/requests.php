@@ -35,7 +35,7 @@
               <div class="section-header requests-background">
                 <i class="bi bi-file-earmark-text text-danger"></i>
                 <span class="user-select-none">Requests</span>
-                <span class="notification-badge user-select-none">2</span>
+                <span class="notification-badge user-select-none"<?= $pendingCount > 0 ? '' : ' style="display: none;"' ?>><?= $pendingCount ?></span>
               </div>
             </a>
           </li>
@@ -88,15 +88,180 @@
           <p class="text-muted user-select-none">Manage pending and recent vacation requests</p>
         </div>
         
+        <?php
+        // Helper function to generate avatar initials
+        function generateAvatar($name, $username) {
+            $displayName = $name ?: $username ?: 'Unknown User';
+            $nameWords = explode(' ', $displayName);
+            if (count($nameWords) >= 2) {
+                return strtoupper(substr($nameWords[0], 0, 1) . substr($nameWords[1], 0, 1));
+            }
+            return strtoupper(substr($displayName, 0, 2));
+        }
+        
+        // Helper function to render pending request card
+        function renderPendingRequestCard($request) {
+            $startDate = new DateTime($request['start_datetime']);
+            $endDate = new DateTime($request['end_datetime']);
+            $createdDate = new DateTime($request['created_at']);
+            $today = new DateTime();
+            
+            $daysSinceRequest = (int)$today->diff($createdDate)->days;
+            $avatar = generateAvatar($request['name'], $request['username']);
+            $displayName = $request['name'] ?: $request['username'];
+            
+            return '
+            <div class="student-card" data-request-id="' . htmlspecialchars($request['id']) . '">
+                <div class="student-header">
+                    <div class="student-avatar status-' . htmlspecialchars($request['status']) . '">
+                        ' . htmlspecialchars($avatar) . '
+                    </div>
+                    <div class="student-info">
+                        <h4>' . htmlspecialchars($displayName) . '</h4>
+                        <p class="student-id">ID: ' . htmlspecialchars($request['id']) . '</p>
+                    </div>
+                </div>
+                
+                <div class="student-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Type:</span>
+                        <span class="detail-value">' . htmlspecialchars($request['request_type']) . '</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Start Date:</span>
+                        <span class="detail-value">' . htmlspecialchars($startDate->format('M j, Y')) . '</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">End Date:</span>
+                        <span class="detail-value">' . htmlspecialchars($endDate->format('M j, Y')) . '</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="status-badge status-' . htmlspecialchars($request['status']) . '">' . htmlspecialchars($request['status']) . '</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Total Hours:</span>
+                        <span class="detail-value">' . htmlspecialchars($request['total_hours']) . ' hours</span>
+                    </div>' . 
+                    (!empty($request['reason']) ? '
+                    <div class="detail-row">
+                        <span class="detail-label">Reason:</span>
+                        <span class="detail-value request-reason">' . htmlspecialchars($request['reason']) . '</span>
+                    </div>' : '') . '
+                </div>
+                
+                <div class="student-card-footer">
+                    <div class="days-remaining">
+                        ' . $daysSinceRequest . ' days ago • Ends: ' . htmlspecialchars($endDate->format('M j, Y')) . '
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-success btn-sm me-2" onclick="approveRequest(\'' . htmlspecialchars($request['id']) . '\')">
+                            <i class="bi bi-check-circle"></i> Approve
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="denyRequest(\'' . htmlspecialchars($request['id']) . '\')">
+                            <i class="bi bi-x-circle"></i> Deny
+                        </button>
+                    </div>
+                </div>
+            </div>';
+        }
+        
+        // Helper function to render approved request card
+        function renderApprovedRequestCard($request) {
+            $startDate = new DateTime($request['start_datetime']);
+            $endDate = new DateTime($request['end_datetime']);
+            $today = new DateTime();
+            
+            $avatar = generateAvatar($request['name'], $request['username']);
+            $displayName = $request['name'] ?: $request['username'];
+            
+            // Determine status and time description
+            $statusClass = 'approved';
+            $timeDescription = '';
+            
+            if ($startDate > $today) {
+                $daysUntilStart = (int)$today->diff($startDate)->days;
+                $timeDescription = "Starts in {$daysUntilStart} days";
+                $statusClass = 'pending-start';
+            } elseif ($endDate >= $today) {
+                $daysRemaining = (int)$today->diff($endDate)->days + 1;
+                $timeDescription = "{$daysRemaining} days remaining";
+                $statusClass = 'active';
+            } else {
+                $daysSinceEnd = (int)$endDate->diff($today)->days;
+                $timeDescription = "Completed {$daysSinceEnd} days ago";
+                $statusClass = 'inactive';
+            }
+            
+            $badgeText = $statusClass === 'active' ? 'Active' : 
+                        ($statusClass === 'inactive' ? 'Completed' : 'Approved');
+            
+            return '
+            <div class="request-card ' . $statusClass . '" data-request-id="' . htmlspecialchars($request['id']) . '">
+                <span class="request-status-badge ' . $statusClass . '">' . $badgeText . '</span>
+                
+                <div class="student-header">
+                    <div class="student-avatar status-approved" style="width: 40px; height: 40px;">
+                        ' . htmlspecialchars($avatar) . '
+                    </div>
+                    <div class="student-info">
+                        <h4>' . htmlspecialchars($displayName) . '</h4>
+                        <p class="student-id">ID: ' . htmlspecialchars($request['id']) . '</p>
+                    </div>
+                </div>
+                
+                <div class="request-dates mt-3">
+                    <div class="date-block">
+                        <div class="date-label">Start Date</div>
+                        <div class="date-value">' . htmlspecialchars($startDate->format('M j, Y')) . '</div>
+                    </div>
+                    <div class="date-block">
+                        <div class="date-label">End Date</div>
+                        <div class="date-value">' . htmlspecialchars($endDate->format('M j, Y')) . '</div>
+                    </div>
+                    <div class="date-block">
+                        <div class="date-label">Hours</div>
+                        <div class="date-value">' . htmlspecialchars($request['total_hours']) . '</div>
+                    </div>
+                </div>' . 
+                (!empty($request['reason']) ? '
+                
+                <div class="mt-3">
+                    <div class="detail-label">Reason:</div>
+                    <div class="detail-value request-reason">' . htmlspecialchars($request['reason']) . '</div>
+                </div>' : '') . '
+                
+                <div class="mt-3 text-end">
+                    <small class="text-muted">' . $timeDescription . '</small>
+                </div>
+                
+                <div class="mt-3 d-flex justify-content-end">
+                    <button class="btn btn-outline-primary btn-sm" onclick="viewRequestDetails(\'' . htmlspecialchars($request['id']) . '\')">
+                        <i class="bi bi-eye"></i> Details
+                    </button>
+                </div>
+            </div>';
+        }
+        
+        // Separate requests by status
+        $pendingRequests = array_filter($requests ?? [], function($req) { return $req['status'] === 'pending'; });
+        $approvedRequests = array_filter($requests ?? [], function($req) { return $req['status'] === 'approved'; });
+        $pendingCount = count($pendingRequests);
+        ?>
+        
         <div class="students-grid" id="studentsGrid">
-          <!-- Student request cards will be generated here -->
+          <?php if (!empty($pendingRequests)): ?>
+            <?php foreach ($pendingRequests as $request): ?>
+              <?= renderPendingRequestCard($request) ?>
+            <?php endforeach; ?>
+          <?php endif; ?>
         </div>
         
-        <div class="no-results" id="noResults" style="display: none;">
+        <div class="no-results" id="noResults" <?= empty($pendingRequests) ? '' : 'style="display: none;"' ?>>
           <div class="text-center py-5">
             <i class="bi bi-search fs-1 text-muted"></i>
-            <h4 class="mt-3 text-muted user-select-none">No requests found</h4>
-            <p class="text-muted user-select-none">Try adjusting your search criteria</p>
+            <h4 class="mt-3 text-muted user-select-none">No pending requests found</h4>
+            <p class="text-muted user-select-none">There are currently no pending requests to review</p>
           </div>
         </div>
         
@@ -121,10 +286,23 @@
         <!-- Approved requests container -->
         <div id="approvedRequestsContainer">
           <div class="approved-requests-grid" id="approvedRequestsGrid">
-            <!-- Approved request cards will be generated here -->
+            <?php if (!empty($approvedRequests)): ?>
+              <?php foreach ($approvedRequests as $request): ?>
+                <?= renderApprovedRequestCard($request) ?>
+              <?php endforeach; ?>
+            <?php endif; ?>
           </div>
           
-          <div class="no-approved-results" id="noApprovedResults" style="display: none;">
+          <?php
+          // Check if we have any active requests to determine if we should show no results
+          $today = new DateTime();
+          $hasActiveRequests = !empty(array_filter($approvedRequests, function($req) use ($today) {
+              $endDate = new DateTime($req['end_datetime']);
+              return $endDate >= $today;
+          }));
+          ?>
+          
+          <div class="no-approved-results" id="noApprovedResults" <?= $hasActiveRequests ? 'style="display: none;"' : '' ?>>
             <div class="text-center py-4">
               <i class="bi bi-clipboard-check fs-1 text-muted"></i>
               <h4 class="mt-3 text-muted user-select-none">No approved requests found</h4>

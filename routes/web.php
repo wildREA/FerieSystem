@@ -94,7 +94,14 @@ $routes['GET']['/requests'] = function() {
     // Route super users to super requests, standard users to standard requests
     $userType = $sessionManager->getUserType();
     if ($userType === 'super') {
-        return view('superuser/requests');
+        // Get all requests from database for superuser management
+        require_once BASE_PATH . '/app/Controllers/RequestController.php';
+        $controller = new App\Controllers\RequestController();
+        $requestsData = $controller->getAllRequestsForView();
+        
+        return view('superuser/requests', [
+            'requests' => $requestsData
+        ]);
     } else {
         $sessionManager->requireUserType(['standard'], '/auth');
         
@@ -144,6 +151,13 @@ $routes['POST']['/api/submit-request'] = function() {
     return $controller->submitRequest();
 };
 
+// API route to get user's own requests
+$routes['GET']['/api/user-requests'] = function() {
+    require_once BASE_PATH . '/app/Controllers/RequestController.php';
+    $controller = new App\Controllers\RequestController();
+    return $controller->getUserRequests();
+};
+
 // API Login route
 $routes['POST']['/api/login'] = function() {
     require_once BASE_PATH . '/app/Controllers/AuthController.php';
@@ -189,6 +203,27 @@ $routes['POST']['/api/reg-key'] = function() {
     require_once BASE_PATH . '/app/Controllers/RegKeysController.php';
     $controller = new App\Controllers\RegKeysController();
     $controller->generateKeyAPI();
+};
+
+// API route to get all requests for superusers
+$routes['GET']['/api/requests'] = function() {
+    require_once BASE_PATH . '/app/Controllers/RequestController.php';
+    $controller = new App\Controllers\RequestController();
+    return $controller->getAllRequests();
+};
+
+// API route to approve a request (superuser only)
+$routes['POST']['/api/requests/approve'] = function() {
+    require_once BASE_PATH . '/app/Controllers/RequestController.php';
+    $controller = new App\Controllers\RequestController();
+    return $controller->approveRequest();
+};
+
+// API route to deny a request (superuser only)
+$routes['POST']['/api/requests/deny'] = function() {
+    require_once BASE_PATH . '/app/Controllers/RequestController.php';
+    $controller = new App\Controllers\RequestController();
+    return $controller->denyRequest();
 };
 
 // Return the routes array to be processed by the router
