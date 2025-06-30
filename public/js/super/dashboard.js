@@ -1,4 +1,4 @@
-// Dashboard functionality for Student Management System
+ // Dashboard functionality for Student Management System
 // Create a global variable to store student data that can be accessed by other scripts
 window.studentsData = [];
 
