@@ -103,7 +103,7 @@
                     </button>
                   </div>
                   
-                  <button class="btn btn-outline-danger" type="button" id="removeCalendarButton">
+                  <button class="btn btn-outline-danger" type="button" id="removeCalendarButton" style="display: none;">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
