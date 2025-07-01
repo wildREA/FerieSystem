@@ -633,4 +633,50 @@ class AuthController {
         error_log("Invalid standard registration key provided: " . $key);
         return false;
     }
+
+    /**
+     * Check authentication status for AJAX requests
+     * Returns JSON response with authentication status and user type
+     * Used by client-side auth redirect logic
+     */
+    public function checkAuthStatus() {
+        // Set JSON content type
+        header('Content-Type: application/json');
+        
+        try {
+            // Check if user is authenticated
+            $isAuthenticated = $this->sessionManager->isAuthenticated();
+            
+            if ($isAuthenticated) {
+                $userType = $this->sessionManager->getUserType();
+                $userId = $this->sessionManager->getUserId();
+                
+                $response = [
+                    'authenticated' => true,
+                    'userType' => $userType,
+                    'userId' => $userId
+                ];
+            } else {
+                $response = [
+                    'authenticated' => false,
+                    'userType' => 'guest'
+                ];
+            }
+            
+            echo json_encode($response);
+            
+        } catch (Exception $e) {
+            error_log("Auth status check failed: " . $e->getMessage());
+            
+            // Return safe default response on error
+            $response = [
+                'authenticated' => false,
+                'userType' => 'guest',
+                'error' => 'Unable to determine authentication status'
+            ];
+            
+            http_response_code(500);
+            echo json_encode($response);
+        }
+    }
 }
