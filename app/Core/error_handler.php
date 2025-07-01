@@ -1,5 +1,4 @@
 <?php
-
 function debugError($message, $file = '', $line = '') {
     $errorMsg = "Error: " . $message;
     if ($file) {
