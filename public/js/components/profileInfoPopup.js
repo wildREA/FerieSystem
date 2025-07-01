@@ -38,6 +38,9 @@ function showProfileModal() {
                             </div>
                             <h4 class="mb-1 non-selectable">${currentUser.name}</h4>
                             <p class="text-muted mb-2 selectable-text">${currentUser.id}</p>
+                            <button class="btn btn-outline-danger btn-sm" onclick="logout()">
+                                <i class="bi bi-box-arrow-right me-1"></i> Logout
+                            </button>
                         </div>
                         <div class="col-md-8">
                             <div class="mb-4">
@@ -92,9 +95,6 @@ function showProfileModal() {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-danger" onclick="logout()">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </button>
                     <button type="button" class="btn btn-secondary" onclick="closeProfileModal()">Close</button>
                 </div>
             </div>
