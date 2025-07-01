@@ -145,9 +145,7 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
         document.addEventListener('keydown', function(e) {
             console.log('Key pressed:', e.key);
             if (e.key === 'Escape') {
-                // Get the URL from the existing back link
                 const backLink = document.querySelector('.register-link a');
-                console.log('Using back link URL:', backLink.href);
                 backLink.click();
             }
         });
