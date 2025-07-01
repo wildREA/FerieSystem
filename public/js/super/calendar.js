@@ -10,11 +10,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const noPdfMessage = document.getElementById("noPdfMessage");
   const pdfEmbed = document.getElementById("pdfEmbed");
   const pdfViewer = document.getElementById("pdfViewer");
-  const fullscreenButton = document.getElementById("fullscreenButton");
   const pdfContainer = document.getElementById("pdfContainer");
 
   let pdfObjectUrl = null;
-  let isInFullscreenMode = false;
 
   // Check if all required elements exist
   if (!fileInput || !uploadButton || !uploadStatus || !uploadStatusText || !noPdfMessage || !pdfEmbed) {
@@ -26,9 +24,6 @@ document.addEventListener("DOMContentLoaded", function () {
   uploadButton.addEventListener("click", uploadPdf);
   if (removeButton) {
     removeButton.addEventListener("click", removePdf);
-  }
-  if (fullscreenButton) {
-    fullscreenButton.addEventListener("click", toggleFullscreen);
   }
 
   // Check for existing PDF in session storage
@@ -182,11 +177,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (removeButton) {
           removeButton.style.display = 'none';
         }
-
-        // Exit fullscreen mode if active
-        if (isInFullscreenMode) {
-          exitFullscreenMode();
-        }
       } else {
         showUploadStatus(data.message || "Failed to remove calendar", "danger");
       }
@@ -267,69 +257,5 @@ document.addEventListener("DOMContentLoaded", function () {
         showUploadStatus("Could not check for existing calendar: " + error.message, "warning");
       }
     });
-  }
-
-  /**
-   * Toggle fullscreen mode for the PDF viewer
-   */
-  function toggleFullscreen() {
-    if (!isInFullscreenMode) {
-      // Enter fullscreen mode
-      enterFullscreenMode();
-    } else {
-      // Exit fullscreen mode
-      exitFullscreenMode();
-    }
-  }
-
-  /**
-   * Enter fullscreen mode
-   */
-  function enterFullscreenMode() {
-    if (!pdfObjectUrl) return;
-
-    // Create fullscreen container
-    const fullscreenContainer = document.createElement("div");
-    fullscreenContainer.className = "pdf-fullscreen";
-    fullscreenContainer.id = "pdfFullscreen";
-
-    // Create fullscreen header
-    const header = document.createElement("div");
-    header.className = "pdf-fullscreen-header";
-    header.innerHTML = `
-            <h3>Calendar - Fullscreen View</h3>
-            <button class="pdf-fullscreen-close" id="exitFullscreenButton">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        `;
-
-    // Clone the PDF embed for fullscreen
-    const fullscreenEmbed = pdfEmbed.cloneNode(true);
-
-    // Assemble the fullscreen view
-    fullscreenContainer.appendChild(header);
-    fullscreenContainer.appendChild(fullscreenEmbed);
-
-    // Add to document body
-    document.body.appendChild(fullscreenContainer);
-
-    // Set up exit fullscreen button
-    document
-      .getElementById("exitFullscreenButton")
-      .addEventListener("click", exitFullscreenMode);
-
-    // Update state
-    isInFullscreenMode = true;
-  }
-
-  /**
-   * Exit fullscreen mode
-   */
-  function exitFullscreenMode() {
-    const fullscreenContainer = document.getElementById("pdfFullscreen");
-    if (fullscreenContainer) {
-      fullscreenContainer.remove();
-    }
-    isInFullscreenMode = false;
   }
 });

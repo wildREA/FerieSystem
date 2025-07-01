@@ -46,7 +46,7 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
                 <?php endif; ?>
                 
                 <?php if ($regSuccess): ?>
-                    <div class="alert alert-success" style="background-color: #efe; border: 1px solid #cfc; color: #6c6; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                    <div class="alert alert-success">
                         <?php echo htmlspecialchars($regSuccess); ?>
                     </div>
                 <?php endif; ?>
