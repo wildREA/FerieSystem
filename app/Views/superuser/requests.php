@@ -13,6 +13,7 @@
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="<?= asset('public/js/super/dashboard.js') ?>" defer></script>
     <script src="<?= asset('public/js/super/requests.js') ?>" defer></script>
     <!-- Hidden input to identify current page -->
@@ -74,7 +75,7 @@
           </i></div>
           <div class="d-flex align-items-center">
             <span class="me-2 user-select-none">SUPER USER</span>
-            <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <div onclick="showProfileModal()" id="profileInfo" class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
               <i class="bi bi-person text-white"></i>
             </div>
           </div>
