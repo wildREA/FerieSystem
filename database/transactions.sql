@@ -16,5 +16,5 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 
 
-INSERT INTO transactions (user_id, date, description, amount, type, status)
-VALUES (1, '2024-07-15', 'Vacation day used', -8.00, 'deduction', 'confirmed');
+-- INSERT INTO transactions (user_id, date, description, amount, type, status)
+-- VALUES (1, '2024-07-15', 'Vacation day used', -8.00, 'deduction', 'confirmed');
