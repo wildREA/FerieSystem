@@ -344,3 +344,27 @@ document.querySelectorAll('.password-toggle').forEach(button => {
         }
     });
 });
+
+// Handle 'Escape' key to close modals and clear forms
+document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('keyVerificationForm');
+    if (e.key === 'Escape') {
+        // First check if any key boxes are filled
+        const keyBoxesFilled = Array.from(keyBoxes).some(box => box.value.trim() !== '');
+        
+        if (keyBoxesFilled) {
+            // Clear all key boxes fields first
+            keyBoxes.forEach(box => {
+                box.value = '';
+                box.classList.remove('filled');
+            });
+            document.getElementById('registrationKey').value = '';
+        } else {
+            // If fields are empty, check if modal is displayed and close it
+            if (modal && modal.style.display !== 'none' && modal.style.display !== '') {
+                // Back link to redirect to login form
+                showForm(loginForm);
+            }
+        }
+    }
+});
