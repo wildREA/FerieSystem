@@ -27,6 +27,7 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
             createSuperUser: '<?= url('/api/create-superuser') ?>',
             auth: '<?= url('/auth') ?>'
         };
+        console.log('APP_URLS:', window.APP_URLS);
     </script>
 </head>
 <body>
@@ -139,6 +140,17 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
                 // Form submits via POST to create-superuser route
             });
         }
+
+        // Handle Escape key to redirect to auth page
+        document.addEventListener('keydown', function(e) {
+            console.log('Key pressed:', e.key);
+            if (e.key === 'Escape') {
+                // Get the URL from the existing back link
+                const backLink = document.querySelector('.register-link a');
+                console.log('Using back link URL:', backLink.href);
+                backLink.click();
+            }
+        });
     </script>
 </body>
 </html>
