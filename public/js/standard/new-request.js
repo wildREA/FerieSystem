@@ -56,43 +56,90 @@ const StudentUtils = {
 
     async fetchBalanceData() {
         try {
+            console.log('Fetching balance data from /api/balance');
             const response = await fetch('/api/balance');
+            
+            // Log the raw response for debugging
+            const responseText = await response.text();
+            console.log('Raw balance API response:', responseText);
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            
             if (!response.ok) {
+                console.error(`HTTP error! status: ${response.status}, response: ${responseText}`);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            const data = await response.json();
+            
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('Failed to parse balance response as JSON:', responseText);
+                console.error('Parse error:', parseError);
+                throw new Error('Invalid JSON response from balance API');
+            }
+            
+            console.log('Parsed balance data:', data);
             
             if (data.success && data.balance) {
                 this.currentBalanceData = data.balance;
+                console.log('Balance data successfully set:', this.currentBalanceData);
                 return data.balance;
             } else {
-                throw new Error('Invalid balance data received');
+                console.error('Invalid balance data structure:', data);
+                throw new Error('Invalid balance data received: ' + JSON.stringify(data));
             }
         } catch (error) {
             console.error('Error fetching balance data:', error);
+            console.log('Using fallback balance data');
             // Return default fallback data
-            return {
+            const fallbackData = {
                 totalAllocated: 200,
                 totalUsed: 0,
                 currentBalance: 200,
                 pendingHours: 0
             };
+            this.currentBalanceData = fallbackData;
+            return fallbackData;
         }
     },
 
     async calculateVacationHours() {
-        if (!this.currentBalanceData) {
-            await this.fetchBalanceData();
+        try {
+            if (!this.currentBalanceData) {
+                console.log('No balance data, fetching...');
+                await this.fetchBalanceData();
+            }
+            
+            const balance = this.currentBalanceData;
+            
+            if (!balance) {
+                console.error('Balance data is still null after fetch attempt');
+                // Return default values
+                return {
+                    totalHours: 200,
+                    usedHours: 0,
+                    pendingHours: 0,
+                    remainingHours: 200
+                };
+            }
+            
+            return {
+                totalHours: balance.totalAllocated || 0,
+                usedHours: Math.abs(balance.totalUsed || 0), // totalUsed is negative, make it positive for display
+                pendingHours: balance.pendingHours || 0,
+                remainingHours: balance.currentBalance || 0
+            };
+        } catch (error) {
+            console.error('Error in calculateVacationHours:', error);
+            // Return default values on error
+            return {
+                totalHours: 200,
+                usedHours: 0,
+                pendingHours: 0,
+                remainingHours: 200
+            };
         }
-        
-        const balance = this.currentBalanceData;
-        
-        return {
-            totalHours: balance.totalAllocated,
-            usedHours: Math.abs(balance.totalUsed), // totalUsed is negative, make it positive for display
-            pendingHours: balance.pendingHours,
-            remainingHours: balance.currentBalance
-        };
     },
 
     calculateWorkingHours(startDate, endDate) {
