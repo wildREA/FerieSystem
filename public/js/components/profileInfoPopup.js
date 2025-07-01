@@ -127,8 +127,35 @@ function showFriendsList() {
 }
 
 function logout() {
-    console.log("Logout - Not implemented yet");
-    // TODO: Implement logout functionality
+    // Close the profile modal first
+    closeProfileModal();
+    
+    // Call the logout API
+    fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin' // Include cookies for session management
+    })
+    .then(response => {
+        if (response.ok) {
+            // Successful logout
+            console.log('Logout successful');
+            // Redirect to login page
+            window.location.href = '/auth';
+        } else {
+            // Handle logout error
+            console.error('Logout failed:', response.status);
+            // Still redirect to login page as a fallback
+            window.location.href = '/auth';
+        }
+    })
+    .catch(error => {
+        console.error('Logout error:', error);
+        // Redirect to login page even if API call fails
+        window.location.href = '/auth';
+    });
 }
 
 function showSettings() {
