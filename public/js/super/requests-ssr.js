@@ -341,8 +341,36 @@ document.addEventListener("DOMContentLoaded", function() {
     function handleRequestCard(requestCard, requestId) {
         // Extract data from the card
         const studentName = requestCard.querySelector('.student-info h4')?.textContent || 'N/A';
-        const status = requestCard.querySelector('.status-badge, .request-status-badge')?.textContent || 'N/A';
+        
+        // Better status extraction - try multiple selectors
+        let status = 'N/A';
+        const statusElement = requestCard.querySelector('.status-badge, .request-status-badge');
+        if (statusElement) {
+            status = statusElement.textContent.trim();
+        }
+        
+        // If status is still N/A, try to determine from context
+        if (status === 'N/A') {
+            // Check if it's in pending requests section
+            if (requestCard.closest('#studentsGrid')) {
+                status = 'Pending';
+            } 
+            // Check if it's in approved requests section
+            else if (requestCard.closest('#approvedRequestsGrid')) {
+                status = 'Active';
+            }
+            // Check if it's in completed requests section
+            else if (requestCard.closest('#completedRequestsGrid')) {
+                status = 'Completed';
+            }
+        }
+        
         const reason = requestCard.querySelector('.detail-value')?.textContent || 'N/A';
+        
+        // Extract user ID for balance API call
+        const userId = requestCard.getAttribute('data-user-id') || 
+                       requestCard.querySelector('.student-id')?.textContent ||
+                       requestCard.getAttribute('data-request-id');
         
         // Get dates from the date blocks (new structure)
         const dateBlocks = requestCard.querySelectorAll('.date-block');
@@ -422,7 +450,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
         
-        console.log('Extracted data:', { requestId, studentName, status, reason, startDate, endDate, days: numDays, ffCost, timePeriod, requestSubmitted, startTime, endTime });
+        console.log('Extracted data:', { requestId, studentName, status, reason, startDate, endDate, days: numDays, ffCost, timePeriod, requestSubmitted, startTime, endTime, userId });
         
         // Create and show the modal
         createDetailModal({
@@ -437,7 +465,8 @@ document.addEventListener("DOMContentLoaded", function() {
             timePeriod,
             requestSubmitted,
             startTime,
-            endTime
+            endTime,
+            userId
         });
     }
     
@@ -451,8 +480,113 @@ document.addEventListener("DOMContentLoaded", function() {
             existingModal.remove();
         }
         
-        // Create modal HTML with system-matching colors
-        const modalHTML = `
+        // Show initial modal with loading state for balance
+        const modalHTML = createModalHTML(data, { loading: true });
+        
+        // Add modal to document
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('requestDetailModal'));
+        modal.show();
+        
+        // Fetch user absolute balance data if userId is available
+        if (data.userId) {
+            fetchUserAbsoluteBalance(data.userId).then(balanceData => {
+                // Update the modal with balance data
+                updateModalWithBalance(balanceData);
+            }).catch(error => {
+                console.error('Error fetching absolute balance:', error);
+                updateModalWithBalance({ error: true });
+            });
+        } else {
+            // No user ID available, show without balance
+            updateModalWithBalance({ error: true });
+        }
+        
+        // Clean up when modal is hidden
+        document.getElementById('requestDetailModal').addEventListener('hidden.bs.modal', function() {
+            this.remove();
+        });
+    }
+    
+    /**
+     * Fetch user absolute balance from API (excluding pending requests)
+     */
+    async function fetchUserAbsoluteBalance(userId) {
+        try {
+            const response = await fetch(`/api/user-absolute-balance?user_id=${encodeURIComponent(userId)}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                return data.balance;
+            } else {
+                throw new Error(data.error || 'Failed to fetch absolute balance');
+            }
+        } catch (error) {
+            console.error('Absolute balance fetch error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Fetch user balance from API
+     */
+    async function fetchUserBalance(userId) {
+        try {
+            const response = await fetch(`/api/user-balance?user_id=${encodeURIComponent(userId)}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                return data.balance;
+            } else {
+                throw new Error(data.error || 'Failed to fetch balance');
+            }
+        } catch (error) {
+            console.error('Balance fetch error:', error);
+            throw error;
+        }
+    }
+    
+    /**
+     * Update modal with balance data
+     */
+    function updateModalWithBalance(balanceData) {
+        const balanceContainer = document.getElementById('modalBalanceContainer');
+        if (!balanceContainer) return;
+        
+        if (balanceData.error) {
+            balanceContainer.innerHTML = `
+                <div class="text-center py-2">
+                    <small class="text-muted">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Balance information unavailable
+                    </small>
+                </div>
+            `;
+            return;
+        }
+        
+        // Convert hours to days for display
+        const currentBalanceDays = Math.floor(balanceData.currentBalance / 8);
+        const currentBalanceHours = balanceData.currentBalance % 8;
+        
+        balanceContainer.innerHTML = `
+            <div class="text-center py-3">
+                <label class="form-label fw-bold d-block" style="color: #a0a7b5; font-size: 0.9rem;">Available Vacation Days</label>
+                <h3 style="color: #28a745; margin-bottom: 8px;">${currentBalanceDays}d ${currentBalanceHours}h</h3>
+                <small style="color: #a0a7b5;">(${balanceData.currentBalance} hours total)</small>
+            </div>
+        `;
+    }
+    
+    /**
+     * Create modal HTML structure
+     */
+    function createModalHTML(data, options = {}) {
+        const isLoading = options.loading || false;
+        
+        return `
             <div class="modal fade" id="requestDetailModal" tabindex="-1" aria-labelledby="requestDetailModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content" style="background-color: #1a1f2c; border: 1px solid #2c3142;">
@@ -476,39 +610,49 @@ document.addEventListener("DOMContentLoaded", function() {
                                                 <label class="form-label fw-bold" style="color: #a0a7b5;">Name:</label>
                                                 <p class="mb-0 selectable-text" style="color: #ffffff; cursor: pointer;" onclick="copyToClipboard('${data.studentName}')">
                                                     ${data.studentName}
-                                                    <i class="bi bi-clipboard ms-1" style="font-size: 0.8rem; opacity: 0.7;"></i>
                                                 </p>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold" style="color: #a0a7b5;">Request ID:</label>
-                                                <p class="mb-0"><code style="background-color: #2c3142; color: #007bff; padding: 2px 6px; border-radius: 3px; cursor: pointer;" onclick="copyToClipboard('${data.requestId}')">${data.requestId} <i class="bi bi-clipboard ms-1" style="font-size: 0.7rem; opacity: 0.7;"></i></code></p>
                                             </div>
                                             <div class="mb-0">
                                                 <label class="form-label fw-bold" style="color: #a0a7b5;">Status:</label>
-                                                <br><span class="badge ${getStatusBadgeBootstrap(data.status)} fs-6">${data.status.toUpperCase()}</span>
+                                                <p class="mb-0" style="color: #ffffff; font-size: 0.8rem;">
+                                                    <span class="${getStatusBadgeBootstrap(data.status)}">${data.status.toUpperCase()}</span>
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <!-- Request Timeline -->
+                                <!-- Vacation Balance -->
                                 <div class="col-md-6 mb-4">
                                     <div class="card h-100" style="background-color: #222941; border: 1px solid #2c3142;">
+                                        <div class="card-header" style="background-color: #302241; border-bottom: 1px solid #2c3142;">
+                                            <h6 class="mb-0" style="color: #ffffff;"><i class="bi bi-wallet2 me-2"></i>Vacation Balance</h6>
+                                        </div>
+                                        <div class="card-body" id="modalBalanceContainer">
+                                            ${isLoading ? `
+                                                <div class="text-center py-3">
+                                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                        <span class="visually-hidden">Loading...</span>
+                                                    </div>
+                                                    <p class="mb-0 mt-2 text-muted">Loading balance...</p>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Request Timeline -->
+                            <div class="row">
+                                <div class="col-12 mb-4">
+                                    <div class="card" style="background-color: #222941; border: 1px solid #2c3142;">
                                         <div class="card-header" style="background-color: #302241; border-bottom: 1px solid #2c3142;">
                                             <h6 class="mb-0" style="color: #ffffff;"><i class="bi bi-clock-history me-2"></i>Timeline</h6>
                                         </div>
                                         <div class="card-body">
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold" style="color: #a0a7b5;">Submitted:</label>
-                                                <p class="mb-0" style="color: #ffffff;">${data.requestSubmitted}</p>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold" style="color: #a0a7b5;">Total Period:</label>
-                                                <p class="mb-0" style="color: #ffffff;">${data.timePeriod}</p>
-                                            </div>
-                                            <div class="mb-0">
-                                                <label class="form-label fw-bold" style="color: #a0a7b5;">Working Days:</label>
-                                                <p class="mb-0 fw-bold" style="color: #dc3545;">${data.days} day${data.days !== 1 ? 's' : ''}</p>
+                                            <div class="text-center py-2">
+                                                <label class="form-label fw-bold d-block" style="color: #a0a7b5;">Submitted</label>
+                                                <h6 style="color: #ffffff; margin-bottom: 2px;">${data.requestSubmitted}</h6>
                                             </div>
                                         </div>
                                     </div>
@@ -578,18 +722,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 </div>
             </div>
         `;
-        
-        // Add modal to document
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        // Show the modal
-        const modal = new bootstrap.Modal(document.getElementById('requestDetailModal'));
-        modal.show();
-        
-        // Clean up when modal is hidden
-        document.getElementById('requestDetailModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
-        });
     }
     
     /**
@@ -597,13 +729,13 @@ document.addEventListener("DOMContentLoaded", function() {
      */
     function getStatusBadgeBootstrap(status) {
         switch (status.toLowerCase()) {
-            case 'pending': return 'bg-warning text-dark';
-            case 'approved': return 'bg-success';
-            case 'active': return 'bg-success';
-            case 'completed': return 'bg-secondary';
-            case 'rejected': return 'bg-danger';
-            case 'denied': return 'bg-danger';
-            default: return 'bg-secondary';
+            case 'pending': return 'text-warning bg-transparent';
+            case 'approved': return 'text-success bg-transparent';
+            case 'active': return 'text-success bg-transparent';
+            case 'completed': return 'text-secondary bg-transparent';
+            case 'rejected': return 'text-danger bg-transparent';
+            case 'denied': return 'text-danger bg-transparent';
+            default: return 'text-secondary bg-transparent';
         }
     }
     

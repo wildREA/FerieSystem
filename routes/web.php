@@ -257,5 +257,19 @@ $routes['POST']['/api/deny-request'] = function() {
     $controller->denyRequestAPI();
 };
 
+// Get user balance API for superusers
+$routes['GET']['/api/user-balance'] = function() {
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->getUserBalanceAPI();
+};
+
+// Get absolute user balance API for superusers (excluding pending)
+$routes['GET']['/api/user-absolute-balance'] = function() {
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->getUserAbsoluteBalanceAPI();
+};
+
 // Return the routes array to be processed by the router
 return $routes;

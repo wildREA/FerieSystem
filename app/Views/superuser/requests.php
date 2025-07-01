@@ -22,6 +22,7 @@ function getStatusBadgeClass($status) {
         case 'pending': return 'status-pending';
         case 'approved': return 'status-approved';
         case 'rejected': return 'status-rejected';
+        case 'denied': return 'status-rejected';
         default: return 'status-pending';
     }
 }
@@ -132,7 +133,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
             </div>
           <?php else: ?>
             <?php foreach ($pendingRequests as $request): ?>
-              <div class="request-card" data-request-id="<?= htmlspecialchars($request['request_id']) ?>">
+              <div class="request-card" data-request-id="<?= htmlspecialchars($request['request_id']) ?>" data-user-id="<?= htmlspecialchars($request['id']) ?>">
                 
                 <div class="student-header">
                   <div class="student-avatar <?= getStatusBadgeClass($request['status']) ?>">
@@ -140,6 +141,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                   </div>
                   <div class="student-info">
                     <h4><?= htmlspecialchars($request['name']) ?></h4>
+                    <p class="student-id" style="display: none;"><?= htmlspecialchars($request['id']) ?></p>
                   </div>
                 </div>
                 
@@ -228,7 +230,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                   $daysRemaining = calculateDaysRemaining($request['requestEndDate']);
                   $timeDescription = $daysRemaining . ' days remaining';
                 ?>
-                <div class="request-card active" data-request-id="<?= htmlspecialchars($request['request_id']) ?>">
+                <div class="request-card active" data-request-id="<?= htmlspecialchars($request['request_id']) ?>" data-user-id="<?= htmlspecialchars($request['id']) ?>">
                   <span class="request-status-badge active">Active</span>
                   
                   <div class="student-header">
@@ -237,7 +239,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                     </div>
                     <div class="student-info">
                       <h4><?= htmlspecialchars($request['name']) ?></h4>
-                      <p class="student-id"><?= htmlspecialchars($request['id']) ?></p>
+                      <p class="student-id" style="display: none;"><?= htmlspecialchars($request['id']) ?></p>
                     </div>
                   </div>
                   
@@ -266,7 +268,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                   </div>
                   
                   <div class="mt-3 d-flex justify-content-end">
-                    <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('<?= htmlspecialchars($request['id']) ?>')">
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('<?= htmlspecialchars($request['request_id']) ?>')">
                       <i class="bi bi-eye"></i> Details
                     </button>
                   </div>
@@ -291,7 +293,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                   $daysSinceCompletion = calculateDaysSince($request['requestEndDate']);
                   $timeDescription = 'Completed ' . $daysSinceCompletion . ' days ago';
                 ?>
-                <div class="request-card inactive" data-request-id="<?= htmlspecialchars($request['request_id']) ?>">
+                <div class="request-card inactive" data-request-id="<?= htmlspecialchars($request['request_id']) ?>" data-user-id="<?= htmlspecialchars($request['id']) ?>">
                   <span class="request-status-badge inactive">Completed</span>
                   
                   <div class="student-header">
@@ -300,7 +302,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                     </div>
                     <div class="student-info">
                       <h4><?= htmlspecialchars($request['name']) ?></h4>
-                      <p class="student-id"><?= htmlspecialchars($request['id']) ?></p>
+                      <p class="student-id" style="display: none;"><?= htmlspecialchars($request['id']) ?></p>
                     </div>
                   </div>
                   
@@ -329,7 +331,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                   </div>
                   
                   <div class="mt-3 d-flex justify-content-end">
-                    <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('<?= htmlspecialchars($request['id']) ?>')">
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('<?= htmlspecialchars($request['request_id']) ?>')">
                       <i class="bi bi-eye"></i> Details
                     </button>
                   </div>

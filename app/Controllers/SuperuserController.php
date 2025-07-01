@@ -162,16 +162,33 @@ class SuperuserController {
                 throw new \Exception('Unauthorized');
             }
             
+            // Start transaction
+            $this->db->beginTransaction();
+            
+            // Update request status
             $stmt = $this->db->prepare("UPDATE requests SET status = 'approved' WHERE id = ?");
             $result = $stmt->execute([$requestId]);
             
-            if ($result) {
-                return ['success' => true, 'message' => 'Request approved successfully'];
-            } else {
+            if (!$result) {
+                $this->db->rollback();
                 throw new \Exception('Failed to approve request');
             }
             
+            // Confirm the pending transaction
+            $transactionResult = $this->confirmPendingTransaction($requestId);
+            
+            if (!$transactionResult) {
+                $this->db->rollback();
+                throw new \Exception('Failed to confirm transaction');
+            }
+            
+            $this->db->commit();
+            return ['success' => true, 'message' => 'Request approved successfully'];
+            
         } catch (\Exception $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollback();
+            }
             error_log("Error approving request: " . $e->getMessage());
             return ['success' => false, 'message' => 'Error approving request'];
         }
@@ -183,21 +200,55 @@ class SuperuserController {
     public function denyRequest($requestId) {
         try {
             if (!$this->sessionManager->isAuthenticated() || $this->sessionManager->getUserType() !== 'super') {
-                throw new \Exception('Unauthorized');
+                throw new \Exception('Unauthorized access');
             }
             
-            $stmt = $this->db->prepare("UPDATE requests SET status = 'rejected' WHERE id = ?");
+            if (!$this->db) {
+                throw new \Exception('Database connection not available');
+            }
+            
+            // First check if the request exists
+            $checkStmt = $this->db->prepare("SELECT id, status FROM requests WHERE id = ?");
+            $checkStmt->execute([$requestId]);
+            $request = $checkStmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if (!$request) {
+                throw new \Exception('Request not found');
+            }
+            
+            if ($request['status'] !== 'pending') {
+                throw new \Exception('Only pending requests can be denied');
+            }
+            
+            // Start transaction
+            $this->db->beginTransaction();
+            
+            // Update the request status
+            $stmt = $this->db->prepare("UPDATE requests SET status = 'denied' WHERE id = ?");
             $result = $stmt->execute([$requestId]);
             
-            if ($result) {
-                return ['success' => true, 'message' => 'Request denied successfully'];
-            } else {
-                throw new \Exception('Failed to deny request');
+            if (!$result || $stmt->rowCount() === 0) {
+                $this->db->rollback();
+                throw new \Exception('Failed to update request status');
             }
             
+            // Cancel the pending transaction
+            $transactionResult = $this->cancelPendingTransaction($requestId);
+            
+            if (!$transactionResult) {
+                $this->db->rollback();
+                throw new \Exception('Failed to cancel transaction');
+            }
+            
+            $this->db->commit();
+            return ['success' => true, 'message' => 'Request denied successfully'];
+            
         } catch (\Exception $e) {
-            error_log("Error denying request: " . $e->getMessage());
-            return ['success' => false, 'message' => 'Error denying request'];
+            if ($this->db->inTransaction()) {
+                $this->db->rollback();
+            }
+            error_log("Error denying request ID $requestId: " . $e->getMessage());
+            return ['success' => false, 'message' => $e->getMessage()];
         }
     }
     
@@ -240,12 +291,18 @@ class SuperuserController {
         header('Content-Type: application/json');
         
         try {
+            if (!$this->sessionManager->isAuthenticated() || $this->sessionManager->getUserType() !== 'super') {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Only superusers can deny requests']);
+                return;
+            }
+
             $input = json_decode(file_get_contents('php://input'), true);
             $requestId = $input['request_id'] ?? null;
             
             if (!$requestId) {
                 http_response_code(400);
-                echo json_encode(['error' => 'Request ID is required']);
+                echo json_encode(['success' => false, 'message' => 'Request ID is required']);
                 return;
             }
             
@@ -261,7 +318,230 @@ class SuperuserController {
         } catch (\Exception $e) {
             error_log("Error in denyRequestAPI: " . $e->getMessage());
             http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Internal server error']);
+        }
+    }
+    
+    /**
+     * Get user balance data for superusers
+     */
+    public function getUserBalance($userId) {
+        try {
+            // Calculate current available balance from transactions table only
+            // This excludes pending requests and only counts processed allocations/deductions
+            $stmt = $this->db->prepare("
+                SELECT 
+                    SUM(CASE WHEN type = 'allocation' THEN amount ELSE 0 END) as total_allocated,
+                    SUM(CASE WHEN type = 'deduction' THEN amount ELSE 0 END) as total_used,
+                    SUM(amount) as current_balance
+                FROM transactions 
+                WHERE user_id = ?
+            ");
+            $stmt->execute([$userId]);
+            $balance = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            return [
+                'currentBalance' => (float)($balance['current_balance'] ?? 0)
+            ];
+            
+        } catch (\Exception $e) {
+            error_log("Error getting user balance: " . $e->getMessage());
+            return [
+                'currentBalance' => 0
+            ];
+        }
+    }
+
+    /**
+     * API endpoint for getting user balance (for superusers)
+     */
+    public function getUserBalanceAPI() {
+        header('Content-Type: application/json');
+        
+        try {
+            if (!$this->sessionManager->isAuthenticated() || $this->sessionManager->getUserType() !== 'super') {
+                http_response_code(403);
+                echo json_encode(['error' => 'Only superusers can access this data']);
+                return;
+            }
+            
+            $userId = $_GET['user_id'] ?? null;
+            
+            if (!$userId) {
+                http_response_code(400);
+                echo json_encode(['error' => 'User ID is required']);
+                return;
+            }
+            
+            $balanceData = $this->getUserBalance($userId);
+            
+            echo json_encode([
+                'success' => true,
+                'balance' => $balanceData
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log("Error in getUserBalanceAPI: " . $e->getMessage());
+            http_response_code(500);
             echo json_encode(['error' => 'Internal server error']);
+        }
+    }
+    
+    /**
+     * API endpoint for getting absolute user balance (excluding pending requests)
+     */
+    public function getUserAbsoluteBalanceAPI() {
+        header('Content-Type: application/json');
+        
+        try {
+            if (!$this->sessionManager->isAuthenticated() || $this->sessionManager->getUserType() !== 'super') {
+                http_response_code(403);
+                echo json_encode(['error' => 'Only superusers can access this data']);
+                return;
+            }
+            
+            $userId = $_GET['user_id'] ?? null;
+            
+            if (!$userId) {
+                http_response_code(400);
+                echo json_encode(['error' => 'User ID is required']);
+                return;
+            }
+            
+            $balanceData = $this->getUserAbsoluteBalance($userId);
+            
+            echo json_encode([
+                'success' => true,
+                'balance' => $balanceData
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log("Error in getUserAbsoluteBalanceAPI: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['error' => 'Internal server error']);
+        }
+    }
+
+    /**
+     * Get absolute user balance (excluding pending requests)
+     */
+    public function getUserAbsoluteBalance($userId) {
+        try {
+            if (!$this->db) {
+                throw new \Exception('Database connection not available');
+            }
+            
+            // Calculate absolute balance from confirmed transactions only
+            // This excludes pending transactions and only counts processed allocations/deductions
+            $stmt = $this->db->prepare("
+                SELECT 
+                    SUM(amount) as current_balance
+                FROM transactions 
+                WHERE user_id = ? AND status = 'confirmed'
+            ");
+            $stmt->execute([$userId]);
+            $balance = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            return [
+                'currentBalance' => (float)($balance['current_balance'] ?? 0)
+            ];
+            
+        } catch (\Exception $e) {
+            error_log("Error getting absolute user balance: " . $e->getMessage());
+            return [
+                'currentBalance' => 0
+            ];
+        }
+    }
+    
+    /**
+     * Create a pending transaction when a request is submitted
+     */
+    public function createPendingTransaction($userId, $requestId, $hours, $description) {
+        try {
+            if (!$this->db) {
+                throw new \Exception('Database connection not available');
+            }
+            
+            // Create a pending deduction transaction for the vacation request
+            $stmt = $this->db->prepare("
+                INSERT INTO transactions (user_id, request_id, date, description, amount, type, status)
+                VALUES (?, ?, CURDATE(), ?, ?, 'deduction', 'pending')
+            ");
+            
+            $result = $stmt->execute([
+                $userId,
+                $requestId,
+                $description,
+                -abs($hours) // Negative amount for deduction
+            ]);
+            
+            if (!$result) {
+                throw new \Exception('Failed to create pending transaction');
+            }
+            
+            return true;
+            
+        } catch (\Exception $e) {
+            error_log("Error creating pending transaction: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Confirm a pending transaction when request is approved
+     */
+    public function confirmPendingTransaction($requestId) {
+        try {
+            if (!$this->db) {
+                throw new \Exception('Database connection not available');
+            }
+            
+            $stmt = $this->db->prepare("
+                UPDATE transactions 
+                SET status = 'confirmed' 
+                WHERE request_id = ? AND status = 'pending'
+            ");
+            
+            $result = $stmt->execute([$requestId]);
+            
+            if (!$result) {
+                throw new \Exception('Failed to confirm pending transaction');
+            }
+            
+            return true;
+            
+        } catch (\Exception $e) {
+            error_log("Error confirming pending transaction: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Cancel a pending transaction when request is denied
+     */
+    public function cancelPendingTransaction($requestId) {
+        try {
+            if (!$this->db) {
+                throw new \Exception('Database connection not available');
+            }
+            
+            $stmt = $this->db->prepare("
+                DELETE FROM transactions 
+                WHERE request_id = ? AND status = 'pending'
+            ");
+            
+            $result = $stmt->execute([$requestId]);
+            
+            if (!$result) {
+                throw new \Exception('Failed to cancel pending transaction');
+            }
+            
+            return true;
+            
+        } catch (\Exception $e) {
+            error_log("Error canceling pending transaction: " . $e->getMessage());
+            return false;
         }
     }
 }
