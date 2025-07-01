@@ -92,9 +92,6 @@ function showProfileModal() {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-primary" onclick="showFriendsList()">
-                        <i class="bi bi-people"></i> Show Friends List
-                    </button>
                     <button type="button" class="btn btn-outline-danger" onclick="logout()">
                         <i class="bi bi-box-arrow-right"></i> Logout
                     </button>
@@ -166,3 +163,8 @@ document.addEventListener('keydown', function(event) {
         closeProfileModal();
     }
 });
+
+// Open modal when clicking on the profile info div
+document.getElementById('profileInfo').addEventListener('click', function() {
+    showProfileModal();
+})
