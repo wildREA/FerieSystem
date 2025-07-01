@@ -1,199 +1,197 @@
-// New Request page functionality
-// Removed mock data - now fetches real data from API
+/**
+ * New Request page functionality
+ * Handles vacation request submission with proper validation and error handling
+ */
 
-const DataManager = {
-    init() {
+// Configuration constants
+const CONFIG = {
+    API_ENDPOINTS: {
+        SUBMIT_REQUEST: '/api/submit-request',
+        BALANCE: '/api/balance'
     },
-
-    async addRequest(newRequest) {
-        console.log('Adding new request:', newRequest);
-        try {
-            const requestData = {
-                requestType: 'vacation',
-                startDateTime: newRequest.startDate,
-                endDateTime: newRequest.endDate,
-                reason: newRequest.reason
-            };
-            
-            console.log('Request data to submit:', requestData);
-
-            const response = await fetch('/api/submit-request', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestData)
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('HTTP error response:', errorText);
-                throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
-            }
-
-            const responseText = await response.text();
-            console.log('Raw response:', responseText);
-            
-            let result;
-            try {
-                result = JSON.parse(responseText);
-            } catch (parseError) {
-                console.error('Failed to parse JSON response:', responseText);
-                throw new Error('Server returned invalid JSON response: ' + responseText.substring(0, 100));
-            }
-            
-            console.log('Request submitted successfully:', result);
-            return result;
-        } catch (error) {
-            console.error('Error submitting request:', error);
-            throw error;
-        }
+    WORKING_HOURS: {
+        START: 8,
+        END: 17,
+        DAILY_HOURS: 9
+    },
+    VALIDATION: {
+        ADVANCE_NOTICE_HOURS: 48,
+        LOW_BALANCE_THRESHOLD: 24
+    },
+    UI: {
+        NOTIFICATION_TIMEOUT: 4000,
+        MIN_END_TIME_OFFSET: 15 // minutes
+    },
+    DEFAULTS: {
+        TOTAL_ALLOCATED: 200,
+        USED_HOURS: 0,
+        PENDING_HOURS: 0
     }
 };
 
-const StudentUtils = {
-    currentBalanceData: null,
-
-    async fetchBalanceData() {
+/**
+ * Handles API communication for vacation requests
+ */
+class RequestApiService {
+    static async submitRequest(requestData) {
+        console.log('Submitting request:', requestData);
+        
         try {
-            console.log('Fetching balance data from /api/balance');
-            const response = await fetch('/api/balance');
-            
-            // Log the raw response for debugging
-            const responseText = await response.text();
-            console.log('Raw balance API response:', responseText);
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
-            
-            if (!response.ok) {
-                console.error(`HTTP error! status: ${response.status}, response: ${responseText}`);
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            let data;
-            try {
-                data = JSON.parse(responseText);
-            } catch (parseError) {
-                console.error('Failed to parse balance response as JSON:', responseText);
-                console.error('Parse error:', parseError);
-                throw new Error('Invalid JSON response from balance API');
-            }
-            
-            console.log('Parsed balance data:', data);
+            const response = await fetch(CONFIG.API_ENDPOINTS.SUBMIT_REQUEST, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+
+            return await this._handleApiResponse(response);
+        } catch (error) {
+            console.error('Error submitting request:', error);
+            throw new Error(`Failed to submit request: ${error.message}`);
+        }
+    }
+
+    static async fetchBalanceData() {
+        console.log('Fetching balance data from', CONFIG.API_ENDPOINTS.BALANCE);
+        
+        try {
+            const response = await fetch(CONFIG.API_ENDPOINTS.BALANCE);
+            const data = await this._handleApiResponse(response);
             
             if (data.success && data.balance) {
-                this.currentBalanceData = data.balance;
-                console.log('Balance data successfully set:', this.currentBalanceData);
                 return data.balance;
-            } else {
-                console.error('Invalid balance data structure:', data);
-                throw new Error('Invalid balance data received: ' + JSON.stringify(data));
             }
+            
+            throw new Error('Invalid balance data structure received');
         } catch (error) {
             console.error('Error fetching balance data:', error);
             console.log('Using fallback balance data');
-            // Return default fallback data
-            const fallbackData = {
-                totalAllocated: 200,
-                totalUsed: 0,
-                currentBalance: 200,
-                pendingHours: 0
-            };
-            this.currentBalanceData = fallbackData;
-            return fallbackData;
+            return this._getFallbackBalanceData();
         }
-    },
+    }
+
+    static async _handleApiResponse(response) {
+        const responseText = await response.text();
+        console.log('API response:', { status: response.status, body: responseText });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${responseText}`);
+        }
+
+        try {
+            return JSON.parse(responseText);
+        } catch (parseError) {
+            throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}`);
+        }
+    }
+
+    static _getFallbackBalanceData() {
+        return {
+            totalAllocated: CONFIG.DEFAULTS.TOTAL_ALLOCATED,
+            totalUsed: CONFIG.DEFAULTS.USED_HOURS,
+            currentBalance: CONFIG.DEFAULTS.TOTAL_ALLOCATED,
+            pendingHours: CONFIG.DEFAULTS.PENDING_HOURS
+        };
+    }
+}
+
+/**
+ * Manages vacation balance calculations and utilities
+ */
+class VacationBalanceService {
+    constructor() {
+        this.currentBalanceData = null;
+    }
+
+    async getBalanceData() {
+        if (!this.currentBalanceData) {
+            this.currentBalanceData = await RequestApiService.fetchBalanceData();
+        }
+        return this.currentBalanceData;
+    }
 
     async calculateVacationHours() {
         try {
-            if (!this.currentBalanceData) {
-                console.log('No balance data, fetching...');
-                await this.fetchBalanceData();
-            }
-            
-            const balance = this.currentBalanceData;
-            
-            if (!balance) {
-                console.error('Balance data is still null after fetch attempt');
-                // Return default values
-                return {
-                    totalHours: 200,
-                    usedHours: 0,
-                    pendingHours: 0,
-                    remainingHours: 200
-                };
-            }
+            const balance = await this.getBalanceData();
             
             return {
                 totalHours: balance.totalAllocated || 0,
-                usedHours: Math.abs(balance.totalUsed || 0), // totalUsed is negative, make it positive for display
+                usedHours: Math.abs(balance.totalUsed || 0),
                 pendingHours: balance.pendingHours || 0,
                 remainingHours: balance.currentBalance || 0
             };
         } catch (error) {
-            console.error('Error in calculateVacationHours:', error);
-            // Return default values on error
-            return {
-                totalHours: 200,
-                usedHours: 0,
-                pendingHours: 0,
-                remainingHours: 200
-            };
+            console.error('Error calculating vacation hours:', error);
+            return this._getDefaultVacationHours();
         }
-    },
+    }
 
-    calculateWorkingHours(startDate, endDate) {
+    _getDefaultVacationHours() {
+        return {
+            totalHours: CONFIG.DEFAULTS.TOTAL_ALLOCATED,
+            usedHours: CONFIG.DEFAULTS.USED_HOURS,
+            pendingHours: CONFIG.DEFAULTS.PENDING_HOURS,
+            remainingHours: CONFIG.DEFAULTS.TOTAL_ALLOCATED
+        };
+    }
+}
+
+/**
+ * Calculates working hours between dates
+ */
+class WorkingHoursCalculator {
+    static calculate(startDate, endDate) {
         const start = new Date(startDate);
         const end = new Date(endDate);
-        
-        const workingStartHour = 8;
-        const workingEndHour = 17;
-        const maxDailyHours = workingEndHour - workingStartHour; // 9 hours per day
         
         let totalWorkingHours = 0;
         const current = new Date(start);
         
         while (current < end) {
-            const dayOfWeek = current.getDay();
-            
-            // Skip weekends (Sunday = 0, Saturday = 6)
-            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-                let dayStart, dayEnd;
-                
-                if (current.toDateString() === start.toDateString()) {
-                    const startHour = Math.max(start.getHours(), workingStartHour);
-                    const startMinute = start.getHours() >= workingStartHour ? start.getMinutes() : 0;
-                    dayStart = startHour + (startMinute / 60);
-                } else {
-                    dayStart = workingStartHour;
-                }
-                
-                if (current.toDateString() === end.toDateString()) {
-                    const endHour = Math.min(end.getHours(), workingEndHour);
-                    const endMinute = end.getHours() <= workingEndHour ? end.getMinutes() : 0;
-                    dayEnd = endHour + (endMinute / 60);
-                } else {
-                    dayEnd = workingEndHour;
-                }
-                
-                const dailyHours = Math.max(0, dayEnd - dayStart);
-                totalWorkingHours += dailyHours;
+            if (this._isWorkingDay(current)) {
+                const dayHours = this._calculateDayHours(current, start, end);
+                totalWorkingHours += dayHours;
             }
             
             current.setDate(current.getDate() + 1);
             current.setHours(0, 0, 0, 0);
         }
         
-        // Round to 2 decimal places for better precision
-        totalWorkingHours = Math.round(totalWorkingHours * 100) / 100;
-        
-        // Don't force a minimum - if it's 0, it should be 0
-        return { 
-            workingHours: Math.max(0, totalWorkingHours)
-        };
-    },
+        return Math.round(totalWorkingHours * 100) / 100;
+    }
 
-    showNotification(message, type = 'info') {
+    static _isWorkingDay(date) {
+        const dayOfWeek = date.getDay();
+        return dayOfWeek !== 0 && dayOfWeek !== 6; // Not Sunday (0) or Saturday (6)
+    }
+
+    static _calculateDayHours(current, start, end) {
+        let dayStart, dayEnd;
+        
+        if (current.toDateString() === start.toDateString()) {
+            const startHour = Math.max(start.getHours(), CONFIG.WORKING_HOURS.START);
+            const startMinute = start.getHours() >= CONFIG.WORKING_HOURS.START ? start.getMinutes() : 0;
+            dayStart = startHour + (startMinute / 60);
+        } else {
+            dayStart = CONFIG.WORKING_HOURS.START;
+        }
+        
+        if (current.toDateString() === end.toDateString()) {
+            const endHour = Math.min(end.getHours(), CONFIG.WORKING_HOURS.END);
+            const endMinute = end.getHours() <= CONFIG.WORKING_HOURS.END ? end.getMinutes() : 0;
+            dayEnd = endHour + (endMinute / 60);
+        } else {
+            dayEnd = CONFIG.WORKING_HOURS.END;
+        }
+        
+        return Math.max(0, dayEnd - dayStart);
+    }
+}
+
+/**
+ * Utility functions for UI operations and formatting
+ */
+class UIUtilities {
+    static showNotification(message, type = 'info') {
         const notification = document.createElement('div');
         notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
         notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
@@ -208,20 +206,17 @@ const StudentUtils = {
             if (notification.parentNode) {
                 notification.remove();
             }
-        }, 4000);
-    },
+        }, CONFIG.UI.NOTIFICATION_TIMEOUT);
+    }
 
-    updateRequestsBadge() {
-        // Update notification badge in navigation
-        // This would typically fetch the current pending request count from the server
+    static updateRequestsBadge() {
         const badgeElement = document.querySelector('.notification-badge');
         if (badgeElement) {
-            // For now, just hide it since we removed notification symbols
             badgeElement.style.display = 'none';
         }
-    },
+    }
 
-    formatDate(date) {
+    static formatDate(date) {
         if (!(date instanceof Date)) {
             date = new Date(date);
         }
@@ -230,129 +225,55 @@ const StudentUtils = {
             month: '2-digit',
             year: 'numeric'
         });
-    },
+    }
 
-    formatHoursToDays(hours) {
+    static formatHoursToDays(hours) {
         if (hours === 0) return '0ff (0 days)';
         
         const days = hours / 8;
         
-        // For very small values (less than 1 hour), just show hours
         if (hours < 1) {
             return `${hours.toFixed(2)}ff (${Math.round(hours * 60)} minutes)`;
         }
         
-        // For values less than 4 hours, show with 2 decimal places for hours
         if (hours < 4) {
             return `${hours.toFixed(2)}ff (${days.toFixed(2)} days)`;
         }
         
-        // For normal values, show 1 decimal place for hours and days
         if (days < 1) {
             return `${hours.toFixed(1)}ff (${days.toFixed(2)} days)`;
         }
         
-        // For full days or more, show appropriate precision
         return `${hours.toFixed(1)}ff (${days.toFixed(1)} days)`;
-    },
-};
-
-document.addEventListener("DOMContentLoaded", function() {
-    
-    const newRequestForm = document.getElementById('newRequestForm');
-    const startDateInput = document.getElementById('startDate');
-    const endDateInput = document.getElementById('endDate');
-    const requestReasonInput = document.getElementById('requestReason');
-
-    async function init() {
-        DataManager.init();
-        await updateBalanceDisplay();
-        setupEventListeners();
-        setMinimumStartDateTime(); // This will call updateEndTimeFromStart() at the end
-        StudentUtils.updateRequestsBadge();
     }
+}
 
-    async function updateBalanceDisplay() {
-        try {
-            const vacationHours = await StudentUtils.calculateVacationHours();
-            
-            function safeUpdate(id, value) {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.textContent = value;
-                }
-            }
-
-            safeUpdate('currentBalance', StudentUtils.formatHoursToDays(vacationHours.remainingHours));
-            safeUpdate('balanceAfterRequest', `${vacationHours.remainingHours}ff`);
-        } catch (error) {
-            console.error('Error updating balance display:', error);
-            StudentUtils.showNotification('Error loading balance data', 'warning');
-        }
-    }
-
-    function setMinimumStartDateTime() {
+/**
+ * Handles date and time operations
+ */
+class DateTimeHelper {
+    static getMinimumRequestDateTime() {
         const now = new Date();
-        const minimumDateTime = new Date(now.getTime() + (48 * 60 * 60 * 1000));
-        
-        const adjustedDateTime = adjustToWorkingHours(minimumDateTime);
-        
-        const startHourSelect = document.getElementById('startHour');
-        const startMinuteSelect = document.getElementById('startMinute');
-        
-        if (startDateInput) {
-            startDateInput.value = adjustedDateTime.toISOString().split('T')[0];
-        }
-        
-        if (startHourSelect) {
-            const hour = adjustedDateTime.getHours().toString().padStart(2, '0');
-            const hourOption = startHourSelect.querySelector(`option[value="${hour}"]`);
-            if (hourOption) {
-                startHourSelect.value = hour;
-            } else {
-                startHourSelect.value = '09';
-            }
-        }
-        
-        if (startMinuteSelect) {
-            const roundedMinute = Math.round(adjustedDateTime.getMinutes() / 15) * 15;
-            const finalMinute = roundedMinute >= 60 ? 0 : roundedMinute;
-            const minuteValue = finalMinute.toString().padStart(2, '0');
-            
-            const minuteOption = startMinuteSelect.querySelector(`option[value="${minuteValue}"]`);
-            if (minuteOption) {
-                startMinuteSelect.value = minuteValue;
-            } else {
-                startMinuteSelect.value = '00';
-            }
-        }
-        
-        // Auto-set end date/time after start date/time is set
-        setTimeout(() => {
-            updateEndTimeFromStart();
-        }, 50);
+        return new Date(now.getTime() + (CONFIG.VALIDATION.ADVANCE_NOTICE_HOURS * 60 * 60 * 1000));
     }
-    
-    function adjustToWorkingHours(dateTime) {
-        const workingStartHour = 8;
-        const workingEndHour = 17;
+
+    static adjustToWorkingHours(dateTime) {
         const result = new Date(dateTime);
-        
         const dayOfWeek = result.getDay();
         const hour = result.getHours();
         
-        if (dayOfWeek === 0) {
+        if (dayOfWeek === 0) { // Sunday
             result.setDate(result.getDate() + 1);
-            result.setHours(workingStartHour, 0, 0, 0);
-        } else if (dayOfWeek === 6) {
+            result.setHours(CONFIG.WORKING_HOURS.START, 0, 0, 0);
+        } else if (dayOfWeek === 6) { // Saturday
             result.setDate(result.getDate() + 2);
-            result.setHours(workingStartHour, 0, 0, 0);
+            result.setHours(CONFIG.WORKING_HOURS.START, 0, 0, 0);
         } else {
-            if (hour < workingStartHour) {
-                result.setHours(workingStartHour, 0, 0, 0);
-            } else if (hour >= workingEndHour) {
+            if (hour < CONFIG.WORKING_HOURS.START) {
+                result.setHours(CONFIG.WORKING_HOURS.START, 0, 0, 0);
+            } else if (hour >= CONFIG.WORKING_HOURS.END) {
                 result.setDate(result.getDate() + 1);
-                result.setHours(workingStartHour, 0, 0, 0);
+                result.setHours(CONFIG.WORKING_HOURS.START, 0, 0, 0);
                 
                 const nextDayOfWeek = result.getDay();
                 if (nextDayOfWeek === 0) {
@@ -366,442 +287,618 @@ document.addEventListener("DOMContentLoaded", function() {
         return result;
     }
 
-    function updateEndTimeFromStart() {
-        const startDate = startDateInput.value;
-        const startHour = document.getElementById('startHour').value;
-        const startMinute = document.getElementById('startMinute').value;
-        const endHourSelect = document.getElementById('endHour');
-        const endMinuteSelect = document.getElementById('endMinute');
+    static isShortNotice(requestStartDateTime) {
+        const now = new Date();
+        const hoursDifference = (new Date(requestStartDateTime) - now) / (1000 * 60 * 60);
+        return hoursDifference < CONFIG.VALIDATION.ADVANCE_NOTICE_HOURS;
+    }
+}
+
+/**
+ * Main application controller for the new request page
+ */
+class NewRequestController {
+    constructor() {
+        this.balanceService = new VacationBalanceService();
+        this.elements = {};
+        this.bindElements();
+    }
+
+    bindElements() {
+        this.elements = {
+            form: document.getElementById('newRequestForm'),
+            startDate: document.getElementById('startDate'),
+            endDate: document.getElementById('endDate'),
+            startHour: document.getElementById('startHour'),
+            startMinute: document.getElementById('startMinute'),
+            endHour: document.getElementById('endHour'),
+            endMinute: document.getElementById('endMinute'),
+            requestReason: document.getElementById('requestReason'),
+            currentBalance: document.getElementById('currentBalance'),
+            balanceAfterRequest: document.getElementById('balanceAfterRequest'),
+            requestDuration: document.getElementById('requestDuration'),
+            workingDays: document.getElementById('workingDays'),
+            submitButton: document.querySelector('button[type="submit"]')
+        };
+    }
+
+    async init() {
+        await this.updateBalanceDisplay();
+        this.setupEventListeners();
+        this.setMinimumStartDateTime();
+        UIUtilities.updateRequestsBadge();
+    }
+
+    async updateBalanceDisplay() {
+        try {
+            const vacationHours = await this.balanceService.calculateVacationHours();
+            
+            this.safeUpdateElement('currentBalance', UIUtilities.formatHoursToDays(vacationHours.remainingHours));
+            this.safeUpdateElement('balanceAfterRequest', `${vacationHours.remainingHours}ff`);
+        } catch (error) {
+            console.error('Error updating balance display:', error);
+            UIUtilities.showNotification('Error loading balance data', 'warning');
+        }
+    }
+
+    safeUpdateElement(id, value) {
+        const element = this.elements[id] || document.getElementById(id);
+        if (element) {
+            element.textContent = value;
+        }
+    }
+
+    setMinimumStartDateTime() {
+        const minimumDateTime = DateTimeHelper.getMinimumRequestDateTime();
+        const adjustedDateTime = DateTimeHelper.adjustToWorkingHours(minimumDateTime);
         
-        if (!startDate || !startHour || !startMinute || !endHourSelect || !endMinuteSelect) {
+        if (this.elements.startDate) {
+            this.elements.startDate.value = adjustedDateTime.toISOString().split('T')[0];
+        }
+        
+        this.setTimeSelectors(adjustedDateTime);
+        
+        // Auto-set end date/time after start date/time is set
+        setTimeout(() => {
+            this.updateEndTimeFromStart();
+        }, 50);
+    }
+
+    setTimeSelectors(dateTime) {
+        const hour = dateTime.getHours().toString().padStart(2, '0');
+        const roundedMinute = Math.round(dateTime.getMinutes() / 15) * 15;
+        const finalMinute = roundedMinute >= 60 ? 0 : roundedMinute;
+        const minuteValue = finalMinute.toString().padStart(2, '0');
+
+        if (this.elements.startHour) {
+            const hourOption = this.elements.startHour.querySelector(`option[value="${hour}"]`);
+            this.elements.startHour.value = hourOption ? hour : '09';
+        }
+
+        if (this.elements.startMinute) {
+            const minuteOption = this.elements.startMinute.querySelector(`option[value="${minuteValue}"]`);
+            this.elements.startMinute.value = minuteOption ? minuteValue : '00';
+        }
+    }
+
+    updateEndTimeFromStart() {
+        const { startDate, startHour, startMinute, endDate, endHour, endMinute } = this.elements;
+        
+        if (!startDate?.value || !startHour?.value || !startMinute?.value || !endHour || !endMinute) {
             return;
         }
         
-        if (endDateInput) {
-            endDateInput.value = startDate;
+        if (endDate) {
+            endDate.value = startDate.value;
         }
         
-        // Create a proper date object with the selected start date
-        const startTime = new Date(`${startDate}T${startHour}:${startMinute}:00`);
+        const startTime = new Date(`${startDate.value}T${startHour.value}:${startMinute.value}:00`);
+        const endTime = new Date(startTime.getTime() + (CONFIG.UI.MIN_END_TIME_OFFSET * 60 * 1000));
         
-        // Add 15 minutes to get the end time
-        const endTime = new Date(startTime.getTime() + (15 * 60 * 1000));
+        this.setEndTimeSelectors(endTime, startTime);
+        this.calculateRequestDuration();
+    }
+
+    setEndTimeSelectors(endTime, startTime) {
+        let endHourValue = endTime.getHours().toString().padStart(2, '0');
+        let endMinuteValue = endTime.getMinutes().toString().padStart(2, '0');
         
-        // Check if end time goes beyond the same day or working hours
-        let endHour = endTime.getHours().toString().padStart(2, '0');
-        let endMinute = endTime.getMinutes().toString().padStart(2, '0');
-        
-        // If the end time goes beyond the same day, adjust accordingly
+        // If end time goes beyond the same day, adjust to end of working hours
         if (endTime.toDateString() !== startTime.toDateString()) {
-            // If it crosses to next day, set it to end of working hours on the same day
             const adjustedEndTime = new Date(startTime);
-            adjustedEndTime.setHours(17, 0, 0, 0); // 17:00
-            endHour = adjustedEndTime.getHours().toString().padStart(2, '0');
-            endMinute = adjustedEndTime.getMinutes().toString().padStart(2, '0');
+            adjustedEndTime.setHours(CONFIG.WORKING_HOURS.END, 0, 0, 0);
+            endHourValue = adjustedEndTime.getHours().toString().padStart(2, '0');
+            endMinuteValue = adjustedEndTime.getMinutes().toString().padStart(2, '0');
         }
         
-        const endHourOption = endHourSelect.querySelector(`option[value="${endHour}"]`);
-        const endMinuteOption = endMinuteSelect.querySelector(`option[value="${endMinute}"]`);
+        this.selectClosestOption(this.elements.endHour, endHourValue);
+        this.selectClosestOption(this.elements.endMinute, endMinuteValue);
+    }
+
+    selectClosestOption(selectElement, targetValue) {
+        const targetOption = selectElement.querySelector(`option[value="${targetValue}"]`);
         
-        if (endHourOption) {
-            endHourSelect.value = endHour;
+        if (targetOption) {
+            selectElement.value = targetValue;
         } else {
-            const lastHourOption = endHourSelect.querySelector('option:last-child');
-            if (lastHourOption) {
-                endHourSelect.value = lastHourOption.value;
-            }
-        }
-        
-        if (endMinuteOption) {
-            endMinuteSelect.value = endMinute;
-        } else {
-            const availableMinutes = Array.from(endMinuteSelect.options).map(opt => opt.value);
-            const closestMinute = availableMinutes.reduce((closest, current) => {
-                return Math.abs(parseInt(current) - parseInt(endMinute)) < Math.abs(parseInt(closest) - parseInt(endMinute)) ? current : closest;
+            const availableValues = Array.from(selectElement.options).map(opt => opt.value);
+            const closestValue = availableValues.reduce((closest, current) => {
+                return Math.abs(parseInt(current) - parseInt(targetValue)) < 
+                       Math.abs(parseInt(closest) - parseInt(targetValue)) ? current : closest;
             });
-            endMinuteSelect.value = closestMinute;
+            selectElement.value = closestValue;
         }
-        
-        calculateRequestDuration();
     }
 
-    function setupEventListeners() {
-        function safeAddListener(id, event, handler) {
-            const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener(event, handler);
-            }
-        }
-
-        if (newRequestForm) {
-            newRequestForm.addEventListener('submit', handleRequestSubmission);
+    setupEventListeners() {
+        if (this.elements.form) {
+            this.elements.form.addEventListener('submit', (e) => this.handleRequestSubmission(e));
         }
         
-        if (startDateInput) {
-            startDateInput.addEventListener('change', calculateRequestDuration);
-        }
-        if (endDateInput) {
-            endDateInput.addEventListener('change', calculateRequestDuration);
-        }
+        // Date and time change listeners
+        const timeChangeElements = [
+            'startDate', 'endDate', 'startHour', 'startMinute', 'endHour', 'endMinute'
+        ];
         
-        safeAddListener('startHour', 'change', calculateRequestDuration);
-        safeAddListener('startMinute', 'change', calculateRequestDuration);
-        safeAddListener('endHour', 'change', calculateRequestDuration);
-        safeAddListener('endMinute', 'change', calculateRequestDuration);
+        timeChangeElements.forEach(elementName => {
+            this.safeAddListener(elementName, 'change', () => this.calculateRequestDuration());
+        });
         
-        safeAddListener('startHour', 'change', updateEndTimeFromStart);
-        safeAddListener('startMinute', 'change', updateEndTimeFromStart);
-        if (startDateInput) {
-            startDateInput.addEventListener('change', updateEndTimeFromStart);
-        }
+        // Start time change triggers end time update
+        ['startDate', 'startHour', 'startMinute'].forEach(elementName => {
+            this.safeAddListener(elementName, 'change', () => this.updateEndTimeFromStart());
+        });
         
-        safeAddListener('requestReason', 'input', validateForm);
-        if (startDateInput) {
-            startDateInput.addEventListener('change', validateForm);
-        }
-        safeAddListener('startHour', 'change', validateForm);
-        safeAddListener('startMinute', 'change', validateForm);
-        if (endDateInput) {
-            endDateInput.addEventListener('change', validateForm);
-        }
+        // Validation triggers
+        ['requestReason', 'startDate', 'startHour', 'startMinute', 'endDate'].forEach(elementName => {
+            this.safeAddListener(elementName, this.getEventType(elementName), () => this.validateForm());
+        });
         
-        if (startDateInput) {
-            startDateInput.addEventListener('change', checkAdvanceNotice);
-        }
-        safeAddListener('startHour', 'change', checkAdvanceNotice);
-        safeAddListener('startMinute', 'change', checkAdvanceNotice);
+        // Advance notice check
+        ['startDate', 'startHour', 'startMinute'].forEach(elementName => {
+            this.safeAddListener(elementName, 'change', () => this.checkAdvanceNotice());
+        });
     }
 
-    async function calculateRequestDuration() {
-        const startDate = startDateInput.value;
-        const endDate = endDateInput.value;
-        const startHour = document.getElementById('startHour').value;
-        const startMinute = document.getElementById('startMinute').value;
-        const endHour = document.getElementById('endHour').value;
-        const endMinute = document.getElementById('endMinute').value;
+    safeAddListener(elementName, event, handler) {
+        const element = this.elements[elementName] || document.getElementById(elementName);
+        if (element) {
+            element.addEventListener(event, handler);
+        }
+    }
+
+    getEventType(elementName) {
+        return elementName === 'requestReason' ? 'input' : 'change';
+    }
+
+    async calculateRequestDuration() {
+        const { startDate, endDate, startHour, startMinute, endHour, endMinute } = this.elements;
         
         try {
-            const vacationHours = await StudentUtils.calculateVacationHours();
-            document.getElementById('requestDuration').textContent = 'Please select dates';
-            document.getElementById('workingDays').textContent = '0ff';
-            document.getElementById('balanceAfterRequest').textContent = vacationHours.remainingHours + 'ff';
+            const vacationHours = await this.balanceService.calculateVacationHours();
+            this.resetDurationDisplay(vacationHours);
             
-            document.getElementById('balanceWarning').style.display = 'none';
-            document.getElementById('balanceError').style.display = 'none';
-            
-            if (!startDate || !endDate) {
+            if (!startDate?.value || !endDate?.value) {
                 return;
             }
             
-            const start = new Date(startDate);
-            const end = new Date(endDate);            if (startHour && startMinute) {
-                start.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
-            }
-            
-            if (endHour && endMinute) {
-                end.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
-            }
+            const { start, end } = this.createDateTimeObjects();
             
             if (end <= start) {
-                document.getElementById('requestDuration').textContent = 'End must be after start';
-                document.getElementById('requestDuration').style.color = '#dc3545';
+                this.showDurationError('End must be after start');
                 return;
             }
             
-            const result = StudentUtils.calculateWorkingHours(start, end);
-            const totalHours = result.workingHours;
-            const totalCalendarDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-            
-            document.getElementById('requestDuration').textContent = `${totalCalendarDays} calendar day${totalCalendarDays !== 1 ? 's' : ''}`;
-            document.getElementById('requestDuration').style.color = '#ffffff';
-            document.getElementById('workingDays').textContent = StudentUtils.formatHoursToDays(totalHours);
-            
-            const balanceAfter = vacationHours.remainingHours - totalHours;
-            const balanceElement = document.getElementById('balanceAfterRequest');
-            balanceElement.textContent = StudentUtils.formatHoursToDays(balanceAfter);
-            
-            if (balanceAfter < 0) {
-                balanceElement.className = 'summary-value insufficient';
-                document.getElementById('balanceError').style.display = 'block';
-            } else if (balanceAfter <= 24) {
-                balanceElement.className = 'summary-value warning';
-                document.getElementById('balanceWarning').style.display = 'block';
-            } else {
-                balanceElement.className = 'summary-value good';
-            }
-            
-            updateRequestPreview();
-            checkAdvanceNotice();
+            this.updateDurationDisplay(start, end, vacationHours);
+            this.updateRequestPreview();
+            this.checkAdvanceNotice();
         } catch (error) {
             console.error('Error calculating request duration:', error);
-            document.getElementById('requestDuration').textContent = 'Error calculating duration';
+            this.safeUpdateElement('requestDuration', 'Error calculating duration');
         }
     }
-    
-    function checkAdvanceNotice() {
-        const startDate = startDateInput.value;
-        const startHour = document.getElementById('startHour').value;
-        const startMinute = document.getElementById('startMinute').value;
+
+    resetDurationDisplay(vacationHours) {
+        this.safeUpdateElement('requestDuration', 'Please select dates');
+        this.safeUpdateElement('workingDays', '0ff');
+        this.safeUpdateElement('balanceAfterRequest', vacationHours.remainingHours + 'ff');
+        this.hideBalanceWarnings();
+    }
+
+    createDateTimeObjects() {
+        const { startDate, endDate, startHour, startMinute, endHour, endMinute } = this.elements;
         
+        const start = new Date(startDate.value);
+        const end = new Date(endDate.value);
+        
+        if (startHour?.value && startMinute?.value) {
+            start.setHours(parseInt(startHour.value), parseInt(startMinute.value), 0, 0);
+        }
+        
+        if (endHour?.value && endMinute?.value) {
+            end.setHours(parseInt(endHour.value), parseInt(endMinute.value), 0, 0);
+        }
+        
+        return { start, end };
+    }
+
+    showDurationError(message) {
+        this.safeUpdateElement('requestDuration', message);
+        const durationElement = this.elements.requestDuration || document.getElementById('requestDuration');
+        if (durationElement) {
+            durationElement.style.color = '#dc3545';
+        }
+    }
+
+    updateDurationDisplay(start, end, vacationHours) {
+        const totalHours = WorkingHoursCalculator.calculate(start, end);
+        const totalCalendarDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        
+        this.safeUpdateElement('requestDuration', `${totalCalendarDays} calendar day${totalCalendarDays !== 1 ? 's' : ''}`);
+        this.resetDurationColor();
+        this.safeUpdateElement('workingDays', UIUtilities.formatHoursToDays(totalHours));
+        
+        this.updateBalanceAfterRequest(vacationHours.remainingHours - totalHours);
+    }
+
+    resetDurationColor() {
+        const durationElement = this.elements.requestDuration || document.getElementById('requestDuration');
+        if (durationElement) {
+            durationElement.style.color = '#ffffff';
+        }
+    }
+
+    updateBalanceAfterRequest(balanceAfter) {
+        const balanceElement = this.elements.balanceAfterRequest || document.getElementById('balanceAfterRequest');
+        if (!balanceElement) return;
+        
+        balanceElement.textContent = UIUtilities.formatHoursToDays(balanceAfter);
+        
+        if (balanceAfter < 0) {
+            balanceElement.className = 'summary-value insufficient';
+            this.showElement('balanceError');
+        } else if (balanceAfter <= CONFIG.VALIDATION.LOW_BALANCE_THRESHOLD) {
+            balanceElement.className = 'summary-value warning';
+            this.showElement('balanceWarning');
+        } else {
+            balanceElement.className = 'summary-value good';
+        }
+    }
+
+    hideBalanceWarnings() {
+        this.hideElement('balanceWarning');
+        this.hideElement('balanceError');
+    }
+
+    showElement(id) {
+        const element = document.getElementById(id);
+        if (element) element.style.display = 'block';
+    }
+
+    hideElement(id) {
+        const element = document.getElementById(id);
+        if (element) element.style.display = 'none';
+    }
+    
+    checkAdvanceNotice() {
+        const { startDate, startHour, startMinute } = this.elements;
+        
+        this.removeExistingAdvanceWarning();
+        
+        if (!startDate?.value || !startHour?.value || !startMinute?.value) {
+            return;
+        }
+        
+        const requestStart = new Date(`${startDate.value}T${startHour.value}:${startMinute.value}:00`);
+        
+        if (DateTimeHelper.isShortNotice(requestStart)) {
+            this.showAdvanceNoticeWarning(requestStart);
+        }
+    }
+
+    removeExistingAdvanceWarning() {
         const existingWarning = document.getElementById('advanceNoticeWarning');
         if (existingWarning) {
             existingWarning.remove();
         }
-        
-        if (!startDate || !startHour || !startMinute) {
-            return;
-        }
-        
-        const requestStart = new Date(`${startDate}T${startHour}:${startMinute}:00`);
+    }
+
+    showAdvanceNoticeWarning(requestStart) {
         const now = new Date();
         const hoursDifference = (requestStart - now) / (1000 * 60 * 60);
         
-        if (hoursDifference < 48) {
-            const warningHtml = `
-                <div id="advanceNoticeWarning" class="alert alert-warning mt-3">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <strong>Short Notice:</strong> This request is less than 48 hours in advance. 
-                    You can still submit it, but approval may be denied.
-                    <small class="d-block mt-1">Time until request: ${Math.round(hoursDifference)} hours</small>
-                </div>
-            `;
-            
-            const summaryCard = document.querySelector('.col-lg-4 .card');
-            if (summaryCard) {
-                summaryCard.insertAdjacentHTML('afterend', warningHtml);
-            } else {
-                const formContainer = document.querySelector('#newRequestSection .col-lg-8');
-                if (formContainer) {
-                    formContainer.insertAdjacentHTML('afterend', warningHtml);
-                }
+        const warningHtml = `
+            <div id="advanceNoticeWarning" class="alert alert-warning mt-3">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Short Notice:</strong> This request is less than ${CONFIG.VALIDATION.ADVANCE_NOTICE_HOURS} hours in advance. 
+                You can still submit it, but approval may be denied.
+                <small class="d-block mt-1">Time until request: ${Math.round(hoursDifference)} hours</small>
+            </div>
+        `;
+        
+        const summaryCard = document.querySelector('.col-lg-4 .card');
+        if (summaryCard) {
+            summaryCard.insertAdjacentHTML('afterend', warningHtml);
+        } else {
+            const formContainer = document.querySelector('#newRequestSection .col-lg-8');
+            if (formContainer) {
+                formContainer.insertAdjacentHTML('afterend', warningHtml);
             }
         }
     }
-    
-    function updateRequestPreview() {
-        const startDate = startDateInput.value;
-        const endDate = endDateInput.value;
-        const startHour = document.getElementById('startHour').value;
-        const startMinute = document.getElementById('startMinute').value;
-        const endHour = document.getElementById('endHour').value;
-        const endMinute = document.getElementById('endMinute').value;
-        
+
+    updateRequestPreview() {
+        const { startDate, endDate, startHour, startMinute, endHour, endMinute } = this.elements;
         const previewDiv = document.getElementById('requestPreview');
         
-        if (!previewDiv) {
-            return;
-        }
+        if (!previewDiv) return;
         
-        if (startDate && endDate && startHour && startMinute && endHour && endMinute) {
-            const startDateTime = `${StudentUtils.formatDate(startDate)} at ${startHour}:${startMinute}`;
-            const endDateTime = `${StudentUtils.formatDate(endDate)} at ${endHour}:${endMinute}`;
+        if (this.hasAllTimeValues()) {
+            const startDateTime = `${UIUtilities.formatDate(startDate.value)} at ${startHour.value}:${startMinute.value}`;
+            const endDateTime = `${UIUtilities.formatDate(endDate.value)} at ${endHour.value}:${endMinute.value}`;
             
-            const previewStart = document.getElementById('previewStart');
-            const previewEnd = document.getElementById('previewEnd');
-            const previewType = document.getElementById('previewType');
-            
-            if (previewStart) previewStart.textContent = startDateTime;
-            if (previewEnd) previewEnd.textContent = endDateTime;
-            if (previewType) previewType.textContent = 'Vacation Request';
-            
+            this.updatePreviewElements(startDateTime, endDateTime);
             previewDiv.style.display = 'block';
         } else {
             previewDiv.style.display = 'none';
         }
     }
-    
-    function validateForm() {
-        const startDate = startDateInput.value;
-        const endDate = endDateInput.value;
-        const reason = document.getElementById('requestReason').value;
-        const submitBtn = document.querySelector('button[type="submit"]');
+
+    hasAllTimeValues() {
+        const { startDate, endDate, startHour, startMinute, endHour, endMinute } = this.elements;
+        return startDate?.value && endDate?.value && startHour?.value && 
+               startMinute?.value && endHour?.value && endMinute?.value;
+    }
+
+    updatePreviewElements(startDateTime, endDateTime) {
+        this.safeUpdateElement('previewStart', startDateTime);
+        this.safeUpdateElement('previewEnd', endDateTime);
+        this.safeUpdateElement('previewType', 'Vacation Request');
+    }
+
+    validateForm() {
+        const { startDate, endDate, requestReason, submitButton } = this.elements;
         
         let isValid = true;
         
-        if (!startDate) {
-            startDateInput.classList.add('is-invalid');
-            isValid = false;
-        } else {
-            startDateInput.classList.remove('is-invalid');
-            startDateInput.classList.add('is-valid');
-        }
+        isValid = this.validateField(startDate, isValid);
+        isValid = this.validateField(endDate, isValid);
+        this.validateOptionalField(requestReason);
         
-        if (!endDate) {
-            endDateInput.classList.add('is-invalid');
-            isValid = false;
-        } else {
-            endDateInput.classList.remove('is-invalid');
-            endDateInput.classList.add('is-valid');
+        if (submitButton) {
+            submitButton.disabled = !isValid;
         }
-        
-        document.getElementById('requestReason').classList.remove('is-invalid');
-        if (reason && reason.trim().length > 0) {
-            document.getElementById('requestReason').classList.add('is-valid');
-        } else {
-            document.getElementById('requestReason').classList.remove('is-valid');
-        }
-        
-        submitBtn.disabled = !isValid;
         
         return isValid;
     }
-    
-    async function handleRequestSubmission(e) {
-        e.preventDefault();
-        
-        if (!validateForm()) {
-            StudentUtils.showNotification('Please fill in all required fields correctly', 'warning');
-            return;
-        }
 
-        const startDate = startDateInput.value;
-        const endDate = endDateInput.value;
-        const startHour = document.getElementById('startHour').value;
-        const startMinute = document.getElementById('startMinute').value;
-        const endHour = document.getElementById('endHour').value;
-        const endMinute = document.getElementById('endMinute').value;
-        const reason = document.getElementById('requestReason').value;
+    validateField(field, currentValidity) {
+        if (!field) return currentValidity;
         
-        const startDateTime = `${startDate}T${startHour}:${startMinute}:00`;
-        const endDateTime = `${endDate}T${endHour}:${endMinute}:00`;
-        
-        const start = new Date(startDateTime);
-        const end = new Date(endDateTime);
-        
-        if (end <= start) {
-            StudentUtils.showNotification('End date must be after start date', 'danger');
-            return;
-        }
-        
-        const result = StudentUtils.calculateWorkingHours(start, end);
-        const workingHours = result.workingHours;
-        
-        const vacationHours = await StudentUtils.calculateVacationHours();
-        if (workingHours > vacationHours.remainingHours) {
-            StudentUtils.showNotification('Request exceeds available vacation hours', 'danger');
-            return;
-        }
-        
-        const now = new Date();
-        const hoursDifference = (start - now) / (1000 * 60 * 60);
-        const isShortNotice = hoursDifference < 48;
-        
-        let confirmMessage = `Submit vacation request for ${StudentUtils.formatHoursToDays(workingHours)}?`;
-        if (isShortNotice) {
-            confirmMessage += '\n\nNote: This is a short notice request (less than 48 hours in advance).';
-        }
-        
-        if (!confirm(confirmMessage)) {
-            return;
-        }
-
-        const submitButton = document.querySelector('button[type="submit"]');
-        const originalText = submitButton.textContent;
-        submitButton.disabled = true;
-        submitButton.textContent = 'Submitting...';
-        
-        try {
-            const newRequest = {
-                startDate: startDateTime,
-                endDate: endDateTime,
-                reason: reason,
-                status: 'pending',
-                submitDate: new Date().toISOString(),
-                hours: workingHours,
-                isShortNotice: isShortNotice,
-                totalCalendarDays: Math.ceil((end - start) / (1000 * 60 * 60 * 24))
-            };
-            
-            const apiResult = await DataManager.addRequest(newRequest);
-            
-            resetForm();
-            
-            let successMessage = 'Request submitted successfully!';
-            if (isShortNotice) {
-                successMessage += ' (Short notice - may take longer to approve)';
-            }
-            StudentUtils.showNotification(successMessage, 'success');
-            
-        } catch (error) {
-            console.error('Error submitting request:', error);
-            StudentUtils.showNotification('Failed to submit request: ' + error.message, 'danger');
-        } finally {
-            submitButton.disabled = false;
-            submitButton.textContent = originalText;
+        if (!field.value) {
+            field.classList.add('is-invalid');
+            field.classList.remove('is-valid');
+            return false;
+        } else {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+            return currentValidity;
         }
     }
 
-    function resetForm() {
-        newRequestForm.reset();
+    validateOptionalField(field) {
+        if (!field) return;
         
-        setMinimumStartDateTime();
+        field.classList.remove('is-invalid');
+        if (field.value && field.value.trim().length > 0) {
+            field.classList.add('is-valid');
+        } else {
+            field.classList.remove('is-valid');
+        }
+    }
+
+    async handleRequestSubmission(e) {
+        e.preventDefault();
         
-        document.getElementById('endDate').value = '';
-        document.getElementById('endHour').value = '17';
-        document.getElementById('endMinute').value = '00';
-        document.getElementById('requestReason').value = '';
+        if (!this.validateForm()) {
+            UIUtilities.showNotification('Please fill in all required fields correctly', 'warning');
+            return;
+        }
+
+        try {
+            const requestData = await this.buildRequestData();
+            const isValid = await this.validateRequestData(requestData);
+            
+            if (!isValid) return;
+            
+            if (!this.confirmSubmission(requestData)) return;
+            
+            await this.submitRequest(requestData);
+            
+        } catch (error) {
+            console.error('Error submitting request:', error);
+            UIUtilities.showNotification('Failed to submit request: ' + error.message, 'danger');
+        }
+    }
+
+    async buildRequestData() {
+        const { startDate, endDate, startHour, startMinute, endHour, endMinute, requestReason } = this.elements;
         
+        const startDateTime = `${startDate.value}T${startHour.value}:${startMinute.value}:00`;
+        const endDateTime = `${endDate.value}T${endHour.value}:${endMinute.value}:00`;
+        
+        const start = new Date(startDateTime);
+        const end = new Date(endDateTime);
+        const workingHours = WorkingHoursCalculator.calculate(start, end);
+        const isShortNotice = DateTimeHelper.isShortNotice(startDateTime);
+        
+        return {
+            requestType: 'vacation',
+            startDateTime,
+            endDateTime,
+            reason: requestReason.value,
+            status: 'pending',
+            submitDate: new Date().toISOString(),
+            hours: workingHours,
+            isShortNotice,
+            totalCalendarDays: Math.ceil((end - start) / (1000 * 60 * 60 * 24))
+        };
+    }
+
+    async validateRequestData(requestData) {
+        const start = new Date(requestData.startDateTime);
+        const end = new Date(requestData.endDateTime);
+        
+        if (end <= start) {
+            UIUtilities.showNotification('End date must be after start date', 'danger');
+            return false;
+        }
+        
+        const vacationHours = await this.balanceService.calculateVacationHours();
+        if (requestData.hours > vacationHours.remainingHours) {
+            UIUtilities.showNotification('Request exceeds available vacation hours', 'danger');
+            return false;
+        }
+        
+        return true;
+    }
+
+    confirmSubmission(requestData) {
+        let confirmMessage = `Submit vacation request for ${UIUtilities.formatHoursToDays(requestData.hours)}?`;
+        
+        if (requestData.isShortNotice) {
+            confirmMessage += `\n\nNote: This is a short notice request (less than ${CONFIG.VALIDATION.ADVANCE_NOTICE_HOURS} hours in advance).`;
+        }
+        
+        return confirm(confirmMessage);
+    }
+
+    async submitRequest(requestData) {
+        this.setSubmitButtonLoading(true);
+        
+        try {
+            await RequestApiService.submitRequest(requestData);
+            this.resetForm();
+            
+            let successMessage = 'Request submitted successfully!';
+            if (requestData.isShortNotice) {
+                successMessage += ' (Short notice - may take longer to approve)';
+            }
+            UIUtilities.showNotification(successMessage, 'success');
+            
+        } finally {
+            this.setSubmitButtonLoading(false);
+        }
+    }
+
+    setSubmitButtonLoading(isLoading) {
+        const { submitButton } = this.elements;
+        if (!submitButton) return;
+        
+        if (isLoading) {
+            submitButton.disabled = true;
+            submitButton.setAttribute('data-original-text', submitButton.textContent);
+            submitButton.textContent = 'Submitting...';
+        } else {
+            submitButton.disabled = false;
+            const originalText = submitButton.getAttribute('data-original-text');
+            if (originalText) {
+                submitButton.textContent = originalText;
+                submitButton.removeAttribute('data-original-text');
+            }
+        }
+    }
+
+    resetForm() {
+        if (this.elements.form) {
+            this.elements.form.reset();
+        }
+        
+        this.setMinimumStartDateTime();
+        this.resetFormFields();
+        this.resetFormValidation();
+        this.resetDisplayElements();
+        this.removeExistingAdvanceWarning();
+    }
+
+    resetFormFields() {
+        const { endDate, endHour, endMinute, requestReason } = this.elements;
+        
+        if (endDate) endDate.value = '';
+        if (endHour) endHour.value = '17';
+        if (endMinute) endMinute.value = '00';
+        if (requestReason) requestReason.value = '';
+    }
+
+    resetFormValidation() {
         document.querySelectorAll('.form-control').forEach(control => {
             control.classList.remove('is-valid', 'is-invalid');
         });
         
-        const vacationHours = StudentUtils.calculateVacationHours();
-        document.getElementById('requestDuration').textContent = 'Please select dates';
-        document.getElementById('workingDays').textContent = '0ff';
-        document.getElementById('balanceAfterRequest').textContent = vacationHours.remainingHours + 'ff';
-        document.getElementById('balanceAfterRequest').className = 'summary-value';
-        
-        const requestPreview = document.getElementById('requestPreview');
-        if (requestPreview) {
-            requestPreview.style.display = 'none';
+        if (this.elements.submitButton) {
+            this.elements.submitButton.disabled = false;
         }
-        document.getElementById('balanceWarning').style.display = 'none';
-        document.getElementById('balanceError').style.display = 'none';
-        
-        const advanceWarning = document.getElementById('advanceNoticeWarning');
-        if (advanceWarning) {
-            advanceWarning.remove();
-        }
-        
-        document.querySelector('button[type="submit"]').disabled = false;
     }
-    
-    async function previewRequest() {
-        const startDate = startDateInput.value;
-        const endDate = endDateInput.value;
-        const startHour = document.getElementById('startHour').value;
-        const startMinute = document.getElementById('startMinute').value;
-        const endHour = document.getElementById('endHour').value;
-        const endMinute = document.getElementById('endMinute').value;
-        const reason = document.getElementById('requestReason').value;
+
+    async resetDisplayElements() {
+        const vacationHours = await this.balanceService.calculateVacationHours();
         
-        if (!startDate || !endDate) {
-            StudentUtils.showNotification('Please select start and end dates to preview', 'info');
+        this.safeUpdateElement('requestDuration', 'Please select dates');
+        this.safeUpdateElement('workingDays', '0ff');
+        this.safeUpdateElement('balanceAfterRequest', vacationHours.remainingHours + 'ff');
+        
+        const balanceElement = this.elements.balanceAfterRequest || document.getElementById('balanceAfterRequest');
+        if (balanceElement) {
+            balanceElement.className = 'summary-value';
+        }
+        
+        this.hideElement('requestPreview');
+        this.hideBalanceWarnings();
+    }
+
+    async previewRequest() {
+        const { startDate, endDate, startHour, startMinute, endHour, endMinute, requestReason } = this.elements;
+        
+        if (!startDate?.value || !endDate?.value) {
+            UIUtilities.showNotification('Please select start and end dates to preview', 'info');
             return;
         }
         
-        const defaultStartHour = startHour || '09';
-        const defaultStartMinute = startMinute || '00';
-        const defaultEndHour = endHour || '17';
-        const defaultEndMinute = endMinute || '00';
+        const defaultStartHour = startHour?.value || '09';
+        const defaultStartMinute = startMinute?.value || '00';
+        const defaultEndHour = endHour?.value || '17';
+        const defaultEndMinute = endMinute?.value || '00';
         
-        const start = new Date(`${startDate}T${defaultStartHour}:${defaultStartMinute}:00`);
-        const end = new Date(`${endDate}T${defaultEndHour}:${defaultEndMinute}:00`);
+        const start = new Date(`${startDate.value}T${defaultStartHour}:${defaultStartMinute}:00`);
+        const end = new Date(`${endDate.value}T${defaultEndHour}:${defaultEndMinute}:00`);
         
         if (end <= start) {
-            StudentUtils.showNotification('End date must be after start date', 'warning');
+            UIUtilities.showNotification('End date must be after start date', 'warning');
             return;
         }
         
-        const result = StudentUtils.calculateWorkingHours(start, end);
-        const workingHours = result.workingHours;
+        const workingHours = WorkingHoursCalculator.calculate(start, end);
         const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-        const vacationHours = await StudentUtils.calculateVacationHours();
+        const vacationHours = await this.balanceService.calculateVacationHours();
+        const isShortNotice = DateTimeHelper.isShortNotice(`${startDate.value}T${defaultStartHour}:${defaultStartMinute}:00`);
         
-        const now = new Date();
-        const hoursDifference = (start - now) / (1000 * 60 * 60);
-        const isShortNotice = hoursDifference < 48;
-        
+        this.showPreviewModal({
+            startDate: startDate.value,
+            endDate: endDate.value,
+            startHour: defaultStartHour,
+            startMinute: defaultStartMinute,
+            endHour: defaultEndHour,
+            endMinute: defaultEndMinute,
+            reason: requestReason?.value || '',
+            workingHours,
+            totalDays,
+            vacationHours,
+            isShortNotice,
+            hasDefaultTimes: !startHour?.value || !endHour?.value
+        });
+    }
+
+    showPreviewModal(data) {
         const previewHtml = `
             <div class="modal fade" id="requestPreviewModal" tabindex="-1" aria-labelledby="requestPreviewModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
@@ -815,10 +912,10 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <i class="bi bi-info-circle me-2"></i>
                                 <strong>Preview Mode:</strong> This shows your request details. You can modify the form and preview again.
                             </div>
-                            ${isShortNotice ? `
+                            ${data.isShortNotice ? `
                                 <div class="alert alert-warning">
                                     <i class="bi bi-exclamation-triangle me-2"></i>
-                                    <strong>Short Notice:</strong> This request is less than 48 hours in advance.
+                                    <strong>Short Notice:</strong> This request is less than ${CONFIG.VALIDATION.ADVANCE_NOTICE_HOURS} hours in advance.
                                 </div>
                             ` : ''}
                             <div class="row">
@@ -828,27 +925,27 @@ document.addEventListener("DOMContentLoaded", function() {
                                         <strong>Type:</strong> Vacation Request
                                     </div>
                                     <div class="preview-detail">
-                                        <strong>Start:</strong> ${StudentUtils.formatDate(startDate)} at ${defaultStartHour}:${defaultStartMinute}
-                                        ${!startHour ? ' <small class="text-muted">(default time)</small>' : ''}
+                                        <strong>Start:</strong> ${UIUtilities.formatDate(data.startDate)} at ${data.startHour}:${data.startMinute}
+                                        ${data.hasDefaultTimes ? ' <small class="text-muted">(default time)</small>' : ''}
                                     </div>
                                     <div class="preview-detail">
-                                        <strong>End:</strong> ${StudentUtils.formatDate(endDate)} at ${defaultEndHour}:${defaultEndMinute}
-                                        ${!endHour ? ' <small class="text-muted">(default time)</small>' : ''}
+                                        <strong>End:</strong> ${UIUtilities.formatDate(data.endDate)} at ${data.endHour}:${data.endMinute}
+                                        ${data.hasDefaultTimes ? ' <small class="text-muted">(default time)</small>' : ''}
                                     </div>
                                     <div class="preview-detail">
-                                        <strong>Reason:</strong> ${reason || '<em class="text-muted">Not specified</em>'}
+                                        <strong>Reason:</strong> ${data.reason || '<em class="text-muted">Not specified</em>'}
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <h6 class="text-primary">Duration Breakdown</h6>
                                     <div class="preview-detail">
-                                        <strong>Total Calendar Days:</strong> ${totalDays}
+                                        <strong>Total Calendar Days:</strong> ${data.totalDays}
                                     </div>
                                     <div class="preview-detail">
-                                        <strong>Working Hours:</strong> ${StudentUtils.formatHoursToDays(workingHours)}
+                                        <strong>Working Hours:</strong> ${UIUtilities.formatHoursToDays(data.workingHours)}
                                     </div>
                                     <div class="preview-detail">
-                                        <strong>Balance After:</strong> ${StudentUtils.formatHoursToDays(vacationHours.remainingHours - workingHours)}
+                                        <strong>Balance After:</strong> ${UIUtilities.formatHoursToDays(data.vacationHours.remainingHours - data.workingHours)}
                                     </div>
                                 </div>
                             </div>
@@ -877,9 +974,18 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    window.resetForm = resetForm;
-    window.previewRequest = previewRequest;
+    // ...existing code...
+}
+
+// Initialize the application when DOM is ready
+document.addEventListener("DOMContentLoaded", function() {
+    const controller = new NewRequestController();
+    controller.init().catch(error => {
+        console.error('Failed to initialize new request controller:', error);
+        UIUtilities.showNotification('Failed to initialize application', 'danger');
+    });
     
-    // Initialize the application after all functions are defined
-    (async () => { await init(); })();
+    // Expose reset and preview functions globally for backward compatibility
+    window.resetForm = () => controller.resetForm();
+    window.previewRequest = () => controller.previewRequest();
 });
