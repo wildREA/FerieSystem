@@ -345,26 +345,61 @@ document.querySelectorAll('.password-toggle').forEach(button => {
     });
 });
 
-// Handle 'Escape' key to close modals and clear forms
-document.addEventListener('keydown', function(e) {
+/**
+ * Checks if any registration key boxes have content
+ * @returns {boolean} True if any key box is filled
+ */
+function areKeyBoxesFilled() {
+    return Array.from(keyBoxes).some(box => box.value.trim() !== '');
+}
+
+/**
+ * Clears all registration key boxes and resets their state
+ */
+function clearAllKeyBoxes() {
+    keyBoxes.forEach(box => {
+        box.value = '';
+        box.classList.remove('filled');
+    });
+    document.getElementById('registrationKey').value = '';
+}
+
+/**
+ * Checks if the key verification form is currently displayed
+ * @returns {boolean} True if the form is visible
+ */
+function isKeyVerificationFormVisible() {
     const modal = document.getElementById('keyVerificationForm');
-    if (e.key === 'Escape') {
-        // First check if any key boxes are filled
-        const keyBoxesFilled = Array.from(keyBoxes).some(box => box.value.trim() !== '');
-        
-        if (keyBoxesFilled) {
-            // Clear all key boxes fields first
-            keyBoxes.forEach(box => {
-                box.value = '';
-                box.classList.remove('filled');
-            });
-            document.getElementById('registrationKey').value = '';
-        } else {
-            // If fields are empty, check if modal is displayed and close it
-            if (modal && modal.style.display !== 'none' && modal.style.display !== '') {
-                // Back link to redirect to login form
-                showForm(loginForm);
-            }
-        }
+    return modal && modal.style.display !== 'none' && modal.style.display !== '';
+}
+
+/**
+ * Handles the escape key behavior for the registration flow
+ * First press: Clear fields if they contain data
+ * Second press: Return to login form if fields are empty
+ */
+function handleEscapeKey() {
+    if (areKeyBoxesFilled()) {
+        clearAllKeyBoxes();
+    } else if (isKeyVerificationFormVisible()) {
+        showForm(loginForm);
     }
-});
+}
+
+/**
+ * Global keyboard event handler
+ * @param {KeyboardEvent} event - The keyboard event
+ */
+function handleGlobalKeyDown(event) {
+    switch (event.key) {
+        case 'Escape':
+            handleEscapeKey();
+            break;
+        // Future keyboard shortcuts can be added here
+        default:
+            break;
+    }
+}
+
+// Attach global keyboard event listener
+document.addEventListener('keydown', handleGlobalKeyDown);
