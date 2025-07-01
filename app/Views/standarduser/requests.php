@@ -118,9 +118,6 @@ function getStatusBadgeClass($status) {
                             </div>
                             <h5>No Requests Found</h5>
                             <p>You haven't submitted any vacation requests yet.</p>
-                            <a href="<?= url('/new-request') ?>" class="btn btn-success">
-                                <i class="bi bi-plus-circle me-2"></i>Submit Your First Request
-                            </a>
                         </div>
                     <?php else: ?>
                         <?php foreach ($requests as $request): 
