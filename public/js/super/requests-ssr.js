@@ -1,5 +1,21 @@
 // Enhanced requests page functionality for server-side rendered data
 
+// Utility function for copying text to clipboard (from profileInfoPopup.js)
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        console.log('Copied to clipboard: ' + text);
+        // Show a toast notification if available
+        if (typeof window.showNotification === 'function') {
+            window.showNotification('Copied to clipboard', 'success');
+        }
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+        if (typeof window.showNotification === 'function') {
+            window.showNotification('Failed to copy to clipboard', 'danger');
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     // Reference to the current page element
     const currentPageElement = document.getElementById('currentPage');
@@ -88,7 +104,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     /**
-     * Setup search functionality
+     * Setup search functionality with loading states and debouncing
      */
     function setupSearch() {
         const searchInput = document.getElementById('studentSearch');
@@ -96,7 +112,43 @@ document.addEventListener("DOMContentLoaded", function() {
         
         if (!searchInput) return;
         
-        searchInput.addEventListener('input', handleSearch);
+        let searchTimeout;
+        
+        // Add loading indicator HTML if it doesn't exist
+        if (!document.getElementById('searchLoading')) {
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.id = 'searchLoading';
+            loadingIndicator.className = 'search-loading';
+            loadingIndicator.innerHTML = '<i class="bi bi-search"></i>';
+            searchInput.parentNode.style.position = 'relative';
+            searchInput.parentNode.appendChild(loadingIndicator);
+        }
+        
+        searchInput.addEventListener('input', function(event) {
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // Show loading indicator
+            const loadingIndicator = document.getElementById('searchLoading');
+            if (loadingIndicator) {
+                loadingIndicator.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i>';
+                loadingIndicator.style.opacity = '1';
+            }
+            
+            // Debounce search by 300ms
+            searchTimeout = setTimeout(() => {
+                handleSearch(event);
+                
+                // Hide loading indicator after search
+                setTimeout(() => {
+                    if (loadingIndicator) {
+                        loadingIndicator.innerHTML = '<i class="bi bi-search"></i>';
+                        loadingIndicator.style.opacity = '0.5';
+                    }
+                }, 200);
+            }, 300);
+        });
+        
         searchInput.addEventListener('focus', showSearchResults);
         searchInput.addEventListener('blur', hideSearchResults);
         
@@ -422,11 +474,14 @@ document.addEventListener("DOMContentLoaded", function() {
                                         <div class="card-body">
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold" style="color: #a0a7b5;">Name:</label>
-                                                <p class="mb-0" style="color: #ffffff;">${data.studentName}</p>
+                                                <p class="mb-0 selectable-text" style="color: #ffffff; cursor: pointer;" onclick="copyToClipboard('${data.studentName}')">
+                                                    ${data.studentName}
+                                                    <i class="bi bi-clipboard ms-1" style="font-size: 0.8rem; opacity: 0.7;"></i>
+                                                </p>
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold" style="color: #a0a7b5;">Request ID:</label>
-                                                <p class="mb-0"><code style="background-color: #2c3142; color: #007bff; padding: 2px 6px; border-radius: 3px;">${data.requestId}</code></p>
+                                                <p class="mb-0"><code style="background-color: #2c3142; color: #007bff; padding: 2px 6px; border-radius: 3px; cursor: pointer;" onclick="copyToClipboard('${data.requestId}')">${data.requestId} <i class="bi bi-clipboard ms-1" style="font-size: 0.7rem; opacity: 0.7;"></i></code></p>
                                             </div>
                                             <div class="mb-0">
                                                 <label class="form-label fw-bold" style="color: #a0a7b5;">Status:</label>
@@ -571,34 +626,178 @@ document.addEventListener("DOMContentLoaded", function() {
     };
     
     /**
-     * Show notification
+     * Show notification with modern styling
      */
     window.showNotification = function(message, type = 'info') {
+        // Create notification container if it doesn't exist
+        let notificationContainer = document.getElementById('notificationContainer');
+        if (!notificationContainer) {
+            notificationContainer = document.createElement('div');
+            notificationContainer.id = 'notificationContainer';
+            notificationContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+            document.body.appendChild(notificationContainer);
+        }
+
+        // Create notification element
         const notification = document.createElement('div');
-        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-        notification.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        const typeColors = {
+            'success': { bg: '#28a745', icon: 'bi-check-circle-fill' },
+            'danger': { bg: '#dc3545', icon: 'bi-exclamation-triangle-fill' },
+            'info': { bg: '#007bff', icon: 'bi-info-circle-fill' },
+            'warning': { bg: '#ffc107', icon: 'bi-exclamation-triangle-fill' }
+        };
+        
+        const config = typeColors[type] || typeColors['info'];
+        
+        notification.className = 'alert fade show mb-2';
+        notification.style.cssText = `
+            background: linear-gradient(135deg, ${config.bg}dd, ${config.bg}bb);
+            color: white;
+            border: 1px solid ${config.bg};
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+            transform: translateX(100%);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            padding: 12px 16px;
+            position: relative;
+            overflow: hidden;
         `;
         
-        document.body.appendChild(notification);
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi ${config.icon} me-2" style="font-size: 1.1rem;"></i>
+                <span style="flex: 1;">${message}</span>
+                <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.8rem;" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+            <div style="position: absolute; bottom: 0; left: 0; height: 3px; background: white; width: 100%; animation: progress 3s linear forwards;"></div>
+        `;
         
+        // Add CSS animation for progress bar
+        if (!document.getElementById('notificationStyles')) {
+            const style = document.createElement('style');
+            style.id = 'notificationStyles';
+            style.textContent = `
+                @keyframes progress {
+                    from { width: 100%; }
+                    to { width: 0%; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        notificationContainer.appendChild(notification);
+        
+        // Trigger animation
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 10);
+        
+        // Auto remove after 3 seconds
         setTimeout(() => {
             if (notification.parentNode) {
-                notification.remove();
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
             }
         }, 3000);
     };
+    
+    // Keyboard shortcuts and accessibility improvements
+    document.addEventListener('keydown', function(event) {
+        // Escape key to close modals
+        if (event.key === 'Escape') {
+            const activeModal = document.querySelector('.modal.show');
+            if (activeModal) {
+                const modalInstance = bootstrap.Modal.getInstance(activeModal);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            }
+        }
+        
+        // Ctrl/Cmd + K to focus search
+        if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+            event.preventDefault();
+            const searchInput = document.getElementById('studentSearch');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.select();
+            }
+        }
+        
+        // Ctrl/Cmd + F to focus search (alternative)
+        if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+            const searchInput = document.getElementById('studentSearch');
+            if (searchInput && !event.defaultPrevented) {
+                event.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            }
+        }
+    });
+    
+    // Add tooltips for keyboard shortcuts
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        searchInput.setAttribute('title', 'Search requests (Ctrl+K or Ctrl+F)');
+        // Add placeholder with hint
+        if (!searchInput.placeholder.includes('Ctrl+K')) {
+            searchInput.placeholder += ' (Ctrl+K)';
+        }
+    }
 });
 
 /**
  * Approve a student's vacation request
  */
 window.approveRequest = function(requestId) {
-    if (!confirm('Are you sure you want to approve this request?')) {
-        return;
-    }
+    // Use SweetAlert2 for better user experience
+    Swal.fire({
+        title: 'Approve Request',
+        text: 'Are you sure you want to approve this vacation request?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Yes, approve it!',
+        cancelButtonText: '<i class="bi bi-x-circle me-1"></i> Cancel',
+        background: '#1a1f2c',
+        color: '#ffffff',
+        customClass: {
+            popup: 'border border-secondary',
+            confirmButton: 'btn btn-success',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            performApproveRequest(requestId);
+        }
+    });
+};
+
+/**
+ * Perform the actual approve request API call
+ */
+function performApproveRequest(requestId) {
+    // Show loading indicator
+    Swal.fire({
+        title: 'Processing...',
+        text: 'Approving the request, please wait.',
+        icon: 'info',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        background: '#1a1f2c',
+        color: '#ffffff',
+        customClass: {
+            popup: 'border border-secondary'
+        },
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
     
     fetch('/api/approve-request', {
         method: 'POST',
@@ -609,6 +808,7 @@ window.approveRequest = function(requestId) {
     })
     .then(response => response.json())
     .then(data => {
+        Swal.close(); // Close loading modal
         if (data.success) {
             window.showNotification(data.message, 'success');
             // Reload the page to show updated data
@@ -620,18 +820,61 @@ window.approveRequest = function(requestId) {
         }
     })
     .catch(error => {
+        Swal.close(); // Close loading modal
         console.error('Error:', error);
         window.showNotification('Error approving request', 'danger');
     });
-};
+}
 
 /**
  * Deny a student's vacation request
  */
 window.denyRequest = function(requestId) {
-    if (!confirm('Are you sure you want to deny this request?')) {
-        return;
-    }
+    // Use SweetAlert2 for better user experience
+    Swal.fire({
+        title: 'Deny Request',
+        text: 'Are you sure you want to deny this vacation request?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="bi bi-x-circle me-1"></i> Yes, deny it!',
+        cancelButtonText: '<i class="bi bi-arrow-left me-1"></i> Cancel',
+        background: '#1a1f2c',
+        color: '#ffffff',
+        customClass: {
+            popup: 'border border-secondary',
+            confirmButton: 'btn btn-danger',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            performDenyRequest(requestId);
+        }
+    });
+};
+
+/**
+ * Perform the actual deny request API call
+ */
+function performDenyRequest(requestId) {
+    // Show loading indicator
+    Swal.fire({
+        title: 'Processing...',
+        text: 'Denying the request, please wait.',
+        icon: 'info',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        background: '#1a1f2c',
+        color: '#ffffff',
+        customClass: {
+            popup: 'border border-secondary'
+        },
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
     
     fetch('/api/deny-request', {
         method: 'POST',
@@ -642,6 +885,7 @@ window.denyRequest = function(requestId) {
     })
     .then(response => response.json())
     .then(data => {
+        Swal.close(); // Close loading modal
         if (data.success) {
             window.showNotification(data.message, 'success');
             // Reload the page to show updated data
@@ -653,6 +897,7 @@ window.denyRequest = function(requestId) {
         }
     })
     .catch(error => {
+        Swal.close(); // Close loading modal
         console.error('Error:', error);
         window.showNotification('Error denying request', 'danger');
     });

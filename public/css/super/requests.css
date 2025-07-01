@@ -1,6 +1,39 @@
 /* filepath: /home/wildrea-archlinux/Documents/Projects/Websites/FerieSystem/mockup/superuser/css/requests.css */
 /* Styles specific to the requests page */
 
+/* Copy-to-clipboard functionality styling (from profileInfoPopup) */
+.selectable-text {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+}
+
+.selectable-text:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+/* Enhanced clipboard icon styling */
+.bi-clipboard {
+    transition: opacity 0.2s ease;
+}
+
+.selectable-text:hover .bi-clipboard,
+code:hover .bi-clipboard {
+    opacity: 1 !important;
+}
+
+/* Modal enhancements for better readability */
+.modal-content .card {
+    transition: transform 0.2s ease;
+}
+
+.modal-content .card:hover {
+    transform: translateY(-2px);
+}
+
 /* Non-selectable elements */
 .request-status-badge, 
 .date-label, 
@@ -61,6 +94,33 @@
   height: 100px;
   background-image: radial-gradient(circle at bottom right, rgba(52, 152, 219, 0.1), transparent 70%);
   pointer-events: none;
+}
+
+/* Enhanced hover effects and animations */
+.request-card, .student-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.request-card:hover, .student-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+}
+
+.request-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.request-card:hover::before {
+    left: 100%;
 }
 
 /* Status badge styles */
@@ -151,3 +211,118 @@
 .request-card.highlighted {
   transition: all 0.3s ease;
 }
+
+/* Button hover enhancements */
+.action-buttons .btn {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.action-buttons .btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.action-buttons .btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.action-buttons .btn-outline-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+    color: white;
+}
+
+/* Pulse animation for notification badges */
+.notification-badge {
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+
+/* Search results dropdown enhanced styling */
+.search-results {
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: 8px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.search-result-item {
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    margin: 2px;
+}
+
+.search-result-item:hover {
+    background-color: rgba(0, 123, 255, 0.2);
+    transform: translateX(5px);
+}
+
+/* Profile info hover effect */
+#profileInfo {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+#profileInfo:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+}
+
+/* Search loading indicator */
+.search-loading {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    opacity: 0.5;
+    z-index: 10;
+}
+
+.search-loading .spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Enhanced filter animations */
+.request-card, .student-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    transform: scale(1);
+}
+
+.request-card[style*="display: none"], 
+.student-card[style*="display: none"] {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
+/* Status badge enhanced animations */

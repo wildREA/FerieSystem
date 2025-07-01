@@ -46,6 +46,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<?= asset('public/js/components/profileInfoPopup.js') ?>" defer></script>
     <script src="<?= asset('public/js/super/requests-ssr.js') ?>" defer></script>
     <!-- Hidden input to identify current page -->
     <input type="hidden" id="currentPage" value="requests">
@@ -70,11 +71,11 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                 <span class="notification-badge user-select-none">2</span>
               </div>
             </a>
-          </li>
+          <!-- </li> -->
           <li class="nav-section">
             <a href="<?= url('/students') ?>" class="section-link">
               <div class="section-header students-background">
-                <i class="bi bi-people text-primary"></i>
+                <!-- <i class="bi bi-people text-primary"></i> -->
                 <span class="user-select-none">Students</span>
               </div>
             </a>
