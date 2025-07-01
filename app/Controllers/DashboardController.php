@@ -59,33 +59,44 @@ class DashboardController {
     }
     
     public function getBalanceData($userId) {
-        // Calculate balance from transactions table
-        $stmt = $this->db->prepare("
-            SELECT 
-                SUM(CASE WHEN type = 'allocation' THEN amount ELSE 0 END) as total_allocated,
-                SUM(CASE WHEN type = 'deduction' THEN amount ELSE 0 END) as total_used,
-                SUM(amount) as current_balance
-            FROM transactions 
-            WHERE user_id = ?
-        ");
-        $stmt->execute([$userId]);
-        $balance = $stmt->fetch(\PDO::FETCH_ASSOC);
-        
-        // Get pending hours from requests
-        $stmt = $this->db->prepare("
-            SELECT SUM(total_hours) as pending_hours 
-            FROM requests 
-            WHERE user_id = ? AND status = 'pending'
-        ");
-        $stmt->execute([$userId]);
-        $pending = $stmt->fetch(\PDO::FETCH_ASSOC);
-        
-        return [
-            'totalAllocated' => (float)($balance['total_allocated'] ?? 0),
-            'totalUsed' => (float)($balance['total_used'] ?? 0),
-            'currentBalance' => (float)($balance['current_balance'] ?? 0),
-            'pendingHours' => (float)($pending['pending_hours'] ?? 0)
-        ];
+        try {
+            // Calculate balance from transactions table
+            $stmt = $this->db->prepare("
+                SELECT 
+                    SUM(CASE WHEN type = 'allocation' THEN amount ELSE 0 END) as total_allocated,
+                    SUM(CASE WHEN type = 'deduction' THEN amount ELSE 0 END) as total_used,
+                    SUM(amount) as current_balance
+                FROM transactions 
+                WHERE user_id = ?
+            ");
+            $stmt->execute([$userId]);
+            $balance = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            // Get pending hours from requests
+            $stmt = $this->db->prepare("
+                SELECT SUM(total_hours) as pending_hours 
+                FROM requests 
+                WHERE user_id = ? AND status = 'pending'
+            ");
+            $stmt->execute([$userId]);
+            $pending = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            return [
+                'totalAllocated' => (float)($balance['total_allocated'] ?? 0),
+                'totalUsed' => (float)($balance['total_used'] ?? 0),
+                'currentBalance' => (float)($balance['current_balance'] ?? 0),
+                'pendingHours' => (float)($pending['pending_hours'] ?? 0)
+            ];
+        } catch (\Exception $e) {
+            error_log("Error in getBalanceData for user $userId: " . $e->getMessage());
+            // Return default data if database query fails
+            return [
+                'totalAllocated' => 0,
+                'totalUsed' => 0,
+                'currentBalance' => 0,
+                'pendingHours' => 0
+            ];
+        }
     }
     
     public function getRecentRequests($userId) {
@@ -117,7 +128,16 @@ class DashboardController {
         header('Content-Type: application/json');
         
         try {
+            // Check if database connection is available
+            if ($this->db === null) {
+                error_log("Database connection not available in getBalanceAPI");
+                http_response_code(500);
+                echo json_encode(['error' => 'Database connection failed']);
+                return;
+            }
+            
             if (!$this->sessionManager->isAuthenticated()) {
+                error_log("User not authenticated in getBalanceAPI");
                 http_response_code(401);
                 echo json_encode(['error' => 'User not authenticated']);
                 return;
@@ -125,12 +145,20 @@ class DashboardController {
             
             $userType = $this->sessionManager->getUserType();
             if ($userType !== 'standard') {
+                error_log("Non-standard user trying to access balance API: " . $userType);
                 http_response_code(403);
                 echo json_encode(['error' => 'Only students can access balance data']);
                 return;
             }
             
             $userId = $this->sessionManager->getUserId();
+            if (!$userId) {
+                error_log("No user ID available in getBalanceAPI");
+                http_response_code(400);
+                echo json_encode(['error' => 'User ID not available']);
+                return;
+            }
+            
             $balanceData = $this->getBalanceData($userId);
             
             echo json_encode([
@@ -140,6 +168,7 @@ class DashboardController {
             
         } catch (\Exception $e) {
             error_log("Error in getBalanceAPI: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             http_response_code(500);
             echo json_encode(['error' => 'Internal server error']);
         }

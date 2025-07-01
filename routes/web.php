@@ -236,11 +236,22 @@ $routes['GET']['/uploads/calendar/calendar.pdf'] = function() {
     }
 };
 
+// Test API endpoint
+$routes['GET']['/api/test'] = function() {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true, 'message' => 'API is working']);
+    exit;
+};
+
 // Balance API for students
 $routes['GET']['/api/balance'] = function() {
+    // Ensure no output before JSON
+    ob_clean();
+    
     require_once BASE_PATH . '/app/Controllers/DashboardController.php';
     $controller = new App\Controllers\DashboardController();
     $controller->getBalanceAPI();
+    exit; // Ensure no additional output
 };
 
 // Approve request API for superusers

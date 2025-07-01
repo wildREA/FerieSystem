@@ -118,14 +118,30 @@ function getStatusBadgeClass($status) {
                             </div>
                             <h5>No Requests Found</h5>
                             <p>You haven't submitted any vacation requests yet.</p>
-                            <a href="<?= url('/new-request') ?>" class="btn btn-success">
-                                <i class="bi bi-plus-circle me-2"></i>Submit Your First Request
-                            </a>
                         </div>
                     <?php else: ?>
                         <?php foreach ($requests as $request): 
-                            $hours = $request['total_hours'];
-                            $days = $hours / 8;
+                            // Calculate total days based on 7.5h Mon-Thu, 6.5h Fri
+                            $start = new DateTime($request['start_datetime']);
+                            $end = new DateTime($request['end_datetime']);
+                            $totalHours = $request['total_hours'];
+                            $workDays = 0;
+                            $remainingHours = $totalHours;
+                            $period = new DatePeriod($start, new DateInterval('P1D'), $end->modify('+1 day'));
+                            foreach ($period as $dt) {
+                                if (in_array($dt->format('N'), [1,2,3,4,5])) { // Mon-Fri
+                                    if ($dt->format('N') == 5) { // Friday
+                                        $dayHours = min(6.5, $remainingHours);
+                                    } else {
+                                        $dayHours = min(7.5, $remainingHours);
+                                    }
+                                    $workDays += $dayHours / ($dt->format('N') == 5 ? 6.5 : 7.5);
+                                    $remainingHours -= $dayHours;
+                                    if ($remainingHours <= 0) break;
+                                }
+                            }
+                            $hours = $totalHours;
+                            $days = $workDays;
                         ?>
                             <div class="request-card" data-status="<?= $request['status'] ?>">
                                 <div class="request-header">
