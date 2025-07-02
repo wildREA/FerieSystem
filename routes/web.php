@@ -130,7 +130,15 @@ $routes['GET']['/dashboard'] = function() {
         redirect('/students');
     } else {
         $sessionManager->requireUserType(['standard'], '/auth');
-        return view('standarduser/dashboard');
+        
+        // Get notification counts
+        require_once BASE_PATH . '/app/Services/NotificationService.php';
+        $notificationService = new App\Services\NotificationService();
+        $notifications = $notificationService->getNotificationCounts();
+        
+        return view('standarduser/dashboard', [
+            'notifications' => $notifications
+        ]);
     }
 };
 
@@ -147,9 +155,15 @@ $routes['GET']['/requests'] = function() {
         $pendingRequests = $controller->getPendingRequests();
         $approvedRequests = $controller->getApprovedRequests();
         
+        // Get notification counts
+        require_once BASE_PATH . '/app/Services/NotificationService.php';
+        $notificationService = new App\Services\NotificationService();
+        $notifications = $notificationService->getNotificationCounts();
+        
         return view('superuser/requests', [
             'pendingRequests' => $pendingRequests,
-            'approvedRequests' => $approvedRequests
+            'approvedRequests' => $approvedRequests,
+            'notifications' => $notifications
         ]);
     } else {
         $sessionManager->requireUserType(['standard'], '/auth');
@@ -159,13 +173,24 @@ $routes['GET']['/requests'] = function() {
         $controller = new App\Controllers\RequestController();
         $requestsData = $controller->getUserRequestsForView();
         
+        // Calculate pending count for notifications
+        $pendingCount = 0;
+        if (is_array($requestsData)) {
+            foreach ($requestsData as $request) {
+                if (isset($request['status']) && $request['status'] === 'pending') {
+                    $pendingCount++;
+                }
+            }
+        }
+        
         // Load helper functions for current user name
         require_once BASE_PATH . '/app/Helpers/UrlHelper.php';
         $userName = function_exists('getCurrentUserName') ? getCurrentUserName() : 'Student';
         
         return view('standarduser/requests', [
             'requests' => $requestsData,
-            'userName' => $userName
+            'userName' => $userName,
+            'pendingCount' => $pendingCount
         ]);
     }
 };
@@ -174,7 +199,15 @@ $routes['GET']['/new-request'] = function() {
     $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
     $sessionManager->requireUserType(['standard'], '/auth');
-    return view('standarduser/new-request');
+    
+    // Get notification counts
+    require_once BASE_PATH . '/app/Services/NotificationService.php';
+    $notificationService = new App\Services\NotificationService();
+    $notifications = $notificationService->getNotificationCounts();
+    
+    return view('standarduser/new-request', [
+        'notifications' => $notifications
+    ]);
 };
 
 // Calendar and admin routes for super users
@@ -182,14 +215,30 @@ $routes['GET']['/calendar'] = function() {
     $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
     $sessionManager->requireUserType(['super'], '/auth');
-    return view('superuser/calendar');
+    
+    // Get notification counts
+    require_once BASE_PATH . '/app/Services/NotificationService.php';
+    $notificationService = new App\Services\NotificationService();
+    $notifications = $notificationService->getNotificationCounts();
+    
+    return view('superuser/calendar', [
+        'notifications' => $notifications
+    ]);
 };
 
 $routes['GET']['/students'] = function() {
     $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
     $sessionManager->requireUserType(['super'], '/auth');
-    return view('superuser/students');
+    
+    // Get notification counts
+    require_once BASE_PATH . '/app/Services/NotificationService.php';
+    $notificationService = new App\Services\NotificationService();
+    $notifications = $notificationService->getNotificationCounts();
+    
+    return view('superuser/students', [
+        'notifications' => $notifications
+    ]);
 };
 
 
@@ -339,6 +388,30 @@ $routes['GET']['/api/user-absolute-balance'] = function() {
     require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
     $controller = new App\Controllers\SuperuserController();
     $controller->getUserAbsoluteBalanceAPI();
+};
+
+// Get notification counts API
+$routes['GET']['/api/notifications'] = function() {
+    // Suppress all PHP errors/warnings for this API endpoint
+    error_reporting(0);
+    ini_set('display_errors', 0);
+    
+    // Ensure absolutely no output before JSON
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    
+    try {
+        require_once BASE_PATH . '/app/Controllers/NotificationController.php';
+        $controller = new App\Controllers\NotificationController();
+        $controller->getNotificationCounts();
+    } catch (Exception $e) {
+        error_log("Error in notifications route: " . $e->getMessage());
+        header('Content-Type: application/json; charset=UTF-8');
+        http_response_code(500);
+        echo json_encode(['error' => 'Internal server error', 'success' => false]);
+    }
+    exit; // Ensure absolutely no additional output
 };
 
 // Return the routes array to be processed by the router

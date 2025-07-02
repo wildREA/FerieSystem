@@ -799,6 +799,12 @@ function performApproveRequest(requestId) {
         Swal.close();
         if (data.success) {
             window.showNotification(data.message, 'success');
+            
+            // Refresh notifications
+            if (window.notificationManager) {
+                window.notificationManager.refresh();
+            }
+            
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
@@ -867,6 +873,12 @@ function performDenyRequest(requestId) {
         Swal.close();
         if (data.success) {
             window.showNotification(data.message, 'success');
+            
+            // Refresh notifications
+            if (window.notificationManager) {
+                window.notificationManager.refresh();
+            }
+            
             setTimeout(() => {
                 window.location.reload();
             }, 1000);

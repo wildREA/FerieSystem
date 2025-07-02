@@ -13,9 +13,28 @@ const StudentUtils = {
         if (requestsBadge) {
             const pendingCards = document.querySelectorAll('.request-card .status-badge.status-pending');
             const pendingCount = pendingCards.length;
-            requestsBadge.textContent = pendingCount;
-            requestsBadge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+            
+            if (pendingCount > 0) {
+                requestsBadge.textContent = pendingCount;
+                requestsBadge.style.display = 'inline-block';
+            } else {
+                requestsBadge.style.display = 'none';
+            }
         }
+        
+        // Also update other notification badges
+        const notificationBadges = document.querySelectorAll('.notification-badge');
+        const pendingCards = document.querySelectorAll('.request-card .status-badge.status-pending');
+        const pendingCount = pendingCards.length;
+        
+        notificationBadges.forEach(badge => {
+            if (pendingCount > 0) {
+                badge.textContent = pendingCount;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        });
     }
 };
 

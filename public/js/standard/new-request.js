@@ -764,6 +764,13 @@ class NewRequestController {
             }
             UIUtilities.showNotification(successMessage, 'success');
             
+            // Refresh notifications after successful submission
+            if (window.notificationManager) {
+                setTimeout(() => {
+                    window.notificationManager.refresh();
+                }, 1000);
+            }
+            
         } finally {
             this.setSubmitButtonLoading(false);
         }

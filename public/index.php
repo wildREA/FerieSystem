@@ -20,7 +20,6 @@ $config = require_once BASE_PATH . '/config/config.php';
 
 // Initialize autoloader
 require_once BASE_PATH . '/app/Core/autoload.php';
-echo "Ferie System\n";
 // Simple router
 class Router
 {

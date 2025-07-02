@@ -48,6 +48,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="<?= asset('public/js/components/profileInfoPopup.js') ?>" defer></script>
+    <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
     <script src="<?= asset('public/js/super/requests-ssr.js') ?>" defer></script>
     <!-- Hidden input to identify current page -->
     <input type="hidden" id="currentPage" value="requests">
@@ -69,7 +70,9 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
               <div class="section-header requests-background">
                 <i class="bi bi-file-earmark-text text-danger"></i>
                 <span class="user-select-none">Requests</span>
-                <span class="notification-badge user-select-none">2</span>
+                <?php if (isset($notifications['pendingRequests']) && $notifications['pendingRequests'] > 0): ?>
+                <span class="notification-badge user-select-none"><?= $notifications['pendingRequests'] ?></span>
+                <?php endif; ?>
               </div>
             </a>
           <!-- </li> -->

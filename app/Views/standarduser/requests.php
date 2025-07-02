@@ -204,5 +204,6 @@ function getStatusBadgeClass($status) {
             });
         });
     </script>
+    <script src="<?= asset('public/js/components/NotificationManager.js') ?>"></script>
 </body>
 </html>

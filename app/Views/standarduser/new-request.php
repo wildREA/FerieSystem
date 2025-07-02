@@ -16,6 +16,7 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
     <link rel="stylesheet" href="<?= asset('public/css/standard/student-styles.css') ?>">
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
     <script src="<?= asset('public/js/standard/new-request.js') ?>" defer></script>
 </head>
 <body>
@@ -47,7 +48,9 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
                     <a href="<?= url('/requests') ?>" class="section-header">
                         <i class="bi bi-clock-history text-warning"></i>
                         <span>My Requests</span>
-                        <span class="notification-badge" id="requestsBadge">3</span>
+                        <?php if (isset($notifications['pendingRequests']) && $notifications['pendingRequests'] > 0): ?>
+                        <span class="notification-badge" id="requestsBadge"><?= $notifications['pendingRequests'] ?></span>
+                        <?php endif; ?>
                     </a>
                 </li>
             </ul>
