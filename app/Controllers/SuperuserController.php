@@ -564,4 +564,152 @@ class SuperuserController {
             return false;
         }
     }
+    
+    /**
+     * Get all students with their latest request information
+     */
+    public function getAllStudents() {
+        try {
+            if (!$this->sessionManager->isAuthenticated()) {
+                throw new \Exception('User not authenticated');
+            }
+            
+            $userType = $this->sessionManager->getUserType();
+            if ($userType !== 'super') {
+                throw new \Exception('Only superusers can access this data');
+            }
+            
+            // Get all standard users (students) with their latest request info
+            $stmt = $this->db->prepare("
+                SELECT 
+                    u.id,
+                    u.username,
+                    u.name,
+                    u.email,
+                    u.created_at,
+                    r.id as request_id,
+                    r.start_datetime,
+                    r.end_datetime,
+                    r.reason,
+                    r.status,
+                    r.created_at as request_created_at,
+                    r.total_hours
+                FROM users u
+                LEFT JOIN (
+                    SELECT r1.*
+                    FROM requests r1
+                    INNER JOIN (
+                        SELECT user_id, MAX(created_at) as max_created
+                        FROM requests
+                        GROUP BY user_id
+                    ) r2 ON r1.user_id = r2.user_id AND r1.created_at = r2.max_created
+                ) r ON u.id = r.user_id
+                WHERE u.user_type = 'standard'
+                ORDER BY u.name ASC
+            ");
+            $stmt->execute();
+            $students = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            // Process students and add calculated fields
+            $processedStudents = [];
+            foreach ($students as $student) {
+                // Generate avatar initials
+                $name = $student['name'] ?? $student['username'] ?? '';
+                if (empty($name)) {
+                    $avatar = 'U'; // Default avatar for unknown user
+                } else {
+                    $nameParts = explode(' ', $name);
+                    $avatar = '';
+                    foreach ($nameParts as $part) {
+                        if (!empty($part)) {
+                            $avatar .= strtoupper($part[0]);
+                        }
+                    }
+                    if (strlen($avatar) > 2) {
+                        $avatar = substr($avatar, 0, 2);
+                    }
+                    if (empty($avatar)) {
+                        $avatar = strtoupper($name[0]); // Use first character if no spaces
+                    }
+                }
+                
+                // Calculate vacation balance for this user
+                $vacationBalanceData = $this->getUserAbsoluteBalance($student['id']);
+                $vacationBalance = $vacationBalanceData['currentBalance'] ?? 0;
+                $vacationDays = max(0, ceil($vacationBalance / 8)); // Convert hours to days, minimum 0
+                
+                // Process request information if exists
+                $requestInfo = null;
+                if ($student['request_id']) {
+                    $startDate = new \DateTime($student['start_datetime']);
+                    $endDate = new \DateTime($student['end_datetime']);
+                    $requestDays = ceil($student['total_hours'] / 8);
+                    
+                    $requestInfo = [
+                        'id' => $student['request_id'],
+                        'status' => $student['status'],
+                        'startDate' => $startDate->format('Y-m-d'),
+                        'endDate' => $endDate->format('Y-m-d'),
+                        'days' => $requestDays,
+                        'reason' => $student['reason'] ?? 'No reason provided',
+                        'createdAt' => $student['request_created_at']
+                    ];
+                }
+                
+                $processedStudents[] = [
+                    'id' => $student['id'],
+                    'name' => $student['name'] ?? $student['username'] ?? 'Unknown User',
+                    'email' => $student['email'] ?? '',
+                    'username' => $student['username'] ?? '',
+                    'course' => 'N/A', // You might want to add this to users table later
+                    'year' => 'N/A', // You might want to add this to users table later
+                    'vacationDays' => $vacationDays,
+                    'avatar' => $avatar,
+                    'joinedAt' => $student['created_at'],
+                    'latestRequest' => $requestInfo
+                ];
+            }
+            
+            return $processedStudents;
+            
+        } catch (\Exception $e) {
+            error_log("Error in getAllStudents: " . $e->getMessage());
+            return [];
+        }
+    }
+    
+    /**
+     * API endpoint to get all students
+     */
+    public function getStudentsAPI() {
+        try {
+            header('Content-Type: application/json');
+            
+            if (!$this->sessionManager->isAuthenticated()) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                return;
+            }
+            
+            $userType = $this->sessionManager->getUserType();
+            if ($userType !== 'super') {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Only superusers can access this data']);
+                return;
+            }
+            
+            $students = $this->getAllStudents();
+            
+            echo json_encode([
+                'success' => true,
+                'data' => $students,
+                'count' => count($students)
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log("Error in getStudentsAPI: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Internal server error']);
+        }
+    }
 }

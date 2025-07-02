@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
-    <script src="<?= asset('public/js/super/dashboard.js') ?>" defer></script>
+    <script src="<?= asset('public/js/super/students.js') ?>" defer></script>
     <!-- Hidden input to identify current page -->
     <input type="hidden" id="currentPage" value="students">
   </head>
@@ -90,8 +90,81 @@
           <p class="text-muted">Manage student vacation requests and information</p>
         </div>
         
+        
         <div class="students-grid" id="studentsGrid">
-          <!-- Student cards will be generated here -->
+          <!-- Students will be rendered server-side and enhanced with JavaScript -->
+          <?php if (!empty($students)): ?>
+            <?php foreach ($students as $student): ?>
+              <div class="student-card" data-student-id="<?= htmlspecialchars($student['id']) ?>">
+                <div class="student-header">
+                  <div class="student-avatar">
+                    <?= htmlspecialchars($student['avatar']) ?>
+                  </div>
+                  <div class="student-info">
+                    <h4 class="student-name"><?= htmlspecialchars($student['name']) ?></h4>
+                    <p class="student-email"><?= htmlspecialchars($student['email']) ?></p>
+                    <div class="student-meta">
+                      <span class="course"><?= htmlspecialchars($student['course']) ?></span>
+                      <?php if ($student['year'] !== 'N/A'): ?>
+                        <span class="year">Year <?= htmlspecialchars($student['year']) ?></span>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="student-stats">
+                  <div class="stat">
+                    <span class="stat-label">Vacation Days</span>
+                    <span class="stat-value"><?= htmlspecialchars($student['vacationDays']) ?></span>
+                  </div>
+                  <?php if ($student['latestRequest']): ?>
+                    <div class="stat">
+                      <span class="stat-label">Latest Request</span>
+                      <span class="stat-value status-<?= htmlspecialchars($student['latestRequest']['status']) ?>">
+                        <?= ucfirst(htmlspecialchars($student['latestRequest']['status'])) ?>
+                      </span>
+                    </div>
+                  <?php endif; ?>
+                </div>
+                
+                <?php if ($student['latestRequest']): ?>
+                  <div class="request-info">
+                    <div class="request-dates">
+                      <i class="bi bi-calendar"></i>
+                      <?= htmlspecialchars($student['latestRequest']['startDate']) ?> - 
+                      <?= htmlspecialchars($student['latestRequest']['endDate']) ?>
+                      <span class="request-days">(<?= htmlspecialchars($student['latestRequest']['days']) ?> days)</span>
+                    </div>
+                    <div class="request-reason">
+                      <i class="bi bi-chat-left-text"></i>
+                      <?= htmlspecialchars($student['latestRequest']['reason']) ?>
+                    </div>
+                    <?php if ($student['latestRequest']['status'] === 'pending'): ?>
+                      <div class="request-actions">
+                        <button class="btn btn-success btn-sm" onclick="approveRequest('<?= htmlspecialchars($student['latestRequest']['id']) ?>')">
+                          <i class="bi bi-check-circle"></i> Approve
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="denyRequest('<?= htmlspecialchars($student['latestRequest']['id']) ?>')">
+                          <i class="bi bi-x-circle"></i> Deny
+                        </button>
+                      </div>
+                    <?php endif; ?>
+                  </div>
+                <?php else: ?>
+                  <div class="no-requests">
+                    <i class="bi bi-inbox"></i>
+                    <span>No recent requests</span>
+                  </div>
+                <?php endif; ?>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div class="no-students text-center py-5">
+              <i class="bi bi-people fs-1 text-muted"></i>
+              <h4 class="mt-3 text-muted">No students found</h4>
+              <p class="text-muted">No students are registered in the system</p>
+            </div>
+          <?php endif; ?>
         </div>
         
         <div class="no-results" id="noResults" style="display: none;">

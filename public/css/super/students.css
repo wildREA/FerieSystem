@@ -101,15 +101,24 @@
 
 /* Status colors */
 .status-approved {
-  background-color: #28a745;
+  color: #28a745;
+  background-color: rgba(40, 167, 69, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
 }
 
 .status-pending {
-  background-color: #ffc107;
+  color: #ffc107;
+  background-color: rgba(255, 193, 7, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
 }
 
 .status-denied {
-  background-color: #dc3545;
+  color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
 }
 
 /* Student header */
@@ -206,4 +215,205 @@
 
 .action-buttons .btn:hover {
   transform: translateY(-3px);
+}
+
+/* Additional styles for students page */
+
+/* Students grid layout */
+.students-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+/* Student meta information */
+.student-meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.student-meta .course,
+.student-meta .year {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: rgba(52, 152, 219, 0.2);
+  color: #3498db;
+}
+
+/* Student stats */
+.student-stats {
+  display: flex;
+  justify-content: space-between;
+  margin: 15px 0;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #a0a7b5;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.student-meta {
+  margin-top: 8px;
+}
+
+.student-meta span {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #a0a7b5;
+  margin-right: 8px;
+}
+
+/* Request info section */
+.request-info {
+  margin-top: 15px;
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #3498db;
+}
+
+.request-dates, .request-reason {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: #ffffff;
+}
+
+.request-dates i, .request-reason i {
+  margin-right: 8px;
+  color: #3498db;
+}
+
+.request-days {
+  font-size: 0.75rem;
+  color: #a0a7b5;
+  margin-left: 8px;
+}
+
+.request-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.request-actions .btn {
+  flex: 1;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+}
+
+/* No requests styling */
+.no-requests {
+  text-align: center;
+  padding: 20px;
+  color: #a0a7b5;
+  font-size: 0.9rem;
+}
+
+.no-requests i {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+/* No students state */
+.no-students {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: #a0a7b5;
+}
+
+.no-students i {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  display: block;
+  opacity: 0.3;
+}
+
+/* Search results styling */
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #232838;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 8px 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+}
+
+.search-results.show {
+  display: block;
+}
+
+.search-result-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+/* Loading states */
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn[disabled]:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .students-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .student-card {
+    padding: 15px;
+  }
+  
+  .student-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
 }

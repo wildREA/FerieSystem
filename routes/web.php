@@ -236,8 +236,14 @@ $routes['GET']['/students'] = function() {
     $notificationService = new App\Services\NotificationService();
     $notifications = $notificationService->getNotificationCounts();
     
+    // Get students data for SSR
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $superuserController = new App\Controllers\SuperuserController();
+    $students = $superuserController->getAllStudents();
+    
     return view('superuser/students', [
-        'notifications' => $notifications
+        'notifications' => $notifications,
+        'students' => $students
     ]);
 };
 
@@ -388,6 +394,13 @@ $routes['GET']['/api/user-absolute-balance'] = function() {
     require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
     $controller = new App\Controllers\SuperuserController();
     $controller->getUserAbsoluteBalanceAPI();
+};
+
+// Get all students API for superusers
+$routes['GET']['/api/students'] = function() {
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->getStudentsAPI();
 };
 
 // Get notification counts API
