@@ -79,7 +79,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
           <li class="nav-section">
             <a href="<?= url('/students') ?>" class="section-link">
               <div class="section-header students-background">
-                <!-- <i class="bi bi-people text-primary"></i> -->
+                <i class="bi bi-people text-primary"></i>
                 <span class="user-select-none">Students</span>
               </div>
             </a>
