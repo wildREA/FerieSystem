@@ -23,6 +23,7 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
             auth: '<?= url('/auth') ?>'
         };
     </script>
+    <script src="public/js/auth-redirect.js" defer></script>
     <script src="public/js/login.js" defer></script>
 </head>
 <body>
