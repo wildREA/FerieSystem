@@ -345,17 +345,10 @@ document.querySelectorAll('.password-toggle').forEach(button => {
     });
 });
 
-/**
- * Checks if any registration key boxes have content
- * @returns {boolean} True if any key box is filled
- */
 function areKeyBoxesFilled() {
     return Array.from(keyBoxes).some(box => box.value.trim() !== '');
 }
 
-/**
- * Clears all registration key boxes and resets their state
- */
 function clearAllKeyBoxes() {
     keyBoxes.forEach(box => {
         box.value = '';
@@ -364,20 +357,11 @@ function clearAllKeyBoxes() {
     document.getElementById('registrationKey').value = '';
 }
 
-/**
- * Checks if the key verification form is currently displayed
- * @returns {boolean} True if the form is visible
- */
 function isKeyVerificationFormVisible() {
     const modal = document.getElementById('keyVerificationForm');
     return modal && modal.style.display !== 'none' && modal.style.display !== '';
 }
 
-/**
- * Handles the escape key behavior for the registration flow
- * First press: Clear fields if they contain data
- * Second press: Return to login form if fields are empty
- */
 function handleEscapeKey() {
     if (areKeyBoxesFilled()) {
         clearAllKeyBoxes();
@@ -386,10 +370,6 @@ function handleEscapeKey() {
     }
 }
 
-/**
- * Global keyboard event handler
- * @param {KeyboardEvent} event - The keyboard event
- */
 function handleGlobalKeyDown(event) {
     switch (event.key) {
         case 'Escape':

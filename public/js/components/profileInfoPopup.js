@@ -1,13 +1,8 @@
-// Profile Info Popup Component
-// Based on showStudentModal function, modified for user profile
-
 function showProfileModal() {
-    // Create modal backdrop
     const modalBackdrop = document.createElement("div");
     modalBackdrop.className = "modal-backdrop fade show";
     modalBackdrop.style.zIndex = "1040";
 
-    // Get current user info (this would normally come from session/auth)
     const currentUser = {
         name: "Super User",
         id: "ADMIN001",
@@ -18,7 +13,6 @@ function showProfileModal() {
         lastLogin: "Today"
     };
 
-    // Create modal
     const modal = document.createElement("div");
     modal.className = "modal fade show";
     modal.style.display = "block";

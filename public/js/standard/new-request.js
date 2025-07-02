@@ -1,9 +1,3 @@
-/**
- * New Request page functionality
- * Handles vacation request submission with proper validation and error handling
- */
-
-// Configuration constants
 const CONFIG = {
     API_ENDPOINTS: {
         SUBMIT_REQUEST: '/api/submit-request',
@@ -20,7 +14,7 @@ const CONFIG = {
     },
     UI: {
         NOTIFICATION_TIMEOUT: 4000,
-        MIN_END_TIME_OFFSET: 15 // minutes
+        MIN_END_TIME_OFFSET: 15
     },
     DEFAULTS: {
         TOTAL_ALLOCATED: 200,
@@ -29,9 +23,6 @@ const CONFIG = {
     }
 };
 
-/**
- * Handles API communication for vacation requests
- */
 class RequestApiService {
     static async submitRequest(requestData) {
         console.log('Submitting request:', requestData);
@@ -94,9 +85,6 @@ class RequestApiService {
     }
 }
 
-/**
- * Manages vacation balance calculations and utilities
- */
 class VacationBalanceService {
     constructor() {
         this.currentBalanceData = null;
@@ -135,9 +123,6 @@ class VacationBalanceService {
     }
 }
 
-/**
- * Calculates working hours between dates
- */
 class WorkingHoursCalculator {
     static calculate(startDate, endDate) {
         const start = new Date(startDate);
@@ -187,9 +172,6 @@ class WorkingHoursCalculator {
     }
 }
 
-/**
- * Utility functions for UI operations and formatting
- */
 class UIUtilities {
     static showNotification(message, type = 'info') {
         const notification = document.createElement('div');
@@ -248,9 +230,6 @@ class UIUtilities {
     }
 }
 
-/**
- * Handles date and time operations
- */
 class DateTimeHelper {
     static getMinimumRequestDateTime() {
         const now = new Date();
@@ -294,9 +273,6 @@ class DateTimeHelper {
     }
 }
 
-/**
- * Main application controller for the new request page
- */
 class NewRequestController {
     constructor() {
         this.balanceService = new VacationBalanceService();
@@ -974,7 +950,7 @@ class NewRequestController {
         });
     }
 
-    // ...existing code...
+
 }
 
 // Initialize the application when DOM is ready

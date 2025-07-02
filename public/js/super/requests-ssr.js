@@ -1,10 +1,6 @@
-// Enhanced requests page functionality for server-side rendered data
-
-// Utility function for copying text to clipboard (from profileInfoPopup.js)
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(function() {
         console.log('Copied to clipboard: ' + text);
-        // Show a toast notification if available
         if (typeof window.showNotification === 'function') {
             window.showNotification('Copied to clipboard', 'success');
         }
@@ -17,22 +13,16 @@ function copyToClipboard(text) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    // Reference to the current page element
     const currentPageElement = document.getElementById('currentPage');
     
-    // Only initialize if we are on the requests page
     if (currentPageElement && currentPageElement.value === 'requests') {
         initRequestsPage();
     }
     
-    /**
-     * Initialize the requests page functionality
-     */
     function initRequestsPage() {
         setupToggleButtons();
         setupSearch();
         
-        // Check if we have a search query stored in localStorage from redirect
         const searchQuery = localStorage.getItem('searchQuery');
         if (searchQuery) {
             const searchInput = document.getElementById('studentSearch');
@@ -44,9 +34,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
-    /**
-     * Setup toggle buttons for active/completed approved requests
-     */
     function setupToggleButtons() {
         const activeRequestsBtn = document.getElementById("activeRequestsBtn");
         const inactiveRequestsBtn = document.getElementById("inactiveRequestsBtn");
@@ -56,15 +43,12 @@ document.addEventListener("DOMContentLoaded", function() {
         
         if (!activeRequestsBtn || !inactiveRequestsBtn) return;
         
-        // Active requests button click
         activeRequestsBtn.addEventListener('click', function() {
-            // Update button styles
             activeRequestsBtn.classList.add("btn-primary", "active");
             activeRequestsBtn.classList.remove("btn-outline-primary");
             inactiveRequestsBtn.classList.add("btn-outline-primary");
             inactiveRequestsBtn.classList.remove("btn-primary", "active");
             
-            // Show active requests, hide completed
             if (approvedRequestsGrid) {
                 approvedRequestsGrid.style.display = 'grid';
             }
@@ -72,22 +56,18 @@ document.addEventListener("DOMContentLoaded", function() {
                 completedRequestsGrid.style.display = 'none';
             }
             
-            // Check if active requests are empty
             const hasActiveRequests = approvedRequestsGrid && approvedRequestsGrid.children.length > 0;
             if (noApprovedResults) {
                 noApprovedResults.style.display = hasActiveRequests ? 'none' : 'block';
             }
         });
         
-        // Inactive/completed requests button click
         inactiveRequestsBtn.addEventListener('click', function() {
-            // Update button styles
             inactiveRequestsBtn.classList.add("btn-primary", "active");
             inactiveRequestsBtn.classList.remove("btn-outline-primary");
             activeRequestsBtn.classList.add("btn-outline-primary");
             activeRequestsBtn.classList.remove("btn-primary", "active");
             
-            // Show completed requests, hide active
             if (approvedRequestsGrid) {
                 approvedRequestsGrid.style.display = 'none';
             }
@@ -95,7 +75,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 completedRequestsGrid.style.display = 'grid';
             }
             
-            // Check if completed requests are empty
             const hasCompletedRequests = completedRequestsGrid && completedRequestsGrid.children.length > 0;
             if (noApprovedResults) {
                 noApprovedResults.style.display = hasCompletedRequests ? 'none' : 'block';
@@ -103,9 +82,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    /**
-     * Setup search functionality with loading states and debouncing
-     */
     function setupSearch() {
         const searchInput = document.getElementById('studentSearch');
         const searchResults = document.getElementById('searchResults');
@@ -114,7 +90,6 @@ document.addEventListener("DOMContentLoaded", function() {
         
         let searchTimeout;
         
-        // Add loading indicator HTML if it doesn't exist
         if (!document.getElementById('searchLoading')) {
             const loadingIndicator = document.createElement('div');
             loadingIndicator.id = 'searchLoading';
@@ -125,21 +100,17 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         searchInput.addEventListener('input', function(event) {
-            // Clear previous timeout
             clearTimeout(searchTimeout);
             
-            // Show loading indicator
             const loadingIndicator = document.getElementById('searchLoading');
             if (loadingIndicator) {
                 loadingIndicator.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i>';
                 loadingIndicator.style.opacity = '1';
             }
             
-            // Debounce search by 300ms
             searchTimeout = setTimeout(() => {
                 handleSearch(event);
                 
-                // Hide loading indicator after search
                 setTimeout(() => {
                     if (loadingIndicator) {
                         loadingIndicator.innerHTML = '<i class="bi bi-search"></i>';
@@ -152,7 +123,6 @@ document.addEventListener("DOMContentLoaded", function() {
         searchInput.addEventListener('focus', showSearchResults);
         searchInput.addEventListener('blur', hideSearchResults);
         
-        // Close search results when clicking outside
         document.addEventListener('click', function(e) {
             if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
                 hideSearchResults();
@@ -160,9 +130,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    /**
-     * Handle search input
-     */
     function handleSearch(event) {
         const query = event.target.value.toLowerCase().trim();
         const studentsGrid = document.getElementById('studentsGrid');
@@ -198,12 +165,10 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
         
-        // Show/hide no results message
         if (noResults) {
             noResults.style.display = visibleCount === 0 && query !== '' ? 'block' : 'none';
         }
         
-        // Update search suggestions
         if (query && searchResults) {
             showSearchSuggestions(matchingCards.slice(0, 5), query);
         } else if (searchResults) {
@@ -211,9 +176,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
-    /**
-     * Show search suggestions
-     */
     function showSearchSuggestions(matches, query) {
         const searchResults = document.getElementById('searchResults');
         if (!searchResults) return;
@@ -234,18 +196,12 @@ document.addEventListener("DOMContentLoaded", function() {
         searchResults.style.display = 'block';
     }
     
-    /**
-     * Highlight matching text in search results
-     */
     function highlightText(text, query) {
         if (!query) return text;
         const regex = new RegExp(`(${query})`, 'gi');
         return text.replace(regex, '<mark>$1</mark>');
     }
     
-    /**
-     * Show search results dropdown
-     */
     function showSearchResults() {
         const searchResults = document.getElementById('searchResults');
         const searchInput = document.getElementById('studentSearch');
@@ -255,9 +211,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
-    /**
-     * Hide search results dropdown
-     */
     function hideSearchResults() {
         setTimeout(() => {
             const searchResults = document.getElementById('searchResults');
@@ -267,14 +220,10 @@ document.addEventListener("DOMContentLoaded", function() {
         }, 150);
     }
     
-    /**
-     * Select a search result
-     */
     window.selectSearchResult = function(studentName) {
         const studentsGrid = document.getElementById('studentsGrid');
         if (!studentsGrid) return;
         
-        // Find the card by student name
         const allCards = studentsGrid.querySelectorAll('.request-card, .student-card');
         let targetCard = null;
         
@@ -286,39 +235,29 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         
         if (targetCard) {
-            // Hide all cards first
             allCards.forEach(card => card.style.display = 'none');
             
-            // Show only the selected card
             targetCard.style.display = 'block';
             
-            // Update search input
             const searchInput = document.getElementById('studentSearch');
             if (searchInput) {
                 searchInput.value = studentName;
             }
             
-            // Hide search results
             hideSearchResults();
             
-            // Scroll to the card
             targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     };
     
-    /**
-     * Global view details function
-     */
     window.viewDetails = function(requestId) {
         console.log('Viewing details for request:', requestId);
         console.log('Looking for selector:', `[data-request-id="${requestId}"]`);
         
-        // Find the request card by request ID
         const requestCard = document.querySelector(`[data-request-id="${requestId}"]`);
         console.log('Found request card:', requestCard);
         
         if (!requestCard) {
-            // Try alternative selectors as fallback
             const alternativeCard = document.querySelector(`[data-student-id="${requestId}"]`);
             console.log('Alternative card found:', alternativeCard);
             
@@ -335,31 +274,22 @@ document.addEventListener("DOMContentLoaded", function() {
         handleRequestCard(requestCard, requestId);
     };
     
-    /**
-     * Handle request card data extraction and modal creation
-     */
     function handleRequestCard(requestCard, requestId) {
-        // Extract data from the card
         const studentName = requestCard.querySelector('.student-info h4')?.textContent || 'N/A';
         
-        // Better status extraction - try multiple selectors
         let status = 'N/A';
         const statusElement = requestCard.querySelector('.status-badge, .request-status-badge');
         if (statusElement) {
             status = statusElement.textContent.trim();
         }
         
-        // If status is still N/A, try to determine from context
         if (status === 'N/A') {
-            // Check if it's in pending requests section
             if (requestCard.closest('#studentsGrid')) {
                 status = 'Pending';
             } 
-            // Check if it's in approved requests section
             else if (requestCard.closest('#approvedRequestsGrid')) {
                 status = 'Active';
             }
-            // Check if it's in completed requests section
             else if (requestCard.closest('#completedRequestsGrid')) {
                 status = 'Completed';
             }
@@ -367,12 +297,10 @@ document.addEventListener("DOMContentLoaded", function() {
         
         const reason = requestCard.querySelector('.detail-value')?.textContent || 'N/A';
         
-        // Extract user ID for balance API call
         const userId = requestCard.getAttribute('data-user-id') || 
                        requestCard.querySelector('.student-id')?.textContent ||
                        requestCard.getAttribute('data-request-id');
         
-        // Get dates from the date blocks (new structure)
         const dateBlocks = requestCard.querySelectorAll('.date-block');
         let startDate = 'N/A', endDate = 'N/A', days = 'N/A';
         
@@ -386,7 +314,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (label === 'Days') days = value;
             });
         } else {
-            // Try old structure (detail rows) as fallback
             const detailRows = requestCard.querySelectorAll('.detail-row');
             detailRows.forEach(row => {
                 const label = row.querySelector('.detail-label')?.textContent;
@@ -397,30 +324,26 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (label === 'Requested:' || label?.includes('Requested')) days = value;
             });
             
-            // If still not found, try to get reason from old structure
             if (reason === 'N/A') {
                 const reasonElement = requestCard.querySelector('.student-details .detail-value');
                 if (reasonElement) reason = reasonElement.textContent;
             }
         }
         
-        // Calculate working days and FF cost
         const numDays = parseInt(days) || 0;
-        const ffCost = numDays * 8; // 8 FF per day
+        const ffCost = numDays * 8;
         
-        // Calculate time period between dates
         let timePeriod = 'N/A';
-        let startTime = '09:00', endTime = '17:00'; // Default times
+        let startTime = '09:00', endTime = '17:00';
         
         if (startDate !== 'N/A' && endDate !== 'N/A') {
             try {
                 const start = new Date(startDate);
                 const end = new Date(endDate);
                 const diffTime = Math.abs(end - start);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end dates
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
                 timePeriod = `${diffDays} calendar days`;
                 
-                // Set realistic vacation times
                 startTime = '09:00 AM';
                 endTime = '17:00 PM';
             } catch (e) {
@@ -428,7 +351,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
         
-        // Get request submission date from footer or calculate
         let requestSubmitted = 'N/A';
         const daysRemainingText = requestCard.querySelector('.days-remaining')?.textContent;
         if (daysRemainingText && daysRemainingText.includes('days ago')) {
@@ -436,8 +358,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (daysAgo) {
                 const submissionDate = new Date();
                 submissionDate.setDate(submissionDate.getDate() - parseInt(daysAgo[1]));
-                // Add some realistic submission time
-                submissionDate.setHours(Math.floor(Math.random() * 8) + 9); // Between 9 AM and 5 PM
+                submissionDate.setHours(Math.floor(Math.random() * 8) + 9);
                 submissionDate.setMinutes(Math.floor(Math.random() * 60));
                 requestSubmitted = submissionDate.toLocaleDateString('en-US', { 
                     year: 'numeric', 
@@ -452,7 +373,6 @@ document.addEventListener("DOMContentLoaded", function() {
         
         console.log('Extracted data:', { requestId, studentName, status, reason, startDate, endDate, days: numDays, ffCost, timePeriod, requestSubmitted, startTime, endTime, userId });
         
-        // Create and show the modal
         createDetailModal({
             requestId,
             studentName,
@@ -470,49 +390,35 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    /**
-     * Create and display the detail modal
-     */
     function createDetailModal(data) {
-        // Remove existing modal if present
         const existingModal = document.getElementById('requestDetailModal');
         if (existingModal) {
             existingModal.remove();
         }
         
-        // Show initial modal with loading state for balance
         const modalHTML = createModalHTML(data, { loading: true });
         
-        // Add modal to document
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         
-        // Show the modal
         const modal = new bootstrap.Modal(document.getElementById('requestDetailModal'));
         modal.show();
         
-        // Fetch user absolute balance data if userId is available
         if (data.userId) {
             fetchUserAbsoluteBalance(data.userId).then(balanceData => {
-                // Update the modal with balance data
                 updateModalWithBalance(balanceData);
             }).catch(error => {
                 console.error('Error fetching absolute balance:', error);
                 updateModalWithBalance({ error: true });
             });
         } else {
-            // No user ID available, show without balance
             updateModalWithBalance({ error: true });
         }
         
-        // Clean up when modal is hidden
         document.getElementById('requestDetailModal').addEventListener('hidden.bs.modal', function() {
             this.remove();
         });
     }
     
-    /**
-     * Fetch user absolute balance from API (excluding pending requests)
-     */
     async function fetchUserAbsoluteBalance(userId) {
         try {
             const response = await fetch(`/api/user-absolute-balance?user_id=${encodeURIComponent(userId)}`);
@@ -529,9 +435,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    /**
-     * Fetch user balance from API
-     */
     async function fetchUserBalance(userId) {
         try {
             const response = await fetch(`/api/user-balance?user_id=${encodeURIComponent(userId)}`);
@@ -548,9 +451,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
-    /**
-     * Update modal with balance data
-     */
     function updateModalWithBalance(balanceData) {
         const balanceContainer = document.getElementById('modalBalanceContainer');
         if (!balanceContainer) return;
@@ -567,22 +467,14 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
         
-        // Convert hours to days for display
-        const currentBalanceDays = Math.floor(balanceData.currentBalance / 8);
-        const currentBalanceHours = balanceData.currentBalance % 8;
-        
         balanceContainer.innerHTML = `
             <div class="text-center py-3">
-                <label class="form-label fw-bold d-block" style="color: #a0a7b5; font-size: 0.9rem;">Available Vacation Days</label>
-                <h3 style="color: #28a745; margin-bottom: 8px;">${currentBalanceDays}d ${currentBalanceHours}h</h3>
-                <small style="color: #a0a7b5;">(${balanceData.currentBalance} hours total)</small>
+                <label class="form-label fw-bold d-block" style="color: #a0a7b5; font-size: 0.9rem;">Available Vacation Hours</label>
+                <h3 style="color: #28a745; margin-bottom: 8px;">${balanceData.currentBalance} hours</h3>
             </div>
         `;
     }
     
-    /**
-     * Create modal HTML structure
-     */
     function createModalHTML(data, options = {}) {
         const isLoading = options.loading || false;
         
@@ -599,7 +491,6 @@ document.addEventListener("DOMContentLoaded", function() {
                         </div>
                         <div class="modal-body" style="background-color: #1a1f2c; color: #ffffff;">
                             <div class="row">
-                                <!-- Student Information -->
                                 <div class="col-md-6 mb-4">
                                     <div class="card h-100" style="background-color: #222941; border: 1px solid #2c3142;">
                                         <div class="card-header" style="background-color: #302241; border-bottom: 1px solid #2c3142;">
@@ -622,7 +513,6 @@ document.addEventListener("DOMContentLoaded", function() {
                                     </div>
                                 </div>
                                 
-                                <!-- Vacation Balance -->
                                 <div class="col-md-6 mb-4">
                                     <div class="card h-100" style="background-color: #222941; border: 1px solid #2c3142;">
                                         <div class="card-header" style="background-color: #302241; border-bottom: 1px solid #2c3142;">
@@ -642,7 +532,6 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </div>
                             </div>
                             
-                            <!-- Request Timeline -->
                             <div class="row">
                                 <div class="col-12 mb-4">
                                     <div class="card" style="background-color: #222941; border: 1px solid #2c3142;">
@@ -659,7 +548,6 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </div>
                             </div>
                             
-                            <!-- Vacation Period Details -->
                             <div class="row">
                                 <div class="col-12 mb-4">
                                     <div class="card" style="background-color: #222941; border: 1px solid #2c3142;">
@@ -693,7 +581,6 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </div>
                             </div>
                             
-                            <!-- Reason -->
                             <div class="row">
                                 <div class="col-12">
                                     <div class="card" style="background-color: #222941; border: 1px solid #2c3142;">
@@ -724,9 +611,6 @@ document.addEventListener("DOMContentLoaded", function() {
         `;
     }
     
-    /**
-     * Get Bootstrap badge class for status
-     */
     function getStatusBadgeBootstrap(status) {
         switch (status.toLowerCase()) {
             case 'pending': return 'text-warning bg-transparent';
@@ -739,29 +623,19 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
-    /**
-     * Approve request from modal
-     */
     window.approveRequestFromModal = function(requestId) {
         const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailModal'));
         modal.hide();
         window.approveRequest(requestId);
     };
     
-    /**
-     * Deny request from modal
-     */
     window.denyRequestFromModal = function(requestId) {
         const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailModal'));
         modal.hide();
         window.denyRequest(requestId);
     };
     
-    /**
-     * Show notification with modern styling
-     */
     window.showNotification = function(message, type = 'info') {
-        // Create notification container if it doesn't exist
         let notificationContainer = document.getElementById('notificationContainer');
         if (!notificationContainer) {
             notificationContainer = document.createElement('div');
@@ -770,7 +644,6 @@ document.addEventListener("DOMContentLoaded", function() {
             document.body.appendChild(notificationContainer);
         }
 
-        // Create notification element
         const notification = document.createElement('div');
         const typeColors = {
             'success': { bg: '#28a745', icon: 'bi-check-circle-fill' },
@@ -805,7 +678,6 @@ document.addEventListener("DOMContentLoaded", function() {
             <div style="position: absolute; bottom: 0; left: 0; height: 3px; background: white; width: 100%; animation: progress 3s linear forwards;"></div>
         `;
         
-        // Add CSS animation for progress bar
         if (!document.getElementById('notificationStyles')) {
             const style = document.createElement('style');
             style.id = 'notificationStyles';
@@ -820,12 +692,10 @@ document.addEventListener("DOMContentLoaded", function() {
         
         notificationContainer.appendChild(notification);
         
-        // Trigger animation
         setTimeout(() => {
             notification.style.transform = 'translateX(0)';
         }, 10);
         
-        // Auto remove after 3 seconds
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.style.transform = 'translateX(100%)';
@@ -836,9 +706,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }, 3000);
     };
     
-    // Keyboard shortcuts and accessibility improvements
     document.addEventListener('keydown', function(event) {
-        // Escape key to close modals
         if (event.key === 'Escape') {
             const activeModal = document.querySelector('.modal.show');
             if (activeModal) {
@@ -849,7 +717,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
         
-        // Ctrl/Cmd + K to focus search
         if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
             event.preventDefault();
             const searchInput = document.getElementById('studentSearch');
@@ -859,7 +726,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
         
-        // Ctrl/Cmd + F to focus search (alternative)
         if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
             const searchInput = document.getElementById('studentSearch');
             if (searchInput && !event.defaultPrevented) {
@@ -870,22 +736,16 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
     
-    // Add tooltips for keyboard shortcuts
     const searchInput = document.getElementById('studentSearch');
     if (searchInput) {
         searchInput.setAttribute('title', 'Search requests (Ctrl+K or Ctrl+F)');
-        // Add placeholder with hint
         if (!searchInput.placeholder.includes('Ctrl+K')) {
             searchInput.placeholder += ' (Ctrl+K)';
         }
     }
 });
 
-/**
- * Approve a student's vacation request
- */
 window.approveRequest = function(requestId) {
-    // Use SweetAlert2 for better user experience
     Swal.fire({
         title: 'Approve Request',
         text: 'Are you sure you want to approve this vacation request?',
@@ -910,11 +770,7 @@ window.approveRequest = function(requestId) {
     });
 };
 
-/**
- * Perform the actual approve request API call
- */
 function performApproveRequest(requestId) {
-    // Show loading indicator
     Swal.fire({
         title: 'Processing...',
         text: 'Approving the request, please wait.',
@@ -940,10 +796,9 @@ function performApproveRequest(requestId) {
     })
     .then(response => response.json())
     .then(data => {
-        Swal.close(); // Close loading modal
+        Swal.close();
         if (data.success) {
             window.showNotification(data.message, 'success');
-            // Reload the page to show updated data
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
@@ -952,17 +807,13 @@ function performApproveRequest(requestId) {
         }
     })
     .catch(error => {
-        Swal.close(); // Close loading modal
+        Swal.close();
         console.error('Error:', error);
         window.showNotification('Error approving request', 'danger');
     });
 }
 
-/**
- * Deny a student's vacation request
- */
 window.denyRequest = function(requestId) {
-    // Use SweetAlert2 for better user experience
     Swal.fire({
         title: 'Deny Request',
         text: 'Are you sure you want to deny this vacation request?',
@@ -987,11 +838,7 @@ window.denyRequest = function(requestId) {
     });
 };
 
-/**
- * Perform the actual deny request API call
- */
 function performDenyRequest(requestId) {
-    // Show loading indicator
     Swal.fire({
         title: 'Processing...',
         text: 'Denying the request, please wait.',
@@ -1017,10 +864,9 @@ function performDenyRequest(requestId) {
     })
     .then(response => response.json())
     .then(data => {
-        Swal.close(); // Close loading modal
+        Swal.close();
         if (data.success) {
             window.showNotification(data.message, 'success');
-            // Reload the page to show updated data
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
@@ -1029,7 +875,7 @@ function performDenyRequest(requestId) {
         }
     })
     .catch(error => {
-        Swal.close(); // Close loading modal
+        Swal.close();
         console.error('Error:', error);
         window.showNotification('Error denying request', 'danger');
     });

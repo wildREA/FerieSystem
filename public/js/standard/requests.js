@@ -1,6 +1,3 @@
-// Requests page specific functionality
-
-// Utility functions
 const StudentUtils = {
     formatDate(dateString) {
         const date = new Date(dateString);
@@ -14,7 +11,6 @@ const StudentUtils = {
     updateRequestsBadge() {
         const requestsBadge = document.getElementById('requestsBadge');
         if (requestsBadge) {
-            // Count pending requests from the DOM
             const pendingCards = document.querySelectorAll('.request-card .status-badge.status-pending');
             const pendingCount = pendingCards.length;
             requestsBadge.textContent = pendingCount;
@@ -59,7 +55,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
         
-        // Show/hide no requests message
         updateNoRequestsMessage(visibleCount);
         updateRequestCount();
     }
