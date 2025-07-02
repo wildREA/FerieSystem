@@ -37,7 +37,8 @@ class RequestApiService {
             return await this._handleApiResponse(response);
         } catch (error) {
             console.error('Error submitting request:', error);
-            throw new Error(`Failed to submit request: ${error.message}`);
+            // Throw a more specific error message
+            throw new Error(`Network or server error: ${error.message}`);
         }
     }
 
@@ -71,7 +72,8 @@ class RequestApiService {
         try {
             return JSON.parse(responseText);
         } catch (parseError) {
-            throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}`);
+            // Handle cases where the response is not valid JSON
+            throw new Error(`Invalid JSON response from server: ${responseText.substring(0, 100)}`);
         }
     }
 

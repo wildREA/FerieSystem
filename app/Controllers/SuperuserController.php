@@ -256,6 +256,11 @@ class SuperuserController {
      * API endpoint for approving requests
      */
     public function approveRequestAPI() {
+        // Clear any potential output buffer to ensure clean JSON response
+        if (ob_get_level()) {
+            ob_clean();
+        }
+        
         header('Content-Type: application/json');
         
         try {
@@ -288,6 +293,11 @@ class SuperuserController {
      * API endpoint for denying requests
      */
     public function denyRequestAPI() {
+        // Clear any potential output buffer to ensure clean JSON response
+        if (ob_get_level()) {
+            ob_clean();
+        }
+        
         header('Content-Type: application/json');
         
         try {
@@ -356,6 +366,11 @@ class SuperuserController {
      * API endpoint for getting user balance (for superusers)
      */
     public function getUserBalanceAPI() {
+        // Clear any potential output buffer to ensure clean JSON response
+        if (ob_get_level()) {
+            ob_clean();
+        }
+        
         header('Content-Type: application/json');
         
         try {
@@ -391,6 +406,11 @@ class SuperuserController {
      * API endpoint for getting absolute user balance (excluding pending requests)
      */
     public function getUserAbsoluteBalanceAPI() {
+        // Clear any potential output buffer to ensure clean JSON response
+        if (ob_get_level()) {
+            ob_clean();
+        }
+        
         header('Content-Type: application/json');
         
         try {

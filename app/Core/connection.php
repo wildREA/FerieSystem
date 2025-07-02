@@ -1,8 +1,15 @@
 <?php
-// Enable full error reporting for development
-ini_set('display_errors', 1);
+// Enable error reporting for development but don't display errors for API requests
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+// Don't display errors for API requests to avoid JSON response corruption
+$isApiRequest = isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/api/') !== false;
+if (!$isApiRequest) {
+    ini_set('display_errors', 1);
+} else {
+    ini_set('display_errors', 0);
+}
 
 // Use a static variable to ensure we only create one connection
 static $pdo = null;

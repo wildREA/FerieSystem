@@ -7,18 +7,30 @@
     
     <div class="navbar-menu">
         <ul class="navbar-nav">
-            <li class="nav-item">
-                <a href="<?= url('/dashboard') ?>" class="nav-link">Dashboard</a>
-            </li>
-            <li class="nav-item">
-                <a href="<?= url('/requests') ?>" class="nav-link">Requests</a>
-            </li>
-            <li class="nav-item">
-                <a href="<?= url('/new-request') ?>" class="nav-link">New Request</a>
-            </li>
-            <li class="nav-item">
-                <a href="<?= url('/calendar') ?>" class="nav-link">Calendar</a>
-            </li>
+            <?php if ($_SESSION['user_type'] === 'super'): ?>
+                <li class="nav-item">
+                    <a href="<?= url('/students') ?>" class="nav-link">Students</a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= url('/s-requests') ?>" class="nav-link">Requests</a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= url('/calendar') ?>" class="nav-link">Calendar</a>
+                </li>
+            <?php else: ?>
+                <li class="nav-item">
+                    <a href="<?= url('/dashboard') ?>" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= url('/requests') ?>" class="nav-link">Requests</a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= url('/new-request') ?>" class="nav-link">New Request</a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= url('/calendar') ?>" class="nav-link">Calendar</a>
+                </li>
+            <?php endif; ?>
             <li class="nav-item">
                 <a href="<?= url('/logout') ?>" class="nav-link">Logout</a>
             </li>

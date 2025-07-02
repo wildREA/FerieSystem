@@ -20,6 +20,11 @@ class DashboardController {
     }
 
     public function getDashboardData() {
+        // Clear any potential output buffer to ensure clean JSON response
+        if (ob_get_level()) {
+            ob_clean();
+        }
+        
         header('Content-Type: application/json');
         
         try {
@@ -125,6 +130,11 @@ class DashboardController {
     }
     
     public function getBalanceAPI() {
+        // Clear any potential output buffer to ensure clean JSON response
+        if (ob_get_level()) {
+            ob_clean();
+        }
+        
         header('Content-Type: application/json');
         
         try {

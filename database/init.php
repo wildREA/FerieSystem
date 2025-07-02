@@ -29,12 +29,12 @@ try {
             try {
                 $pdo->exec($sql);
             } catch (PDOException $e) {
-                echo "✗ Error in $fileName: " . $e->getMessage() . "\n";
+                error_log("✗ Error in $fileName: " . $e->getMessage());
             }
         } else {
-            echo "Warning: $fileName is empty, skipping...\n";
+            error_log("Warning: $fileName is empty, skipping...");
         }
     }    
 } catch (Exception $e) {
-    echo "Database initialization failed: " . $e->getMessage() . "\n";
+    error_log("Database initialization failed: " . $e->getMessage());
 }

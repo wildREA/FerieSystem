@@ -88,6 +88,35 @@ $routes['GET']['/logout'] = function() {
     $auth = new App\Controllers\AuthController();
     return $auth->logout();
 };
+
+// Requests page for standard users
+$routes['GET']['/requests'] = function() {
+    $sessionManager = getSessionManager();
+    $sessionManager->requireAuth('/auth');
+
+    $userType = $sessionManager->getUserType();
+    if ($userType === 'standard') {
+        return view('standarduser/requests');
+    } else {
+        // Redirect non-standard users
+        redirect('/auth');
+    }
+};
+
+// Requests page for superusers
+$routes['GET']['/s-requests'] = function() {
+    $sessionManager = getSessionManager();
+    $sessionManager->requireAuth('/auth');
+
+    $userType = $sessionManager->getUserType();
+    if ($userType === 'super') {
+        return view('superuser/requests');
+    } else {
+        // Redirect non-superusers
+        redirect('/auth');
+    }
+};
+
 // test
 // Simple route pattern (as decided)
 $routes['GET']['/dashboard'] = function() {
@@ -263,6 +292,11 @@ $routes['GET']['/uploads/calendar/calendar.pdf'] = function() {
 
 // Test API endpoint
 $routes['GET']['/api/test'] = function() {
+    // Clear any potential output buffer to ensure clean JSON response
+    if (ob_get_level()) {
+        ob_clean();
+    }
+    
     header('Content-Type: application/json');
     echo json_encode(['success' => true, 'message' => 'API is working']);
     exit;
