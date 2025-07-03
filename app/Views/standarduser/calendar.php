@@ -8,13 +8,14 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="<?= asset('public/css/standard/styles.css') ?>">
-    <link rel="stylesheet" href="<?= asset('public/css/standard/calendar.css') ?>">
+    <link rel="stylesheet" href="<?= asset('public/css/super/styles.css') ?>">
+    <link rel="stylesheet" href="<?= asset('public/css/super/calendar.css') ?>">
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-    <script src="<?= asset('public/js/standard/dashboard.js') ?>" defer></script>
+    <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
     <script src="<?= asset('public/js/components/profileInfoPopup.js') ?>" defer></script>
+    <script src="<?= asset('public/js/super/dashboard.js') ?>" defer></script>
     <!-- Hidden input to identify current page -->
     <input type="hidden" id="currentPage" value="requests">
   </head>
@@ -27,7 +28,7 @@
           <div class="user-avatar">
             <i class="bi bi-person-circle"></i>
           </div>
-          <div class="user-role">Student</div>
+          <div class="user-role">user</div>
         </div>
         <ul class="nav-menu">
           <li class="nav-section">
@@ -42,17 +43,17 @@
             </a>
           </li>
           <li class="nav-section">
-            <a href="<?= url('/new-request') ?>" class="section-link">
+            <a href="<?= url('/students') ?>" class="section-link">
               <div class="section-header students-background">
-                <i class="bi bi-plus-circle text-primary"></i>
-                <span>New Request</span>
+                <i class="bi bi-people text-primary"></i>
+                <span>Students</span>
               </div>
             </a>
           </li>
           <li class="nav-section active">
             <a href="<?= url('/calendar') ?>" class="section-link">
               <div class="section-header bounties-background">
-                <i class="bi bi-calendar3 text-success"></i>
+                <i class="bi bi-cash-coin text-success"></i>
                 <span>Calendar</span>
               </div>
             </a>
@@ -70,12 +71,12 @@
             <div id="searchResults" class="search-results"></div>
           </div>
         </div>
-        <div class="user-actions d-flex align-items-center">
+        <div class="user-actions d-flex align-items-center" id="profileInfo" style="cursor: pointer;">
           <div class="me-3"><i class="bi bi-bell position-relative">
             <span class="notification-dot"></span>
           </i></div>
-          <div class="d-flex align-items-center" id="profileInfo" style="cursor: pointer;">
-            <span class="me-2">STUDENT</span>
+          <div class="d-flex align-items-center">
+            <span class="me-2">SUPER USER</span>
             <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
               <i class="bi bi-person text-white"></i>
             </div>
@@ -87,10 +88,10 @@
       <div class="main-content">
         <div class="content-header">
           <h2>Calendar</h2>
-          <p class="text-muted">View the calendar to plan your requests accordingly</p>
+          <p class="text-muted">This page allows instructors to upload a PDF version of the calendar for students to plan their requests accordingly</p>
         </div>
         
-        <div class="calendar-container">
+        <div class="calendar-container">          
           <!-- PDF viewer section -->
           <div class="pdf-viewer-section">
             <div class="card">
@@ -121,6 +122,6 @@
     </div>
     
     <!-- Add JavaScript for PDF handling -->
-    <script src="<?= asset('public/js/standard/calendar.js') ?>" defer></script>
+    <script src="js/calendar.js" defer></script>
   </body>
 </html>
