@@ -270,11 +270,69 @@ $routes['POST']['/api/verify-key'] = function() {
     return $auth->verifyRegistrationKey();
 };
 
+// Simple test API endpoint
+$routes['GET']['/api/test'] = function() {
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'ok', 'message' => 'API is working']);
+    exit;
+};
+
 // API Auth Status Check route - for client-side authentication verification
 $routes['GET']['/api/auth-status'] = function() {
+    header('Content-Type: application/json');
+    
+    try {
+        // Simple session check without using AuthController for now
+        $isAuthenticated = isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+        
+        if ($isAuthenticated) {
+            $userId = $_SESSION['user_id'];
+            $userType = $_SESSION['user_type'] ?? 'standard';
+            
+            // Try to get database connection
+            require_once BASE_PATH . '/app/Core/Database.php';
+            $db = Database::getInstance()->getConnection();
+            
+            // Fetch user info
+            $stmt = $db->prepare("SELECT name, email, username FROM users WHERE id = ?");
+            $stmt->execute([$userId]);
+            $userInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            $response = [
+                'authenticated' => true,
+                'userType' => $userType,
+                'userId' => $userId,
+                'name' => $userInfo['name'] ?? 'Unknown User',
+                'email' => $userInfo['email'] ?? 'No email',
+                'username' => $userInfo['username'] ?? 'No username'
+            ];
+        } else {
+            $response = [
+                'authenticated' => false,
+                'userType' => 'guest'
+            ];
+        }
+        
+        echo json_encode($response);
+        exit;
+        
+    } catch (Exception $e) {
+        error_log("Auth status route error: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode([
+            'authenticated' => false,
+            'error' => 'Server error',
+            'debug' => $e->getMessage()
+        ]);
+        exit;
+    }
+};
+
+// API Logout endpoint
+$routes['POST']['/api/logout'] = function() {
     require_once BASE_PATH . '/app/Controllers/AuthController.php';
     $auth = new App\Controllers\AuthController();
-    return $auth->checkAuthStatus();
+    return $auth->logoutAPI();
 };
 
 // Registration key retrieval for super users
@@ -325,18 +383,6 @@ $routes['GET']['/uploads/calendar/calendar.pdf'] = function() {
         echo 'Calendar file not found';
         exit;
     }
-};
-
-// Test API endpoint
-$routes['GET']['/api/test'] = function() {
-    // Clear any potential output buffer to ensure clean JSON response
-    if (ob_get_level()) {
-        ob_clean();
-    }
-    
-    header('Content-Type: application/json');
-    echo json_encode(['success' => true, 'message' => 'API is working']);
-    exit;
 };
 
 // Balance API for students

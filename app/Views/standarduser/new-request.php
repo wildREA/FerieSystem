@@ -18,6 +18,7 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
     <script src="<?= asset('public/js/standard/new-request.js') ?>" defer></script>
+    <script src="<?= asset('public/js/components/profileInfoPopup.js') ?>" defer></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -62,7 +63,7 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
                 <h1 class="page-title" id="pageTitle">New Request</h1>
                 <p class="page-subtitle" id="pageSubtitle">Submit a new vacation request</p>
             </div>
-            <div class="user-actions d-flex align-items-center">
+            <div class="user-actions d-flex align-items-center" id="profileInfo" style="cursor: pointer;">
                 <div class="d-flex align-items-center">
                     <span class="me-2" id="headerUserName"><?= strtoupper(getCurrentUserName()) ?></span>
                     <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">

@@ -820,3 +820,109 @@ body {
   font-size: 14px;
   font-weight: bold;
 }
+
+/* Modal styles for profile popup */
+.modal {
+    color: #ffffff;
+}
+
+.modal-content {
+    background-color: #232838 !important;
+    border: 1px solid #2c3142;
+    border-radius: 8px;
+}
+
+.modal-header {
+    background-color: #232838;
+    border-bottom: 1px solid #2c3142;
+    color: #ffffff;
+}
+
+.modal-title {
+    color: #ffffff;
+}
+
+.modal-body {
+    background-color: #232838;
+    color: #ffffff;
+}
+
+.modal-footer {
+    background-color: #232838;
+    border-top: 1px solid #2c3142;
+}
+
+.btn-close {
+    filter: invert(1);
+}
+
+.profile-avatar {
+    background-color: #0d6efd !important;
+    color: white !important;
+}
+
+.selectable-text {
+    user-select: text;
+    cursor: text;
+}
+
+.non-selectable {
+    user-select: none;
+}
+
+/* Utility classes for modal */
+.text-primary {
+    color: #0d6efd !important;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.badge.bg-success {
+    background-color: #198754 !important;
+}
+
+.btn-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-outline-light {
+    color: #f8f9fa;
+    border-color: #f8f9fa;
+}
+
+.btn-outline-light:hover {
+    color: #000;
+    background-color: #f8f9fa;
+    border-color: #f8f9fa;
+}
+
+.btn-outline-info {
+    color: #0dcaf0;
+    border-color: #0dcaf0;
+}
+
+.btn-outline-info:hover {
+    color: #000;
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+}
+
+.btn-outline-warning {
+    color: #ffc107;
+    border-color: #ffc107;
+}
+
+.btn-outline-warning:hover {
+    color: #000;
+    background-color: #ffc107;
+    border-color: #ffc107;
+}

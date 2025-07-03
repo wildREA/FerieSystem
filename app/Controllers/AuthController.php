@@ -655,8 +655,13 @@ class AuthController {
      * Used by client-side auth redirect logic
      */
     public function checkAuthStatus() {
-        // Set JSON content type
+        // Set JSON content type and prevent any other output
         header('Content-Type: application/json');
+        
+        // Clear any previous output
+        if (ob_get_level()) {
+            ob_clean();
+        }
         
         try {
             // Check if user is authenticated
@@ -666,10 +671,23 @@ class AuthController {
                 $userType = $this->sessionManager->getUserType();
                 $userId = $this->sessionManager->getUserId();
                 
+                // Fetch additional user information from database
+                $stmt = $this->db->prepare("SELECT name, email, username FROM users WHERE id = ?");
+                $stmt->execute([$userId]);
+                $userInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                // Debug logging
+                error_log("Auth status check - User ID: " . $userId);
+                error_log("Auth status check - User info: " . json_encode($userInfo));
+                
                 $response = [
                     'authenticated' => true,
                     'userType' => $userType,
-                    'userId' => $userId
+                    'userId' => $userId,
+                    'name' => $userInfo['name'] ?? 'Unknown User',
+                    'email' => $userInfo['email'] ?: 'No email in database',
+                    'username' => $userInfo['username'] ?? 'No username',
+                    'debug_userInfo' => $userInfo  // Temporary debug info
                 ];
             } else {
                 $response = [
@@ -679,6 +697,7 @@ class AuthController {
             }
             
             echo json_encode($response);
+            exit; // Ensure no additional output
             
         } catch (Exception $e) {
             error_log("Auth status check failed: " . $e->getMessage());
@@ -687,7 +706,41 @@ class AuthController {
             $response = [
                 'authenticated' => false,
                 'userType' => 'guest',
-                'error' => 'Unable to determine authentication status'
+                'error' => 'Unable to determine authentication status',
+                'debug_error' => $e->getMessage()
+            ];
+            
+            http_response_code(500);
+            echo json_encode($response);
+            exit; // Ensure no additional output
+        }
+    }
+
+    /**
+     * API logout endpoint - returns JSON response
+     */
+    public function logoutAPI() {
+        // Set JSON content type
+        header('Content-Type: application/json');
+        
+        try {
+            // Clear the session
+            $this->sessionManager->clearSession();
+            
+            $response = [
+                'success' => true,
+                'message' => 'Logout successful'
+            ];
+            
+            echo json_encode($response);
+            
+        } catch (Exception $e) {
+            error_log("API logout failed: " . $e->getMessage());
+            
+            $response = [
+                'success' => false,
+                'error' => 'Logout failed',
+                'message' => 'An error occurred during logout'
             ];
             
             http_response_code(500);

@@ -14,6 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
+    <script src="<?= asset('public/js/components/profileInfoPopup.js') ?>" defer></script>
     <script src="<?= asset('public/js/super/dashboard.js') ?>" defer></script>
     <!-- Hidden input to identify current page -->
     <input type="hidden" id="currentPage" value="requests">
@@ -70,7 +71,7 @@
             <div id="searchResults" class="search-results"></div>
           </div>
         </div>
-        <div class="user-actions d-flex align-items-center">
+        <div class="user-actions d-flex align-items-center" id="profileInfo" style="cursor: pointer;">
           <div class="me-3"><i class="bi bi-bell position-relative">
             <span class="notification-dot"></span>
           </i></div>

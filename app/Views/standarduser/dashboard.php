@@ -53,6 +53,7 @@ if (function_exists('getCurrentUserName')) {
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
+    <script src="<?= asset('public/js/components/profileInfoPopup.js') ?>" defer></script>
     <script src="<?= asset('public/js/standard/dashboard.js') ?>" defer></script>
 </head>
 <body>
@@ -104,8 +105,8 @@ if (function_exists('getCurrentUserName')) {
                 <h1 class="page-title" id="pageTitle">Dashboard</h1>
                 <p class="page-subtitle" id="pageSubtitle">Welcome back, manage your vacation requests</p>
             </div>
-            <div class="user-actions d-flex align-items-center" onclick="alert('Construction in progress 🚧')" >
-                <div class="d-flex align-items-center" onclick="alert('Construction in progress 🚧')">
+            <div class="user-actions d-flex align-items-center" id="profileInfo" style="cursor: pointer;">
+                <div class="d-flex align-items-center">
                     <span  class="me-2" id="headerUserName"><?php 
                         if (function_exists('getCurrentUserName')) {
                             echo strtoupper(getCurrentUserName());

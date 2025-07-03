@@ -38,6 +38,7 @@ function getStatusBadgeClass($status) {
     <link rel="stylesheet" href="/css/standard/styles.css">
     <link rel="stylesheet" href="/css/standard/student-styles.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="<?= asset('public/js/components/profileInfoPopup.js') ?>" defer></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -80,7 +81,7 @@ function getStatusBadgeClass($status) {
                 <h1 class="page-title">My Requests</h1>
                 <p class="page-subtitle">View and track your vacation requests</p>
             </div>
-            <div class="user-actions d-flex align-items-center">
+            <div class="user-actions d-flex align-items-center" id="profileInfo" style="cursor: pointer;">
                 <div class="d-flex align-items-center">
                     <span class="me-2"><?= strtoupper(htmlspecialchars($userName)) ?></span>
                     <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
