@@ -47,25 +47,7 @@ $routes['GET']['/contact'] = function() {
 };
 
 // Login page
-$routes['GET']['/auth'] = function() {
-    $sessionManager = getSessionManager();
-    
-    // Check if user is already authenticated (server-side fallback)
-    if ($sessionManager->checkAuthentication()) {
-        // User is already logged in, redirect to appropriate dashboard
-        $userType = $sessionManager->getUserType();
-        
-        if ($userType === 'super') {
-            redirect('/students');
-        } elseif ($userType === 'standard') {
-            redirect('/dashboard');
-        } else {
-            // Unknown user type, logout and show auth page
-            $sessionManager->logout();
-        }
-    }
-    
-    // User is not authenticated, show auth page
+$routes['GET']['/auth'] = function() {    
     return view('auth');
 };
 
