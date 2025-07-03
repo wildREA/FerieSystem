@@ -1,5 +1,10 @@
 <?php
 // Helper functions for request formatting
+function formatDateTimeForDisplay($dateTimeString) {
+    $dateTime = new DateTime($dateTimeString);
+    return $dateTime->format('M j, Y \a\t H:i');
+}
+
 function formatDateForDisplay($dateString) {
     $date = new DateTime($dateString);
     return $date->format('M j, Y');
@@ -136,7 +141,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
             </div>
           <?php else: ?>
             <?php foreach ($pendingRequests as $request): ?>
-              <div class="request-card" data-request-id="<?= htmlspecialchars($request['request_id']) ?>" data-user-id="<?= htmlspecialchars($request['id']) ?>">
+              <div class="request-card" data-request-id="<?= htmlspecialchars($request['request_id']) ?>" data-user-id="<?= htmlspecialchars($request['id']) ?>" data-total-hours="<?= htmlspecialchars($request['total_hours']) ?>">
                 
                 <div class="student-header">
                   <div class="student-avatar <?= getStatusBadgeClass($request['status']) ?>">
@@ -151,11 +156,11 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                 <div class="request-dates mt-3">
                   <div class="date-block">
                     <div class="date-label">Start Date</div>
-                    <div class="date-value"><?= formatDateForDisplay($request['requestDate']) ?></div>
+                    <div class="date-value"><?= formatDateTimeForDisplay($request['requestDate']) ?></div>
                   </div>
                   <div class="date-block">
                     <div class="date-label">End Date</div>
-                    <div class="date-value"><?= formatDateForDisplay($request['requestEndDate']) ?></div>
+                    <div class="date-value"><?= formatDateTimeForDisplay($request['requestEndDate']) ?></div>
                   </div>
                   <div class="date-block">
                     <div class="date-label">Days</div>
@@ -230,7 +235,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                   $daysRemaining = calculateDaysRemaining($request['requestEndDate']);
                   $timeDescription = $daysRemaining . ' days remaining';
                 ?>
-                <div class="request-card active" data-request-id="<?= htmlspecialchars($request['request_id']) ?>" data-user-id="<?= htmlspecialchars($request['id']) ?>">
+                <div class="request-card active" data-request-id="<?= htmlspecialchars($request['request_id']) ?>" data-user-id="<?= htmlspecialchars($request['id']) ?>" data-total-hours="<?= htmlspecialchars($request['total_hours']) ?>">
                   <span class="request-status-badge active">Active</span>
                   
                   <div class="student-header">
@@ -246,11 +251,11 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                   <div class="request-dates mt-3">
                     <div class="date-block">
                       <div class="date-label">Start Date</div>
-                      <div class="date-value"><?= formatDateForDisplay($request['requestDate']) ?></div>
+                      <div class="date-value"><?= formatDateTimeForDisplay($request['requestDate']) ?></div>
                     </div>
                     <div class="date-block">
                       <div class="date-label">End Date</div>
-                      <div class="date-value"><?= formatDateForDisplay($request['requestEndDate']) ?></div>
+                      <div class="date-value"><?= formatDateTimeForDisplay($request['requestEndDate']) ?></div>
                     </div>
                     <div class="date-block">
                       <div class="date-label">Days</div>
@@ -293,7 +298,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                   $daysSinceCompletion = calculateDaysSince($request['requestEndDate']);
                   $timeDescription = 'Completed ' . $daysSinceCompletion . ' days ago';
                 ?>
-                <div class="request-card inactive" data-request-id="<?= htmlspecialchars($request['request_id']) ?>" data-user-id="<?= htmlspecialchars($request['id']) ?>">
+                <div class="request-card inactive" data-request-id="<?= htmlspecialchars($request['request_id']) ?>" data-user-id="<?= htmlspecialchars($request['id']) ?>" data-total-hours="<?= htmlspecialchars($request['total_hours']) ?>">
                   <span class="request-status-badge inactive">Completed</span>
                   
                   <div class="student-header">
@@ -309,11 +314,11 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                   <div class="request-dates mt-3">
                     <div class="date-block">
                       <div class="date-label">Start Date</div>
-                      <div class="date-value"><?= formatDateForDisplay($request['requestDate']) ?></div>
+                      <div class="date-value"><?= formatDateTimeForDisplay($request['requestDate']) ?></div>
                     </div>
                     <div class="date-block">
                       <div class="date-label">End Date</div>
-                      <div class="date-value"><?= formatDateForDisplay($request['requestEndDate']) ?></div>
+                      <div class="date-value"><?= formatDateTimeForDisplay($request['requestEndDate']) ?></div>
                     </div>
                     <div class="date-block">
                       <div class="date-label">Days</div>

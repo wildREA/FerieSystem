@@ -101,16 +101,16 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
                                                         <div class="time-input-wrapper">
                                                             <select class="form-select" id="startHour" required>
                                                                 <option value="">Hour</option>
-                                                                <option value="08">08:00</option>
-                                                                <option value="09" selected>09:00</option>
-                                                                <option value="10">10:00</option>
-                                                                <option value="11">11:00</option>
-                                                                <option value="12">12:00</option>
-                                                                <option value="13">13:00</option>
-                                                                <option value="14">14:00</option>
-                                                                <option value="15">15:00</option>
-                                                                <option value="16">16:00</option>
-                                                                <option value="17">17:00</option>
+                                                                <option value="08">08</option>
+                                                                <option value="09" selected>09</option>
+                                                                <option value="10">10</option>
+                                                                <option value="11">11</option>
+                                                                <option value="12">12</option>
+                                                                <option value="13">13</option>
+                                                                <option value="14">14</option>
+                                                                <option value="15">15</option>
+                                                                <option value="16">16</option>
+                                                                <option value="17">17</option>
                                                             </select>
                                                             <span class="time-separator">:</span>
                                                             <select class="form-select" id="startMinute" required>
@@ -134,16 +134,16 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
                                                         <div class="time-input-wrapper">
                                                             <select class="form-select" id="endHour" required>
                                                                 <option value="">Hour</option>
-                                                                <option value="08">08:00</option>
-                                                                <option value="09">09:00</option>
-                                                                <option value="10">10:00</option>
-                                                                <option value="11">11:00</option>
-                                                                <option value="12">12:00</option>
-                                                                <option value="13">13:00</option>
-                                                                <option value="14">14:00</option>
-                                                                <option value="15">15:00</option>
-                                                                <option value="16">16:00</option>
-                                                                <option value="17" selected>17:00</option>
+                                                                <option value="08">08</option>
+                                                                <option value="09">09</option>
+                                                                <option value="10">10</option>
+                                                                <option value="11">11</option>
+                                                                <option value="12">12</option>
+                                                                <option value="13">13</option>
+                                                                <option value="14">14</option>
+                                                                <option value="15">15</option>
+                                                                <option value="16">16</option>
+                                                                <option value="17" selected>17</option>
                                                             </select>
                                                             <span class="time-separator">:</span>
                                                             <select class="form-select" id="endMinute" required>

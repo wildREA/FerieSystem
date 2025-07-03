@@ -96,8 +96,8 @@ class SuperuserController {
                     'year' => 'N/A', // You might want to add this to users table
                     'status' => $request['status'] ?? 'pending',
                     'vacationDays' => 25, // Default - you might want to calculate this
-                    'requestDate' => $startDate->format('Y-m-d'),
-                    'requestEndDate' => $endDate->format('Y-m-d'),
+                    'requestDate' => $request['start_datetime'], // Keep full datetime
+                    'requestEndDate' => $request['end_datetime'], // Keep full datetime
                     'requestDays' => $requestDays,
                     'requestReason' => $request['reason'] ?? 'No reason provided',
                     'avatar' => $avatar,
