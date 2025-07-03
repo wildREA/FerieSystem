@@ -312,8 +312,8 @@ class AuthController {
             return 'Username can only contain letters, numbers, and underscores';
         }
         
-        if (strlen($password) < 6) {
-            return 'Password must be at least 6 characters long';
+        if (strlen($password) < 8) {
+            return 'Password must be at least 8 characters long';
         }
         
         if ($password !== $confirmPassword) {
@@ -490,7 +490,7 @@ class AuthController {
         header('Location: /auth');
         exit;
     }
-    
+
     /**
      * Get the admin secret from the .env file
      * 
