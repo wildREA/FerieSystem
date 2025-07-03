@@ -781,10 +781,11 @@ class SuperuserController {
             $studentId = $input['student_id'] ?? null;
             $action = $input['action'] ?? null;
             $hours = $input['hours'] ?? null;
+            $reason = $input['reason'] ?? null;
             
-            if (!$studentId || !$action || !$hours) {
+            if (!$studentId || !$action || !$hours || !$reason) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'Missing required fields: student_id, action, hours']);
+                echo json_encode(['success' => false, 'message' => 'Missing required fields: student_id, action, hours, reason']);
                 return;
             }
             
@@ -821,8 +822,8 @@ class SuperuserController {
             $transactionAmount = ($action === 'add') ? $hours : -$hours;
             $transactionType = ($action === 'add') ? 'allocation' : 'deduction';
             $description = ($action === 'add') ? 
-                "Manual FF allocation by superuser" : 
-                "Manual FF deduction by superuser";
+                "Manual FF allocation by superuser: {$reason}" : 
+                "Manual FF deduction by superuser: {$reason}";
             
             // Insert transaction record
             $stmt = $this->db->prepare("
@@ -846,7 +847,7 @@ class SuperuserController {
             }
             
             // Log the action for audit purposes
-            error_log("FF Adjustment: User " . $this->sessionManager->getUserId() . " {$action}ed {$hours} hours for student {$studentId}");
+            error_log("FF Adjustment: User " . $this->sessionManager->getUserId() . " {$action}ed {$hours} hours for student {$studentId}. Reason: {$reason}");
             
             // Get updated balance to return
             $balanceData = $this->getUserBalance($studentId);
@@ -862,6 +863,70 @@ class SuperuserController {
             
         } catch (\Exception $e) {
             error_log("Error in adjustStudentFF: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Internal server error']);
+        }
+    }
+
+    /**
+     * API endpoint to get student transaction history
+     */
+    public function getStudentTransactions() {
+        try {
+            header('Content-Type: application/json');
+            
+            if (!$this->sessionManager->isAuthenticated()) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                return;
+            }
+            
+            $userType = $this->sessionManager->getUserType();
+            if ($userType !== 'super') {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Only superusers can access this data']);
+                return;
+            }
+            
+            $studentId = $_GET['id'] ?? null;
+            
+            if (!$studentId) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Student ID is required']);
+                return;
+            }
+            
+            // Get student name
+            $stmt = $this->db->prepare("SELECT name FROM users WHERE id = ?");
+            $stmt->execute([$studentId]);
+            $student = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if (!$student) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Student not found']);
+                return;
+            }
+            
+            // Get transaction history
+            $stmt = $this->db->prepare("
+                SELECT date, description, amount, type, created_at 
+                FROM transactions 
+                WHERE user_id = ? 
+                ORDER BY date DESC, created_at DESC 
+                LIMIT 50
+            ");
+            $stmt->execute([$studentId]);
+            $transactions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            echo json_encode([
+                'success' => true,
+                'transactions' => $transactions,
+                'student_name' => $student['name'],
+                'student_id' => $studentId
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log("Error in getStudentTransactions: " . $e->getMessage());
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Internal server error']);
         }

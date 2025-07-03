@@ -479,5 +479,12 @@ $routes['POST']['/api/adjust-student-ff'] = function() {
     $controller->adjustStudentFF();
 };
 
+// Get student transaction history API
+$routes['GET']['/api/student-transactions'] = function() {
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->getStudentTransactions();
+};
+
 // Return the routes array to be processed by the router
 return $routes;
