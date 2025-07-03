@@ -146,7 +146,8 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
             console.log('Key pressed:', e.key);
             if (e.key === 'Escape') {
                 const backLink = document.querySelector('.register-link a');
-                backLink.click();
+                e.preventDefault();
+                window.location.href = "<?= url('/register') ?>";
             }
         });
     </script>

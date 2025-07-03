@@ -183,5 +183,15 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
     <footer>
         <p>&copy; 2025 FerieSystem. All rights reserved. Developed by Thunderclaw Industries™</p>
     </footer>
+    <script>
+        // Handle Escape key to redirect to auth page
+        document.addEventListener('keydown', function(e) {
+            console.log('Key pressed:', e.key);
+            if (e.key === 'Escape') {
+                const backLink = document.querySelector('.register-link a');
+                backLink.click();
+            }
+        });
+    </script>
 </body>
 </html>
