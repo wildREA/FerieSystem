@@ -490,49 +490,12 @@ class AuthController {
         header('Location: /auth');
         exit;
     }
-
+    
     /**
-     * Test database connection
+     * Get the admin secret from the .env file
+     * 
+     * @return string|null The admin secret if found, null otherwise
      */
-    public function testDatabase() {
-        // Clear any potential output buffer to ensure clean JSON response
-        if (ob_get_level()) {
-            ob_clean();
-        }
-        
-        header('Content-Type: application/json');
-        
-        $result = [
-            'env_loaded' => !empty($_ENV),
-            'env_vars' => [
-                'DB_HOST' => $_ENV['DB_HOST'] ?? 'not set',
-                'DB_DATABASE' => $_ENV['DB_DATABASE'] ?? 'not set', 
-                'DB_USERNAME' => $_ENV['DB_USERNAME'] ?? 'not set',
-                'DB_PASSWORD' => !empty($_ENV['DB_PASSWORD']) ? 'set' : 'not set'
-            ],
-            'db_connection' => null,
-            'connection_type' => gettype($this->db),
-            'is_pdo' => $this->db instanceof PDO
-        ];
-        
-        if ($this->db instanceof PDO) {
-            try {
-                $stmt = $this->db->query("SELECT 1 as test");
-                $test = $stmt->fetch();
-                $result['db_connection'] = 'success';
-                $result['test_query'] = $test;
-            } catch (PDOException $e) {
-                $result['db_connection'] = 'query_failed';
-                $result['error'] = $e->getMessage();
-            }
-        } else {
-            $result['db_connection'] = 'not_connected';
-        }
-        
-        echo json_encode($result, JSON_PRETTY_PRINT);
-        exit;
-    }
-
     private function getAdminSecret() {
         $envFile = dirname(__DIR__, 2) . '/.env';
         if (!file_exists($envFile)) {
