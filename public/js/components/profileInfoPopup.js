@@ -1,16 +1,16 @@
 function showProfileModal() {
-    console.log('ProfileInfoPopup: showProfileModal called');
+    
     const modalBackdrop = document.createElement("div");
     modalBackdrop.className = "modal-backdrop fade show";
     modalBackdrop.style.zIndex = "1040";
 
-    console.log('ProfileInfoPopup: Fetching auth status from /api/auth-status');
+    
     // Fetch current user data from API
     fetch('/api/auth-status')
         .then(response => {
-            console.log('ProfileInfoPopup: Auth status response received', response);
-            console.log('ProfileInfoPopup: Response status:', response.status);
-            console.log('ProfileInfoPopup: Response headers:', response.headers);
+            
+            
+            
             
             // Check if response is ok
             if (!response.ok) {
@@ -19,7 +19,7 @@ function showProfileModal() {
             
             // Get the response text first to see what we're actually getting
             return response.text().then(text => {
-                console.log('ProfileInfoPopup: Raw response text:', text);
+                
                 try {
                     return JSON.parse(text);
                 } catch (parseError) {
@@ -30,7 +30,7 @@ function showProfileModal() {
             });
         })
         .then(data => {
-            console.log('ProfileInfoPopup: Auth status data:', data);
+            
             if (data.authenticated) {
                 const currentUser = {
                     name: data.name || "User",
@@ -43,10 +43,10 @@ function showProfileModal() {
                     lastLogin: "Today"
                 };
                 
-                console.log('ProfileInfoPopup: Creating modal with user data:', currentUser);
+                
                 createProfileModal(currentUser, modalBackdrop);
             } else {
-                console.log('ProfileInfoPopup: User not authenticated, redirecting');
+                
                 // User not authenticated, redirect to login
                 window.location.href = '/auth';
             }
@@ -69,7 +69,7 @@ function showProfileModal() {
 }
 
 function createProfileModal(currentUser, modalBackdrop) {
-    console.log('ProfileInfoPopup: createProfileModal called with user:', currentUser);
+    
     const modal = document.createElement("div");
     modal.className = "modal fade show";
     modal.style.display = "block";
@@ -153,7 +153,7 @@ function createProfileModal(currentUser, modalBackdrop) {
     document.body.appendChild(modalBackdrop);
     document.body.appendChild(modal);
 
-    console.log('ProfileInfoPopup: Modal elements appended to body');
+    
     
     // Store references for cleanup
     window.currentProfileModal = modal;
@@ -173,7 +173,7 @@ function closeProfileModal() {
 
 // Placeholder functions for button functionality (no functionality yet as requested)
 function showFriendsList() {
-    console.log("Show Friends List - Not implemented yet");
+    
     // TODO: Implement friends list functionality
 }
 
@@ -202,7 +202,7 @@ function logout() {
         }
     })
     .then(data => {
-        console.log('Logout successful');
+        
         
         // Handle the response based on the server's instructions
         if (data.action === 'refresh') {
@@ -222,19 +222,19 @@ function logout() {
 }
 
 function showSettings() {
-    console.log("Show Settings - Not implemented yet");
+    
     // TODO: Implement settings functionality
 }
 
 function showNotifications() {
-    console.log("Show Notifications - Not implemented yet");
+    
     // TODO: Implement notifications functionality
 }
 
 // Utility function for copying text to clipboard (if not already defined)
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(function() {
-        console.log('Copied to clipboard: ' + text);
+        
         // Could add a toast notification here
     }).catch(function(err) {
         console.error('Could not copy text: ', err);
@@ -256,12 +256,12 @@ document.addEventListener('keydown', function(event) {
 
 // Initialize the profile popup when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('ProfileInfoPopup: DOM loaded, looking for profileInfo element');
+    
     const profileInfo = document.getElementById('profileInfo');
     if (profileInfo) {
-        console.log('ProfileInfoPopup: Found profileInfo element, adding click listener');
+        
         profileInfo.addEventListener('click', function(e) {
-            console.log('ProfileInfoPopup: Click detected on profileInfo');
+            
             e.preventDefault();
             e.stopPropagation();
             showProfileModal();
