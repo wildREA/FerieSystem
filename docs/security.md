@@ -69,10 +69,3 @@ Run the database initialization script to create the necessary tables:
 ```bash
 php database/init.php
 ```
-
-### Testing Authentication
-
-Default test users:
-
-- Admin: `admin@example.com` (password: admin123)
-- Student: `user@example.com` (password: user123)
