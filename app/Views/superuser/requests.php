@@ -169,9 +169,6 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                 </div>
                 
                 <div class="student-card-footer">
-                  <div class="days-remaining">
-                    <?= calculateDaysSince($request['requestDate']) ?> days ago • Ends: <?= formatDateForDisplay($request['requestEndDate']) ?>
-                  </div>
                   <div class="action-buttons">
                     <button class="btn btn-success btn-sm me-2" onclick="approveRequest('<?= htmlspecialchars($request['request_id']) ?>')">
                       <i class="bi bi-check-circle"></i> Approve
