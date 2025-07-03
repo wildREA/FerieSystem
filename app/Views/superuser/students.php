@@ -111,51 +111,8 @@
                     </div>
                   </div>
                 </div>
+                                
                 
-                <div class="student-stats">
-                  <div class="stat">
-                    <span class="stat-label">Vacation Days</span>
-                    <span class="stat-value"><?= htmlspecialchars($student['vacationDays']) ?></span>
-                  </div>
-                  <?php if ($student['latestRequest']): ?>
-                    <div class="stat">
-                      <span class="stat-label">Latest Request</span>
-                      <span class="stat-value status-<?= htmlspecialchars($student['latestRequest']['status']) ?>">
-                        <?= ucfirst(htmlspecialchars($student['latestRequest']['status'])) ?>
-                      </span>
-                    </div>
-                  <?php endif; ?>
-                </div>
-                
-                <?php if ($student['latestRequest']): ?>
-                  <div class="request-info">
-                    <div class="request-dates">
-                      <i class="bi bi-calendar"></i>
-                      <?= htmlspecialchars($student['latestRequest']['startDate']) ?> - 
-                      <?= htmlspecialchars($student['latestRequest']['endDate']) ?>
-                      <span class="request-days">(<?= htmlspecialchars($student['latestRequest']['days']) ?> days)</span>
-                    </div>
-                    <div class="request-reason">
-                      <i class="bi bi-chat-left-text"></i>
-                      <?= htmlspecialchars($student['latestRequest']['reason']) ?>
-                    </div>
-                    <?php if ($student['latestRequest']['status'] === 'pending'): ?>
-                      <div class="request-actions">
-                        <button class="btn btn-success btn-sm" onclick="approveRequest('<?= htmlspecialchars($student['latestRequest']['id']) ?>')">
-                          <i class="bi bi-check-circle"></i> Approve
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="denyRequest('<?= htmlspecialchars($student['latestRequest']['id']) ?>')">
-                          <i class="bi bi-x-circle"></i> Deny
-                        </button>
-                      </div>
-                    <?php endif; ?>
-                  </div>
-                <?php else: ?>
-                  <div class="no-requests">
-                    <i class="bi bi-inbox"></i>
-                    <span>No recent requests</span>
-                  </div>
-                <?php endif; ?>
               </div>
             <?php endforeach; ?>
           <?php else: ?>

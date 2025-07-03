@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
     init();
 
     function init() {
+        console.log('Initializing students page...');
         setupEventListeners();
         initializeSearch();
         loadStudentsData();
@@ -30,6 +31,9 @@ document.addEventListener("DOMContentLoaded", function() {
         if (searchInput) {
             searchInput.addEventListener("input", handleSearch);
         }
+
+        // Student card click handlers
+        setupStudentCardClickHandlers();
 
         // Listen for notifications updated event
         window.addEventListener('notificationsUpdated', function(event) {
@@ -174,8 +178,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function createStudentCard(student) {
-        const latestRequest = student.latestRequest;
-        
         return `
             <div class="student-card" data-student-id="${escapeHtml(student.id)}">
                 <div class="student-header">
@@ -191,51 +193,6 @@ document.addEventListener("DOMContentLoaded", function() {
                         </div>
                     </div>
                 </div>
-                
-                <div class="student-stats">
-                    <div class="stat">
-                        <span class="stat-label">Vacation Days</span>
-                        <span class="stat-value">${escapeHtml(student.vacationDays)}</span>
-                    </div>
-                    ${latestRequest ? `
-                        <div class="stat">
-                            <span class="stat-label">Latest Request</span>
-                            <span class="stat-value status-${escapeHtml(latestRequest.status)}">
-                                ${capitalizeFirst(escapeHtml(latestRequest.status))}
-                            </span>
-                        </div>
-                    ` : ''}
-                </div>
-                
-                ${latestRequest ? `
-                    <div class="request-info">
-                        <div class="request-dates">
-                            <i class="bi bi-calendar"></i>
-                            ${escapeHtml(latestRequest.startDate)} - 
-                            ${escapeHtml(latestRequest.endDate)}
-                            <span class="request-days">(${escapeHtml(latestRequest.days)} days)</span>
-                        </div>
-                        <div class="request-reason">
-                            <i class="bi bi-chat-left-text"></i>
-                            ${escapeHtml(latestRequest.reason)}
-                        </div>
-                        ${latestRequest.status === 'pending' ? `
-                            <div class="request-actions">
-                                <button class="btn btn-success btn-sm" onclick="approveRequest('${escapeHtml(latestRequest.id)}')">
-                                    <i class="bi bi-check-circle"></i> Approve
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="denyRequest('${escapeHtml(latestRequest.id)}')">
-                                    <i class="bi bi-x-circle"></i> Deny
-                                </button>
-                            </div>
-                        ` : ''}
-                    </div>
-                ` : `
-                    <div class="no-requests">
-                        <i class="bi bi-inbox"></i>
-                        <span>No recent requests</span>
-                    </div>
-                `}
             </div>
         `;
     }
@@ -274,6 +231,172 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    function setupStudentCardClickHandlers() {
+        // Use event delegation for dynamically created student cards
+        const studentsGrid = document.getElementById('studentsGrid');
+        console.log('Setting up student card click handlers', studentsGrid);
+        if (studentsGrid) {
+            studentsGrid.addEventListener('click', function(event) {
+                console.log('Click detected on students grid', event.target);
+                const studentCard = event.target.closest('.student-card');
+                console.log('Found student card:', studentCard);
+                if (studentCard) {
+                    const studentId = studentCard.dataset.studentId;
+                    console.log('Student ID:', studentId);
+                    console.log('Available students:', studentsData);
+                    
+                    let student = studentsData.find(s => s.id === studentId);
+                    console.log('Found student data:', student);
+                    
+                    // If student not found in array, extract data from the card itself
+                    if (!student) {
+                        console.log('Student not found in studentsData, extracting from card');
+                        student = extractStudentFromCard(studentCard);
+                        console.log('Extracted student data:', student);
+                    }
+                    
+                    if (student) {
+                        showStudentDetailModal(student);
+                    } else {
+                        console.error('Student data not found for ID:', studentId);
+                        showToast('Student data not available', 'error');
+                    }
+                } else {
+                    console.log('Click was not on a student card');
+                }
+            });
+        } else {
+            console.error('Students grid not found!');
+        }
+    }
+
+    function extractStudentFromCard(card) {
+        try {
+            return {
+                id: card.dataset.studentId,
+                name: card.querySelector('.student-name')?.textContent?.trim() || 'Unknown',
+                email: card.querySelector('.student-email')?.textContent?.trim() || 'No email',
+                course: card.querySelector('.course')?.textContent?.trim() || 'N/A',
+                year: card.querySelector('.year')?.textContent?.replace('Year ', '')?.trim() || 'N/A',
+                avatar: card.querySelector('.student-avatar')?.textContent?.trim() || 'U'
+            };
+        } catch (error) {
+            console.error('Error extracting student data from card:', error);
+            return null;
+        }
+    }
+
+    function showStudentDetailModal(student) {
+        const modalBackdrop = document.createElement("div");
+        modalBackdrop.className = "modal-backdrop fade show";
+        modalBackdrop.style.zIndex = "1040";
+
+        const modal = document.createElement("div");
+        modal.className = "modal fade show";
+        modal.style.display = "block";
+        modal.style.zIndex = "1050";
+        modal.innerHTML = createStudentModalHTML(student);
+
+        document.body.appendChild(modalBackdrop);
+        document.body.appendChild(modal);
+
+        // Store references for cleanup
+        window.currentStudentModal = modal;
+        window.currentStudentModalBackdrop = modalBackdrop;
+
+        // Load student's FF balance
+        window.loadStudentFFBalance(student.id);
+    }
+
+    function createStudentModalHTML(student) {
+        return `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content" style="background-color: #232838;">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Student Information</h5>
+                        <button type="button" class="btn-close" onclick="closeStudentModal()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <div class="student-avatar-large" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 15px; background-color: #0d6efd; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                    ${escapeHtml(student.avatar)}
+                                </div>
+                                <h4 class="mb-1 non-selectable">${escapeHtml(student.name)}</h4>
+                                <p class="text-muted mb-2 selectable-text">${escapeHtml(student.id || 'N/A')}</p>
+                                <div class="status-badge">
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <h6 class="text-primary mb-2"><i class="bi bi-person-circle me-2"></i>Contact Information</h6>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <small class="text-muted">Email</small>
+                                            <div class="fw-medium selectable-text" style="cursor: pointer;" onclick="copyToClipboard('${escapeHtml(student.email)}')">
+                                                ${escapeHtml(student.email)}
+                                                <i class="bi bi-clipboard ms-1" style="font-size: 0.8rem; opacity: 0.7;"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- FF Balance Management Section -->
+                                <div class="mb-3">
+                                    <h6 class="text-primary mb-2"><i class="bi bi-wallet2 me-2"></i>FF Hours Management</h6>
+                                    <div class="ff-balance-container p-3" style="border: 1px solid #007bff; border-radius: 8px;">
+                                        <div class="text-center mb-2">
+                                            <small class="text-muted">Current FF Balance</small>
+                                            <h3 class="mb-0" id="studentFFBalance" style="color: #28a745;">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </h3>
+                                        </div>
+                                        <div class="ff-management-controls">
+                                            <div class="input-group mb-2">
+                                                <input type="number" class="form-control" id="ffHoursInput" placeholder="Enter hours" min="1" max="1000" style="background-color: transparent; border-color: #007bff; color: white;">
+                                                <span class="input-group-text" style="background-color: transparent; border-color: #007bff; color: #a0a7b5;">hours</span>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-outline-success btn-sm flex-fill" onclick="adjustStudentFF('${escapeHtml(student.id)}', 'add')">
+                                                    <i class="bi bi-plus-circle me-1"></i> Add Hours
+                                                </button>
+                                                <button class="btn btn-outline-warning btn-sm flex-fill" onclick="adjustStudentFF('${escapeHtml(student.id)}', 'subtract')">
+                                                    <i class="bi bi-dash-circle me-1"></i> Remove Hours
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Actions Section -->
+                                <div class="mb-2">
+                                    <h6 class="text-primary mb-2"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button class="btn btn-outline-light btn-sm" onclick="viewStudentRequests('${escapeHtml(student.id)}')">
+                                            <i class="bi bi-file-earmark-text me-1"></i> View Requests
+                                        </button>
+                                        <button class="btn btn-outline-info btn-sm" onclick="sendStudentMessage('${escapeHtml(student.id)}')">
+                                            <i class="bi bi-envelope me-1"></i> Send Message
+                                        </button>
+                                        <button class="btn btn-outline-warning btn-sm" onclick="viewStudentHistory('${escapeHtml(student.id)}')">
+                                            <i class="bi bi-clock-history me-1"></i> View History
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeStudentModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     // Helper functions
     function escapeHtml(text) {
         if (text === null || text === undefined) return '';
@@ -297,117 +420,139 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    // Make showToast globally available
+    window.showToast = showToast;
+
     // Expose functions globally for button onclick handlers
     window.refreshStudentsData = refreshStudentsData;
 });
 
-// Request approval/denial functions (global scope for onclick handlers)
-window.approveRequest = function(requestId) {
-    if (!requestId) {
-        console.error('No request ID provided');
+// Global functions for student modal
+window.closeStudentModal = function() {
+    if (window.currentStudentModal) {
+        document.body.removeChild(window.currentStudentModal);
+        window.currentStudentModal = null;
+    }
+    if (window.currentStudentModalBackdrop) {
+        document.body.removeChild(window.currentStudentModalBackdrop);
+        window.currentStudentModalBackdrop = null;
+    }
+};
+
+window.loadStudentFFBalance = function(studentId) {
+    fetch(`/api/student-balance?id=${studentId}`)
+        .then(response => response.json())
+        .then(data => {
+            const balanceElement = document.getElementById('studentFFBalance');
+            if (balanceElement) {
+                if (data.success) {
+                    balanceElement.innerHTML = `${data.balance} hours`;
+                } else {
+                    balanceElement.innerHTML = `<span class="text-warning">Error loading balance</span>`;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading student balance:', error);
+            const balanceElement = document.getElementById('studentFFBalance');
+            if (balanceElement) {
+                balanceElement.innerHTML = `<span class="text-danger">Failed to load</span>`;
+            }
+        });
+};
+
+window.adjustStudentFF = function(studentId, action) {
+    const hoursInput = document.getElementById('ffHoursInput');
+    const hours = parseInt(hoursInput.value);
+    
+    if (!hours || hours <= 0) {
+        showToast('Please enter a valid number of hours', 'error');
+        return;
+    }
+    
+    const actionText = action === 'add' ? 'add' : 'remove';
+    const confirmMessage = `Are you sure you want to ${actionText} ${hours} hours ${action === 'add' ? 'to' : 'from'} this student's FF balance?`;
+    
+    if (!confirm(confirmMessage)) {
         return;
     }
     
     // Show loading state
-    const button = event.target.closest('button');
-    if (button) {
-        button.disabled = true;
-        button.innerHTML = '<i class="bi bi-hourglass-split"></i> Approving...';
-    }
+    const addBtn = document.querySelector('button[onclick*="add"]');
+    const removeBtn = document.querySelector('button[onclick*="subtract"]');
+    if (addBtn) addBtn.disabled = true;
+    if (removeBtn) removeBtn.disabled = true;
     
-    fetch('/api/approve-request', {
+    fetch('/api/adjust-student-ff', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ request_id: requestId })
+        body: JSON.stringify({
+            student_id: studentId,
+            action: action,
+            hours: hours
+        })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Show success message
-            if (window.notificationManager && window.notificationManager.showToast) {
-                window.notificationManager.showToast('Request approved successfully', 'success');
-            }
-            
-            // Refresh data
-            window.refreshStudentsData();
-            
-            // Trigger notification refresh
-            window.dispatchEvent(new CustomEvent('requestStatusChanged'));
+            showToast(`Successfully ${action === 'add' ? 'added' : 'removed'} ${hours} hours`, 'success');
+            // Refresh the balance display
+            window.loadStudentFFBalance(studentId);
+            // Clear the input
+            hoursInput.value = '';
         } else {
-            console.error('Failed to approve request:', data.message);
-            if (window.notificationManager && window.notificationManager.showToast) {
-                window.notificationManager.showToast('Failed to approve request', 'error');
-            }
+            showToast(data.message || `Failed to ${actionText} hours`, 'error');
         }
     })
     .catch(error => {
-        console.error('Error approving request:', error);
-        if (window.notificationManager && window.notificationManager.showToast) {
-            window.notificationManager.showToast('Error approving request', 'error');
-        }
+        console.error('Error adjusting FF hours:', error);
+        showToast(`Error ${action === 'add' ? 'adding' : 'removing'} hours`, 'error');
     })
     .finally(() => {
-        // Reset button state
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = '<i class="bi bi-check-circle"></i> Approve';
-        }
+        // Reset button states
+        if (addBtn) addBtn.disabled = false;
+        if (removeBtn) removeBtn.disabled = false;
     });
 };
 
-window.denyRequest = function(requestId) {
-    if (!requestId) {
-        console.error('No request ID provided');
-        return;
-    }
-    
-    // Show loading state
-    const button = event.target.closest('button');
-    if (button) {
-        button.disabled = true;
-        button.innerHTML = '<i class="bi bi-hourglass-split"></i> Denying...';
-    }
-    
-    fetch('/api/deny-request', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ request_id: requestId })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Show success message
-            if (window.notificationManager && window.notificationManager.showToast) {
-                window.notificationManager.showToast('Request denied successfully', 'success');
-            }
-            
-            // Refresh data
-            window.refreshStudentsData();
-            
-            // Trigger notification refresh
-            window.dispatchEvent(new CustomEvent('requestStatusChanged'));
-        } else {
-            console.error('Failed to deny request:', data.message);
-            if (window.notificationManager && window.notificationManager.showToast) {
-                window.notificationManager.showToast('Failed to deny request', 'error');
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error denying request:', error);
-        if (window.notificationManager && window.notificationManager.showToast) {
-            window.notificationManager.showToast('Error denying request', 'error');
-        }
-    })
-    .finally(() => {
-        // Reset button state
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = '<i class="bi bi-x-circle"></i> Deny';
-        }
+window.viewStudentRequests = function(studentId) {
+    // Close the student modal first
+    closeStudentModal();
+    // Navigate to requests page with student filter
+    window.location.href = `/requests?student=${studentId}`;
+};
+
+window.sendStudentMessage = function(studentId) {
+    showToast('Message functionality not implemented yet', 'info');
+    // TODO: Implement student messaging functionality
+};
+
+window.viewStudentHistory = function(studentId) {
+    showToast('History functionality not implemented yet', 'info');
+    // TODO: Implement student history functionality
+};
+
+// Copy to clipboard function (if not already defined)
+window.copyToClipboard = function(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        showToast('Copied to clipboard: ' + text, 'success');
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+        showToast('Failed to copy to clipboard', 'error');
     });
 };
+
+// Close modal when clicking outside or pressing escape
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal-backdrop')) {
+        closeStudentModal();
+    }
+});
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && window.currentStudentModal) {
+        closeStudentModal();
+    }
+});

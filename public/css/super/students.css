@@ -33,6 +33,7 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .student-card:hover {
@@ -416,4 +417,110 @@
     height: 50px;
     font-size: 20px;
   }
+}
+
+/* Student Detail Modal Styles */
+.student-avatar-large {
+  background: linear-gradient(135deg, #0d6efd 0%, #3498db 100%);
+  box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+}
+
+.ff-balance-container {
+  border: 2px solid #007bff !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.ff-balance-container:hover {
+  border-color: #0056b3 !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+}
+
+.ff-management-controls .form-control {
+  background-color: transparent !important;
+  border: 1px solid #007bff !important;
+  color: white !important;
+  border-radius: 6px !important;
+}
+
+.ff-management-controls .form-control:focus {
+  background-color: transparent !important;
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15) !important;
+  color: white !important;
+}
+
+.ff-management-controls .input-group-text {
+  background-color: transparent !important;
+  border: 1px solid #007bff !important;
+  color: #a0a7b5 !important;
+  border-radius: 6px !important;
+}
+
+.ff-management-controls .btn-outline-success,
+.ff-management-controls .btn-outline-warning {
+  border-width: 1.5px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  background-color: transparent !important;
+}
+
+.ff-management-controls .btn-outline-success {
+  color: #28a745 !important;
+  border-color: #28a745 !important;
+}
+
+.ff-management-controls .btn-outline-warning {
+  color: #ffc107 !important;
+  border-color: #ffc107 !important;
+}
+
+.ff-management-controls .btn-outline-success:hover {
+  background-color: #28a745 !important;
+  border-color: #28a745 !important;
+  color: white !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.ff-management-controls .btn-outline-warning:hover {
+  background-color: #ffc107 !important;
+  border-color: #ffc107 !important;
+  color: #000 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+}
+
+.modal-content {
+  border: 1px solid #2c3142;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  border-bottom: 1px solid #2c3142;
+}
+
+.modal-footer {
+  border-top: 1px solid #2c3142;
+}
+
+.non-selectable {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.selectable-text {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Modal backdrop style */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.8);
 }

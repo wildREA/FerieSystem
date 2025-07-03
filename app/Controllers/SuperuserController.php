@@ -712,4 +712,158 @@ class SuperuserController {
             echo json_encode(['success' => false, 'message' => 'Internal server error']);
         }
     }
+
+    /**
+     * API endpoint to get student FF balance
+     */
+    public function getStudentBalance($studentId) {
+        try {
+            header('Content-Type: application/json');
+            
+            if (!$this->sessionManager->isAuthenticated()) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                return;
+            }
+            
+            $userType = $this->sessionManager->getUserType();
+            if ($userType !== 'super') {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Only superusers can access this data']);
+                return;
+            }
+            
+            // Get real balance from transactions table
+            $balanceData = $this->getUserBalance($studentId);
+            
+            echo json_encode([
+                'success' => true,
+                'balance' => $balanceData['currentBalance'],
+                'student_id' => $studentId
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log("Error in getStudentBalance: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Internal server error']);
+        }
+    }
+
+    /**
+     * API endpoint to adjust student FF hours
+     */
+    public function adjustStudentFF() {
+        try {
+            header('Content-Type: application/json');
+            
+            if (!$this->sessionManager->isAuthenticated()) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                return;
+            }
+            
+            $userType = $this->sessionManager->getUserType();
+            if ($userType !== 'super') {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Only superusers can adjust FF hours']);
+                return;
+            }
+            
+            // Get JSON input
+            $input = json_decode(file_get_contents('php://input'), true);
+            
+            if (!$input) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid JSON input']);
+                return;
+            }
+            
+            $studentId = $input['student_id'] ?? null;
+            $action = $input['action'] ?? null;
+            $hours = $input['hours'] ?? null;
+            
+            if (!$studentId || !$action || !$hours) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Missing required fields: student_id, action, hours']);
+                return;
+            }
+            
+            if (!in_array($action, ['add', 'subtract'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid action. Must be "add" or "subtract"']);
+                return;
+            }
+            
+            if (!is_numeric($hours) || $hours <= 0) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Hours must be a positive number']);
+                return;
+            }
+            
+            // Check if database connection exists
+            if (!$this->db) {
+                error_log("Database connection is null in adjustStudentFF");
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database connection error']);
+                return;
+            }
+            
+            // Verify that the student exists
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE id = ?");
+            $stmt->execute([$studentId]);
+            if (!$stmt->fetch()) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Student not found']);
+                return;
+            }
+            
+            // Calculate the transaction amount based on action
+            $transactionAmount = ($action === 'add') ? $hours : -$hours;
+            $transactionType = ($action === 'add') ? 'allocation' : 'deduction';
+            $description = ($action === 'add') ? 
+                "Manual FF allocation by superuser" : 
+                "Manual FF deduction by superuser";
+            
+            // Insert transaction record
+            $stmt = $this->db->prepare("
+                INSERT INTO transactions (user_id, date, type, amount, description, status, created_at) 
+                VALUES (?, CURDATE(), ?, ?, ?, 'confirmed', NOW())
+            ");
+            
+            $success = $stmt->execute([
+                $studentId,
+                $transactionType,
+                $transactionAmount,
+                $description
+            ]);
+            
+            if (!$success) {
+                $errorInfo = $stmt->errorInfo();
+                error_log("Database error in adjustStudentFF: " . print_r($errorInfo, true));
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to update student balance']);
+                return;
+            }
+            
+            // Log the action for audit purposes
+            error_log("FF Adjustment: User " . $this->sessionManager->getUserId() . " {$action}ed {$hours} hours for student {$studentId}");
+            
+            // Get updated balance to return
+            $balanceData = $this->getUserBalance($studentId);
+            
+            echo json_encode([
+                'success' => true,
+                'message' => "Successfully {$action}ed {$hours} hours",
+                'action' => $action,
+                'hours' => $hours,
+                'student_id' => $studentId,
+                'new_balance' => $balanceData['currentBalance']
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log("Error in adjustStudentFF: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Internal server error']);
+        }
+    }
 }

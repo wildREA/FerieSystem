@@ -409,5 +409,29 @@ $routes['GET']['/api/notifications'] = function() {
     exit; // Ensure absolutely no additional output
 };
 
+// Get student FF balance API
+$routes['GET']['/api/student-balance'] = function() {
+    // Get student ID from query parameter
+    $studentId = $_GET['id'] ?? null;
+    
+    if (!$studentId) {
+        header('Content-Type: application/json');
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Student ID is required']);
+        return;
+    }
+    
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->getStudentBalance($studentId);
+};
+
+// Adjust student FF hours API
+$routes['POST']['/api/adjust-student-ff'] = function() {
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->adjustStudentFF();
+};
+
 // Return the routes array to be processed by the router
 return $routes;
