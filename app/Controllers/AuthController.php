@@ -68,24 +68,67 @@ class AuthController {
     }
 
     public function logout() {
-        $this->sessionManager->logout();
-        session_destroy();
-        deleteRememberMeTokens($this->sessionManager->getUserId());
-        redirect('/auth');
+        try {
+            $userId = $this->sessionManager->getUserId();
+            
+            // Perform logout actions
+            $this->sessionManager->logout();
+            session_destroy();
+            $this->deleteRememberMeTokens($userId);
+            
+            // Return JSON response for client-side handling
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'message' => 'Logout successful',
+                'action' => 'refresh'
+            ]);
+            exit;
+        } catch (Exception $e) {
+            error_log("Logout failed: " . $e->getMessage());
+            
+            // Return error response
+            header('Content-Type: application/json');
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'An error occurred during logout'
+            ]);
+            exit;
+        }
     }
 
+    /**
+     * Deletes all remember me tokens for a specific user
+     * 
+     * @param int $userId The ID of the user whose tokens should be deleted
+     * @return bool True on success, false on failure
+     */
     private function deleteRememberMeTokens($userId) {
+        if (!$userId) {
+            error_log("deleteRememberMeTokens: No user ID provided");
+            return false;
+        }
+        
         if (!$this->db) {
             error_log("deleteRememberMeTokens: No database connection available");
-            return;
+            return false;
         }
         
         try {
             $stmt = $this->db->prepare("DELETE FROM remember_tokens WHERE user_id = ?");
-            $stmt->execute([$userId]);
-            error_log("deleteRememberMeTokens: Successfully deleted tokens for user ID: $userId");
+            $result = $stmt->execute([$userId]);
+            
+            if ($result) {
+                error_log("deleteRememberMeTokens: Successfully deleted tokens for user ID: $userId");
+                return true;
+            } else {
+                error_log("deleteRememberMeTokens: Failed to delete tokens for user ID: $userId");
+                return false;
+            }
         } catch (PDOException $e) {
             error_log("deleteRememberMeTokens: Database error: " . $e->getMessage());
+            return false;
         }
     }
 
@@ -137,7 +180,7 @@ class AuthController {
 
         
         if ($this->userExists($email, $username)) {
-            return $this->handleRegisterError('User with this email or username already exists', $contentType);
+            return $this->handleRegisterError('User with this email or username exists', $contentType);
         }
         
         $userId = $this->createUser($name, $username, $email, $password);
@@ -207,7 +250,7 @@ class AuthController {
         }
         
         if ($this->userExists($email, $username)) {
-            return $this->handleSuperUserError('User with this email or username already exists', $contentType);
+            return $this->handleSuperUserError('User with this email or username exists', $contentType);
         }
         
         $userId = $this->createSuperUserAccount($name, $username, $email, $password);
@@ -698,33 +741,43 @@ class AuthController {
 
     /**
      * API logout endpoint - returns JSON response
+     * Used for programmatic logout requests via AJAX
      */
     public function logoutAPI() {
-        // Set JSON content type
+        // Set JSON content type and prevent any other output
         header('Content-Type: application/json');
+        if (ob_get_level()) {
+            ob_clean();
+        }
         
         try {
+            $userId = $this->sessionManager->getUserId();
+            
             // Clear the session and remember me tokens
             $this->sessionManager->logout();
+            session_destroy();
+            $this->deleteRememberMeTokens($userId);
             
             $response = [
                 'success' => true,
-                'message' => 'Logout successful'
+                'message' => 'Logout successful',
+                'action' => 'redirect',
+                'redirectUrl' => url('/auth')
             ];
             
             echo json_encode($response);
+            exit;
             
         } catch (Exception $e) {
             error_log("API logout failed: " . $e->getMessage());
             
-            $response = [
+            http_response_code(500);
+            echo json_encode([
                 'success' => false,
                 'error' => 'Logout failed',
                 'message' => 'An error occurred during logout'
-            ];
-            
-            http_response_code(500);
-            echo json_encode($response);
+            ]);
+            exit;
         }
     }
 }

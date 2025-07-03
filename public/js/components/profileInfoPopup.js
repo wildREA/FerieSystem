@@ -193,21 +193,31 @@ function logout() {
     })
     .then(response => {
         if (response.ok) {
-            // Successful logout
-            console.log('Logout successful');
-            // Redirect to login page
-            window.location.href = '/auth';
+            return response.json();
         } else {
-            // Handle logout error
             console.error('Logout failed:', response.status);
-            // Still redirect to login page as a fallback
-            window.location.href = '/auth';
+            // If server response is not OK, just refresh the page
+            window.location.reload();
+            throw new Error('Logout request failed');
+        }
+    })
+    .then(data => {
+        console.log('Logout successful');
+        
+        // Handle the response based on the server's instructions
+        if (data.action === 'refresh') {
+            window.location.reload();
+        } else if (data.redirectUrl) {
+            window.location.href = data.redirectUrl;
+        } else {
+            // Default fallback - just reload the page
+            window.location.reload();
         }
     })
     .catch(error => {
         console.error('Logout error:', error);
-        // Redirect to login page even if API call fails
-        window.location.href = '/auth';
+        // Refresh the page as fallback
+        window.location.reload();
     });
 }
 
