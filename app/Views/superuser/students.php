@@ -13,7 +13,8 @@
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-    <script src="<?= asset('public/js/super/dashboard.js') ?>" defer></script>
+    <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
+    <script src="<?= asset('public/js/super/students.js') ?>" defer></script>
     <!-- Hidden input to identify current page -->
     <input type="hidden" id="currentPage" value="students">
   </head>
@@ -34,7 +35,9 @@
               <div class="section-header requests-background">
                 <i class="bi bi-file-earmark-text text-danger"></i>
                 <span>Requests</span>
-                <span class="notification-badge">2</span>
+                <?php if (isset($notifications['pendingRequests']) && $notifications['pendingRequests'] > 0): ?>
+                <span class="notification-badge"><?= $notifications['pendingRequests'] ?></span>
+                <?php endif; ?>
               </div>
             </a>
           </li>
@@ -87,8 +90,38 @@
           <p class="text-muted">Manage student vacation requests and information</p>
         </div>
         
+        
         <div class="students-grid" id="studentsGrid">
-          <!-- Student cards will be generated here -->
+          <!-- Students will be rendered server-side and enhanced with JavaScript -->
+          <?php if (!empty($students)): ?>
+            <?php foreach ($students as $student): ?>
+              <div class="student-card" data-student-id="<?= htmlspecialchars($student['id']) ?>">
+                <div class="student-header">
+                  <div class="student-avatar">
+                    <?= htmlspecialchars($student['avatar']) ?>
+                  </div>
+                  <div class="student-info">
+                    <h4 class="student-name"><?= htmlspecialchars($student['name']) ?></h4>
+                    <p class="student-email"><?= htmlspecialchars($student['email']) ?></p>
+                    <div class="student-meta">
+                      <span class="course"><?= htmlspecialchars($student['course']) ?></span>
+                      <?php if ($student['year'] !== 'N/A'): ?>
+                        <span class="year">Year <?= htmlspecialchars($student['year']) ?></span>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+                </div>
+                                
+                
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div class="no-students text-center py-5">
+              <i class="bi bi-people fs-1 text-muted"></i>
+              <h4 class="mt-3 text-muted">No students found</h4>
+              <p class="text-muted">No students are registered in the system</p>
+            </div>
+          <?php endif; ?>
         </div>
         
         <div class="no-results" id="noResults" style="display: none;">

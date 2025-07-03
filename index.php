@@ -1,6 +1,7 @@
 <?php
 // Application entry point - handles routing when .htaccess is unavailable
 
+
 $requestUri = $_SERVER['REQUEST_URI'];
 $parsedUrl = parse_url($requestUri);
 $path = $parsedUrl['path'] ?? '/';

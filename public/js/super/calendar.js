@@ -1,7 +1,4 @@
-// Calendar page functionality for PDF upload and viewing
-
 document.addEventListener("DOMContentLoaded", function () {
-  // Elements
   const fileInput = document.getElementById("calendarPdfUpload");
   const uploadButton = document.getElementById("uploadButton");
   const removeButton = document.getElementById("removeCalendarButton");
@@ -14,24 +11,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let pdfObjectUrl = null;
 
-  // Check if all required elements exist
   if (!fileInput || !uploadButton || !uploadStatus || !uploadStatusText || !noPdfMessage || !pdfEmbed) {
     console.error("Calendar.js: Required DOM elements not found");
     return;
   }
 
-  // Set up event listeners
   uploadButton.addEventListener("click", uploadPdf);
   if (removeButton) {
     removeButton.addEventListener("click", removePdf);
   }
 
-  // Check for existing PDF in session storage
   checkForExistingPdf();
 
-  /**
-   * Upload and display the selected PDF
-   */
   function uploadPdf() {
     const file = fileInput.files[0];
 
@@ -45,15 +36,12 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Show uploading status
     showUploadStatus("Uploading calendar...", "info");
     uploadButton.disabled = true;
 
-    // Create FormData for file upload
     const formData = new FormData();
     formData.append('calendar', file);
 
-    // Upload file to server
     fetch('/api/calendar/upload', {
       method: 'POST',
       body: formData
@@ -66,11 +54,9 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .then(data => {
       if (data.success) {
-        // Create iframe to display the uploaded PDF
         createPdfIframe(data.url);
         showUploadStatus("Calendar uploaded successfully", "success");
         
-        // Show remove button
         if (removeButton) {
           removeButton.style.display = 'inline-block';
         }
@@ -87,10 +73,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  /**
-   * Create an iframe to display the PDF
-   * @param {File|string} source - Either a File object or a URL string
-   */
   function createPdfIframe(source) {
     // Revoke previous object URL if exists to prevent memory leaks
     if (pdfObjectUrl) {
@@ -124,9 +106,6 @@ document.addEventListener("DOMContentLoaded", function () {
     pdfEmbed.style.display = "block";
   }
 
-  /**
-   * Show upload status message
-   */
   function showUploadStatus(message, type = "success") {
     uploadStatusText.textContent = message;
     uploadStatus.querySelector(".alert").className = `alert alert-${type}`;
@@ -138,9 +117,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 3000);
   }
 
-  /**
-   * Remove the current PDF
-   */
   function removePdf() {
     // Show removing status
     showUploadStatus("Removing calendar...", "info");
@@ -190,9 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  /**
-   * Check for an existing PDF on the server
-   */
   function checkForExistingPdf() {
     fetch('/api/calendar/info')
     .then(response => {

@@ -1,7 +1,3 @@
-/**
- * Registration Key Container Component
- * Handles the display, generation, and visibility toggling of registration keys
- */
 class KeyContainer {
   constructor() {
     this.keyContainer = document.querySelector(".key-container");
@@ -20,9 +16,6 @@ class KeyContainer {
     this.initToastContainer();
   }
 
-  /**
-   * Initialize toast notification container
-   */
   initToastContainer() {
     if (document.querySelector(".toast-container")) return;
     
@@ -31,9 +24,6 @@ class KeyContainer {
     document.body.appendChild(toastContainer);
   }
 
-  /**
-   * Show toast notification
-   */
   showToast(message, type = "success", duration = 3000) {
     if (this.toastQueue.size >= this.maxToasts) {
       const oldestToast = this.toastQueue.values().next().value;
@@ -65,9 +55,6 @@ class KeyContainer {
     return toast;
   }
 
-  /**
-   * Remove toast notification with proper cleanup
-   */
   removeToast(toast) {
     if (!toast || !this.toastQueue.has(toast)) return;
 
@@ -81,9 +68,6 @@ class KeyContainer {
     }, 300);
   }
 
-  /**
-   * Load existing registration key from the server
-   */
   async loadExistingKey() {
     try {
       const response = await fetch("/api/reg-key");
@@ -107,18 +91,12 @@ class KeyContainer {
       this.showKey();
     }
   }
-  /**
-   * Initialize component - set up event listeners and load existing key
-   */
   init() {
     this.bindEvents();
     this.setInitialState();
     this.loadExistingKey();
   }
 
-  /**
-   * Bind event listeners to UI elements
-   */
   bindEvents() {
     this.visibilityBtn.addEventListener("click", () => this.toggleVisibility());
     this.generateBtn.addEventListener("click", () => this.generateNewKey());
@@ -129,16 +107,10 @@ class KeyContainer {
     }
   }
 
-  /**
-   * Set initial UI state
-   */
   setInitialState() {
     // Initial state will be set after loading existing key
   }
 
-  /**
-   * Set the current key and update the display
-   */
   setKey(key) {
     this.currentKey = key;
 
@@ -156,25 +128,16 @@ class KeyContainer {
     this.textWrapper.textContent = key || "No key generated";
   }
 
-  /**
-   * Toggle key visibility
-   */
   toggleVisibility() {
     this.isVisible ? this.hideKey() : this.showKey();
   }
 
-  /**
-   * Show the registration key
-   */
   showKey() {
     this.keyStatus.style.filter = "none";
     this.isVisible = true;
     this.updateVisibilityIcon("bi bi-eye", "white", "Hide");
   }
 
-  /**
-   * Hide the registration key
-   */
   hideKey() {
     if (!this.currentKey) { this.showCannotHideNotification(); return; }
     
@@ -183,25 +146,16 @@ class KeyContainer {
     this.updateVisibilityIcon("bi bi-eye-slash-fill", "red", "Show");
   }
 
-  /**
-   * Show notification when trying to hide without a key
-   */
   showCannotHideNotification() {
     this.showToast("Cannot hide without a key", "error");
   }
 
-  /**
-   * Update visibility icon appearance
-   */
   updateVisibilityIcon(className, color, title) {
     this.visibilityIcon.className = className;
     this.visibilityIcon.style.color = color;
     this.visibilityBtn.title = title;
   }
 
-  /**
-   * Generate a new registration key
-   */
   async generateNewKey() {
     try {
       if (this.currentKey) {
@@ -233,9 +187,6 @@ class KeyContainer {
     }
   }
 
-  /**
-   * Copy the current key to clipboard
-   */
   async copyToClipboard() {
     if (!this.currentKey) {
       this.showToast("No key available to copy", "warning");
@@ -256,9 +207,6 @@ class KeyContainer {
     }
   }
 
-  /**
-   * Fallback method for copying to clipboard in older browsers
-   */
   fallbackCopyToClipboard(text) {
     const textArea = document.createElement("textarea");
     textArea.value = text;

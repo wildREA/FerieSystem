@@ -15,7 +15,10 @@
 .idea/
 .vscode/
 node_modules/
-vendor/
+# Ignore vendor packages but keep composer manifest files
+vendor/*
+!vendor/autoload.php
+!vendor/composer/
 storage/
 .cache/
 *.swp

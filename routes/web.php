@@ -47,25 +47,7 @@ $routes['GET']['/contact'] = function() {
 };
 
 // Login page
-$routes['GET']['/auth'] = function() {
-    $sessionManager = getSessionManager();
-    
-    // Check if user is already authenticated (server-side fallback)
-    if ($sessionManager->checkAuthentication()) {
-        // User is already logged in, redirect to appropriate dashboard
-        $userType = $sessionManager->getUserType();
-        
-        if ($userType === 'super') {
-            redirect('/students');
-        } elseif ($userType === 'standard') {
-            redirect('/dashboard');
-        } else {
-            // Unknown user type, logout and show auth page
-            $sessionManager->logout();
-        }
-    }
-    
-    // User is not authenticated, show auth page
+$routes['GET']['/auth'] = function() {    
     return view('auth');
 };
 
@@ -88,6 +70,35 @@ $routes['GET']['/logout'] = function() {
     $auth = new App\Controllers\AuthController();
     return $auth->logout();
 };
+
+// Requests page for standard users
+$routes['GET']['/requests'] = function() {
+    $sessionManager = getSessionManager();
+    $sessionManager->requireAuth('/auth');
+
+    $userType = $sessionManager->getUserType();
+    if ($userType === 'standard') {
+        return view('standarduser/requests');
+    } else {
+        // Redirect non-standard users
+        redirect('/auth');
+    }
+};
+
+// Requests page for superusers
+$routes['GET']['/s-requests'] = function() {
+    $sessionManager = getSessionManager();
+    $sessionManager->requireAuth('/auth');
+
+    $userType = $sessionManager->getUserType();
+    if ($userType === 'super') {
+        return view('superuser/requests');
+    } else {
+        // Redirect non-superusers
+        redirect('/auth');
+    }
+};
+
 // test
 // Simple route pattern (as decided)
 $routes['GET']['/dashboard'] = function() {
@@ -101,7 +112,15 @@ $routes['GET']['/dashboard'] = function() {
         redirect('/students');
     } else {
         $sessionManager->requireUserType(['standard'], '/auth');
-        return view('standarduser/dashboard');
+        
+        // Get notification counts
+        require_once BASE_PATH . '/app/Services/NotificationService.php';
+        $notificationService = new App\Services\NotificationService();
+        $notifications = $notificationService->getNotificationCounts();
+        
+        return view('standarduser/dashboard', [
+            'notifications' => $notifications
+        ]);
     }
 };
 
@@ -118,9 +137,15 @@ $routes['GET']['/requests'] = function() {
         $pendingRequests = $controller->getPendingRequests();
         $approvedRequests = $controller->getApprovedRequests();
         
+        // Get notification counts
+        require_once BASE_PATH . '/app/Services/NotificationService.php';
+        $notificationService = new App\Services\NotificationService();
+        $notifications = $notificationService->getNotificationCounts();
+        
         return view('superuser/requests', [
             'pendingRequests' => $pendingRequests,
-            'approvedRequests' => $approvedRequests
+            'approvedRequests' => $approvedRequests,
+            'notifications' => $notifications
         ]);
     } else {
         $sessionManager->requireUserType(['standard'], '/auth');
@@ -130,13 +155,24 @@ $routes['GET']['/requests'] = function() {
         $controller = new App\Controllers\RequestController();
         $requestsData = $controller->getUserRequestsForView();
         
+        // Calculate pending count for notifications
+        $pendingCount = 0;
+        if (is_array($requestsData)) {
+            foreach ($requestsData as $request) {
+                if (isset($request['status']) && $request['status'] === 'pending') {
+                    $pendingCount++;
+                }
+            }
+        }
+        
         // Load helper functions for current user name
         require_once BASE_PATH . '/app/Helpers/UrlHelper.php';
         $userName = function_exists('getCurrentUserName') ? getCurrentUserName() : 'Student';
         
         return view('standarduser/requests', [
             'requests' => $requestsData,
-            'userName' => $userName
+            'userName' => $userName,
+            'pendingCount' => $pendingCount
         ]);
     }
 };
@@ -145,7 +181,15 @@ $routes['GET']['/new-request'] = function() {
     $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
     $sessionManager->requireUserType(['standard'], '/auth');
-    return view('standarduser/new-request');
+    
+    // Get notification counts
+    require_once BASE_PATH . '/app/Services/NotificationService.php';
+    $notificationService = new App\Services\NotificationService();
+    $notifications = $notificationService->getNotificationCounts();
+    
+    return view('standarduser/new-request', [
+        'notifications' => $notifications
+    ]);
 };
 
 // Calendar and admin routes for super users
@@ -153,14 +197,36 @@ $routes['GET']['/calendar'] = function() {
     $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
     $sessionManager->requireUserType(['super'], '/auth');
-    return view('superuser/calendar');
+    
+    // Get notification counts
+    require_once BASE_PATH . '/app/Services/NotificationService.php';
+    $notificationService = new App\Services\NotificationService();
+    $notifications = $notificationService->getNotificationCounts();
+    
+    return view('superuser/calendar', [
+        'notifications' => $notifications
+    ]);
 };
 
 $routes['GET']['/students'] = function() {
     $sessionManager = getSessionManager();
     $sessionManager->requireAuth('/auth');
     $sessionManager->requireUserType(['super'], '/auth');
-    return view('superuser/students');
+    
+    // Get notification counts
+    require_once BASE_PATH . '/app/Services/NotificationService.php';
+    $notificationService = new App\Services\NotificationService();
+    $notifications = $notificationService->getNotificationCounts();
+    
+    // Get students data for SSR
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $superuserController = new App\Controllers\SuperuserController();
+    $students = $superuserController->getAllStudents();
+    
+    return view('superuser/students', [
+        'notifications' => $notifications,
+        'students' => $students
+    ]);
 };
 
 
@@ -263,6 +329,11 @@ $routes['GET']['/uploads/calendar/calendar.pdf'] = function() {
 
 // Test API endpoint
 $routes['GET']['/api/test'] = function() {
+    // Clear any potential output buffer to ensure clean JSON response
+    if (ob_get_level()) {
+        ob_clean();
+    }
+    
     header('Content-Type: application/json');
     echo json_encode(['success' => true, 'message' => 'API is working']);
     exit;
@@ -291,6 +362,75 @@ $routes['POST']['/api/deny-request'] = function() {
     require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
     $controller = new App\Controllers\SuperuserController();
     $controller->denyRequestAPI();
+};
+
+// Get user balance API for superusers
+$routes['GET']['/api/user-balance'] = function() {
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->getUserBalanceAPI();
+};
+
+// Get absolute user balance API for superusers (excluding pending)
+$routes['GET']['/api/user-absolute-balance'] = function() {
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->getUserAbsoluteBalanceAPI();
+};
+
+// Get all students API for superusers
+$routes['GET']['/api/students'] = function() {
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->getStudentsAPI();
+};
+
+// Get notification counts API
+$routes['GET']['/api/notifications'] = function() {
+    // Suppress all PHP errors/warnings for this API endpoint
+    error_reporting(0);
+    ini_set('display_errors', 0);
+    
+    // Ensure absolutely no output before JSON
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    
+    try {
+        require_once BASE_PATH . '/app/Controllers/NotificationController.php';
+        $controller = new App\Controllers\NotificationController();
+        $controller->getNotificationCounts();
+    } catch (Exception $e) {
+        error_log("Error in notifications route: " . $e->getMessage());
+        header('Content-Type: application/json; charset=UTF-8');
+        http_response_code(500);
+        echo json_encode(['error' => 'Internal server error', 'success' => false]);
+    }
+    exit; // Ensure absolutely no additional output
+};
+
+// Get student FF balance API
+$routes['GET']['/api/student-balance'] = function() {
+    // Get student ID from query parameter
+    $studentId = $_GET['id'] ?? null;
+    
+    if (!$studentId) {
+        header('Content-Type: application/json');
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Student ID is required']);
+        return;
+    }
+    
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->getStudentBalance($studentId);
+};
+
+// Adjust student FF hours API
+$routes['POST']['/api/adjust-student-ff'] = function() {
+    require_once BASE_PATH . '/app/Controllers/SuperuserController.php';
+    $controller = new App\Controllers\SuperuserController();
+    $controller->adjustStudentFF();
 };
 
 // Return the routes array to be processed by the router

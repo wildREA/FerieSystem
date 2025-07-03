@@ -13,6 +13,7 @@
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+    <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
     <script src="<?= asset('public/js/super/dashboard.js') ?>" defer></script>
     <!-- Hidden input to identify current page -->
     <input type="hidden" id="currentPage" value="requests">
@@ -34,7 +35,9 @@
               <div class="section-header requests-background">
                 <i class="bi bi-file-earmark-text text-danger"></i>
                 <span>Requests</span>
-                <span class="notification-badge"></span>
+                <?php if (isset($notifications['pendingRequests']) && $notifications['pendingRequests'] > 0): ?>
+                <span class="notification-badge"><?= $notifications['pendingRequests'] ?></span>
+                <?php endif; ?>
               </div>
             </a>
           </li>

@@ -456,6 +456,11 @@ class AuthController {
     }
 
     protected function respondWithError($message) {
+        // Clear any potential output buffer to ensure clean JSON response
+        if (ob_get_level()) {
+            ob_clean();
+        }
+        
         header('Content-Type: application/json');
         echo json_encode([
             'success' => false,
@@ -465,6 +470,11 @@ class AuthController {
     }
     
     protected function respondWithSuccess($data) {
+        // Clear any potential output buffer to ensure clean JSON response
+        if (ob_get_level()) {
+            ob_clean();
+        }
+        
         header('Content-Type: application/json');
         echo json_encode(array_merge([
             'success' => true
@@ -485,6 +495,11 @@ class AuthController {
      * Test database connection
      */
     public function testDatabase() {
+        // Clear any potential output buffer to ensure clean JSON response
+        if (ob_get_level()) {
+            ob_clean();
+        }
+        
         header('Content-Type: application/json');
         
         $result = [

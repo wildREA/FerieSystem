@@ -30,6 +30,11 @@ class RegKeysController {
      * API method to get registration key with authentication and JSON response
      */
     public function getKeyAPI() {
+        // Clear any potential output buffer to ensure clean JSON response
+        if (ob_get_level()) {
+            ob_clean();
+        }
+        
         // Set JSON header
         header('Content-Type: application/json');
         
@@ -66,6 +71,11 @@ class RegKeysController {
      * API method to generate registration key with authentication and JSON response
      */
     public function generateKeyAPI() {
+        // Clear any potential output buffer to ensure clean JSON response
+        if (ob_get_level()) {
+            ob_clean();
+        }
+        
         // Set JSON header
         header('Content-Type: application/json');
         

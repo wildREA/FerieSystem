@@ -122,9 +122,9 @@ function getStatusBadgeClass($status) {
                     <?php else: ?>
                         <?php foreach ($requests as $request): 
                             // Calculate total days based on 7.5h Mon-Thu, 6.5h Fri
-                            $start = new DateTime($request['start_datetime']);
-                            $end = new DateTime($request['end_datetime']);
-                            $totalHours = $request['total_hours'];
+                            $start = new DateTime($request['rawStartDate']);
+                            $end = new DateTime($request['rawEndDate']);
+                            $totalHours = $request['totalHours'];
                             $workDays = 0;
                             $remainingHours = $totalHours;
                             $period = new DatePeriod($start, new DateInterval('P1D'), $end->modify('+1 day'));
@@ -150,26 +150,27 @@ function getStatusBadgeClass($status) {
                                     </div>
                                     <div class="status-badge status-<?= $request['status'] ?>"><?= ucfirst($request['status']) ?></div>
                                 </div>
-                                <div class="request-details">
-                                    <div class="detail-row">
-                                        <span class="detail-label">Start:</span>
-                                        <span class="detail-value"><?= formatDateTimeForDisplay($request['start_datetime']) ?></span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <span class="detail-label">End:</span>
-                                        <span class="detail-value"><?= formatDateTimeForDisplay($request['end_datetime']) ?></span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <span class="detail-label">Submitted:</span>
-                                        <span class="detail-value"><?= formatDateForDisplay($request['created_at']) ?></span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <span class="detail-label">Request ID:</span>
-                                        <span class="detail-value"><?= str_pad($request['id'], 3, '0', STR_PAD_LEFT) ?></span>
-                                    </div>
+                                <div class="request-summary">
+                                    <?php 
+                                    $requestDays = $request['days'] ?? 0;
+                                    $ffCost = $request['ffCost'] ?? 0;
+                                    $timePeriod = $request['timePeriod'] ?? 'N/A';
+                                    ?>
+                                    <p><strong>FF (<?= htmlspecialchars($requestDays) ?> days)</strong></p>
+                                    <p>Cost: <?= htmlspecialchars($ffCost) ?> hours</p>
+                                    <p>Time Period: <?= htmlspecialchars($timePeriod) ?></p>
                                 </div>
-                                <div class="request-reason">
-                                    <strong>Reason:</strong> <?= !empty($request['reason']) ? htmlspecialchars($request['reason']) : 'No reason provided' ?>
+                                <div class="request-details">
+                                    <div class="request-info">
+                                        <p><strong>Start:</strong> <?= htmlspecialchars($request['startDate'] ?? 'N/A') ?></p>
+                                        <p><strong>End:</strong> <?= htmlspecialchars($request['endDate'] ?? 'N/A') ?></p>
+                                        <p><strong>Submitted:</strong> <?= htmlspecialchars($request['requestSubmitted'] ?? 'N/A') ?></p>
+                                        <p><strong>Request ID:</strong> #<?= str_pad($request['requestId'] ?? 0, 6, '0', STR_PAD_LEFT) ?></p>
+                                    </div>
+                                    <div class="request-reason">
+                                        <p><strong>Reason:</strong></p>
+                                        <p><?= htmlspecialchars($request['reason'] ?? 'No reason provided') ?></p>
+                                    </div>
                                 </div>
                                 <?php if ($request['status'] === 'denied'): ?>
                                     <div class="alert alert-danger mt-2">
@@ -203,5 +204,6 @@ function getStatusBadgeClass($status) {
             });
         });
     </script>
+    <script src="<?= asset('public/js/components/NotificationManager.js') ?>"></script>
 </body>
 </html>

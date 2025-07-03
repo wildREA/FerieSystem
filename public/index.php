@@ -1,4 +1,14 @@
 <?php
+
+// Production environment settings
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+// Optionally, set a log file path
+// ini_set('error_log', 'path/to/your/php-error.log');
+
+// Start session
+session_start();
+
 // Define the application base path
 define('BASE_PATH', dirname(__DIR__));
 
@@ -10,7 +20,6 @@ $config = require_once BASE_PATH . '/config/config.php';
 
 // Initialize autoloader
 require_once BASE_PATH . '/app/Core/autoload.php';
-
 // Simple router
 class Router
 {
@@ -125,6 +134,11 @@ class Router
         
         // For API routes, return JSON error
         if (strpos($uri, '/api/') === 0) {
+            // Clear any potential output buffer to ensure clean JSON response
+            if (ob_get_level()) {
+                ob_clean();
+            }
+            
             header('Content-Type: application/json');
             echo json_encode(['error' => 'API endpoint not found']);
             return null;

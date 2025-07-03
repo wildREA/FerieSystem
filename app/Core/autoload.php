@@ -35,9 +35,13 @@ if (!defined('BASE_PATH')) {
 
 // Initialize database (for development - ensures tables exist and test data is available)
 // Note: In production, this should be moved to a proper migration/setup system
-try {
-    require_once dirname(__DIR__, 2) . '/database/init.php';
-} catch (Exception $e) {
-    // Log the error but don't stop execution
-    error_log("Database initialization failed: " . $e->getMessage());
+// Skip database initialization for API requests to avoid output interference
+$isApiRequest = isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/api/') !== false;
+if (!$isApiRequest) {
+    try {
+        require_once dirname(__DIR__, 2) . '/database/init.php';
+    } catch (Exception $e) {
+        // Log the error but don't stop execution
+        error_log("Database initialization failed: " . $e->getMessage());
+    }
 }

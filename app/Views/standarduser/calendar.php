@@ -35,7 +35,9 @@
               <div class="section-header requests-background">
                 <i class="bi bi-file-earmark-text text-danger"></i>
                 <span>Requests</span>
-                <span class="notification-badge"></span>
+                <?php if (isset($notifications['pendingRequests']) && $notifications['pendingRequests'] > 0): ?>
+                <span class="notification-badge"><?= $notifications['pendingRequests'] ?></span>
+                <?php endif; ?>
               </div>
             </a>
           </li>
