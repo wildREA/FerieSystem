@@ -909,11 +909,9 @@ class SuperuserController {
             
             // Get transaction history
             $stmt = $this->db->prepare("
-                SELECT date, description, amount, type, created_at 
-                FROM transactions 
-                WHERE user_id = ? 
-                ORDER BY date DESC, created_at DESC 
-                LIMIT 50
+                SELECT date, description, amount, type, status
+                FROM transactions
+                WHERE user_id = ?
             ");
             $stmt->execute([$studentId]);
             $transactions = $stmt->fetchAll(\PDO::FETCH_ASSOC);

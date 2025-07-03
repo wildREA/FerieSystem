@@ -799,7 +799,9 @@ function createTransactionHistoryModalHTML(transactions, studentName) {
     let transactionRows = '';
     
     if (transactions && transactions.length > 0) {
-        transactionRows = transactions.map(transaction => `
+        // Reverse the order to show most recent transactions first
+        const reversedTransactions = [...transactions].reverse();
+        transactionRows = reversedTransactions.map(transaction => `
             <div class="transaction-item d-flex justify-content-between align-items-center py-3 border-bottom">
                 <div class="transaction-info">
                     <div class="transaction-date small text-muted">${formatDate(transaction.date)}</div>
