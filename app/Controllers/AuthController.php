@@ -3,8 +3,19 @@ namespace App\Controllers;
 
 require_once dirname(__DIR__) . '/Core/sessions.php';
 require_once dirname(__DIR__) . '/Helpers/UrlHelper.php';
+require_once dirname(__DIR__) . '/Helpers/DatabaseHelper.php';
+require_once dirname(__DIR__) . '/Helpers/ResponseHelper.php';
+
+use PDO;
+use PDOException;
+use Exception;
+use App\Helpers\DatabaseHelper;
+use App\Helpers\ResponseHelper;
 
 class AuthController {
+    use DatabaseHelper;
+    use ResponseHelper;
+    
     private $sessionManager;
     private $db;
     
@@ -67,7 +78,12 @@ class AuthController {
         }
     }
 
-    public function logout() {
+    /**
+     * Handle user logout and clean up session data
+     * 
+     * @return never Exits script execution after sending response
+     */
+    public function logout(): never {
         try {
             $userId = $this->sessionManager->getUserId();
             
@@ -77,24 +93,13 @@ class AuthController {
             $this->deleteRememberMeTokens($userId);
             
             // Return JSON response for client-side handling
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => true,
+            $this->respondWithSuccess([
                 'message' => 'Logout successful',
                 'action' => 'refresh'
             ]);
-            exit;
         } catch (Exception $e) {
             error_log("Logout failed: " . $e->getMessage());
-            
-            // Return error response
-            header('Content-Type: application/json');
-            http_response_code(500);
-            echo json_encode([
-                'success' => false,
-                'message' => 'An error occurred during logout'
-            ]);
-            exit;
+            $this->respondWithError('An error occurred during logout', 500);
         }
     }
 
@@ -104,32 +109,24 @@ class AuthController {
      * @param int $userId The ID of the user whose tokens should be deleted
      * @return bool True on success, false on failure
      */
-    private function deleteRememberMeTokens($userId) {
+    private function deleteRememberMeTokens(int $userId): bool {
         if (!$userId) {
             error_log("deleteRememberMeTokens: No user ID provided");
             return false;
         }
         
-        if (!$this->db) {
-            error_log("deleteRememberMeTokens: No database connection available");
-            return false;
+        $result = $this->dbExecute(
+            "DELETE FROM remember_tokens WHERE user_id = ?",
+            [$userId],
+            "deleteRememberMeTokens"
+        );
+        
+        if ($result !== false) {
+            error_log("deleteRememberMeTokens: Successfully deleted tokens for user ID: $userId");
+            return true;
         }
         
-        try {
-            $stmt = $this->db->prepare("DELETE FROM remember_tokens WHERE user_id = ?");
-            $result = $stmt->execute([$userId]);
-            
-            if ($result) {
-                error_log("deleteRememberMeTokens: Successfully deleted tokens for user ID: $userId");
-                return true;
-            } else {
-                error_log("deleteRememberMeTokens: Failed to delete tokens for user ID: $userId");
-                return false;
-            }
-        } catch (PDOException $e) {
-            error_log("deleteRememberMeTokens: Database error: " . $e->getMessage());
-            return false;
-        }
+        return false;
     }
 
     public function register() {
@@ -324,35 +321,20 @@ class AuthController {
      * @param string $password User password
      * @return array|false User data if valid, false otherwise
      */
-    protected function verifyCredentials($emailOrUsername, $password) {
-        if (!$this->db) {
-            error_log("verifyCredentials: No database connection available");
+    protected function verifyCredentials(string $emailOrUsername, string $password): false|array {
+        $user = $this->dbQuery(
+            "SELECT id, name, email, username, password, user_type
+             FROM users 
+             WHERE email = ? OR username = ?",
+            [$emailOrUsername, $emailOrUsername],
+            "verifyCredentials"
+        );
+        
+        if (!$user || !password_verify($password, $user['password'])) {
             return false;
         }
         
-        try {
-            $stmt = $this->db->prepare("
-                SELECT id, name, email, username, password, user_type
-                FROM users 
-                WHERE email = ? OR username = ?
-            ");
-            
-            $stmt->execute([$emailOrUsername, $emailOrUsername]);
-            $user = $stmt->fetch();
-            
-            if (!$user) {
-                return false;
-            }
-            
-            if (!password_verify($password, $user['password'])) {
-                return false;
-            }
-            
-            return $user;
-        } catch (PDOException $e) {
-            error_log("Database error in verifyCredentials: " . $e->getMessage());
-            return false;
-        }
+        return $user;
     }
     
     protected function validateRegistration($name, $username, $email, $password, $confirmPassword, $registrationKey) {
@@ -415,140 +397,131 @@ class AuthController {
         return true;
     }
     
-    protected function userExists($email, $username = null) {
-        if (!$this->db) {
-            return false;
-        }
-        
-        try {
-            if ($username !== null) {
-                $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
-                $stmt->execute([$email, $username]);
-            } else {
-                $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ?");
-                $stmt->execute([$email]);
-            }
-            return $stmt->fetch() !== false;
-        } catch (PDOException $e) {
-            error_log("Database error in userExists: " . $e->getMessage());
-            return false;
-        }
-    }
-    
-    protected function createUser($name, $username, $email, $password) {
-        if (!$this->db) {
-            throw new Exception("No database connection available");
-        }
-        
-        try {
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            
-            $stmt = $this->db->prepare("
-                INSERT INTO users (name, username, email, password, user_type) 
-                VALUES (?, ?, ?, ?, 'standard')
-            ");
-            
-            $result = $stmt->execute([$name, $username, $email, $hashedPassword]);
-            if ($result) {
-                $userId = $this->db->lastInsertId();
-                error_log("createUser: Successfully created user with ID: $userId");
-                return $userId;
-            } else {
-                throw new Exception("Failed to execute INSERT statement");
-            }
-        } catch (PDOException $e) {
-            error_log("createUser: Database error: " . $e->getMessage());
-            throw new Exception("Database error: " . $e->getMessage());
-        }
-    }
-    
-    protected function createSuperUserAccount($name, $username, $email, $password) {
-        if (!$this->db) {
-            throw new Exception("No database connection available");
-        }
-        
-        try {
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            
-            $stmt = $this->db->prepare("
-                INSERT INTO users (name, username, email, password, user_type) 
-                VALUES (?, ?, ?, ?, 'super')
-            ");
-            
-            $result = $stmt->execute([$name, $username, $email, $hashedPassword]);
-            if ($result) {
-                $userId = $this->db->lastInsertId();
-                error_log("createSuperUserAccount: Successfully created super user with ID: $userId");
-                return $userId;
-            } else {
-                throw new Exception("Failed to execute INSERT statement");
-            }
-        } catch (PDOException $e) {
-            error_log("createSuperUserAccount: Database error: " . $e->getMessage());
-            throw new Exception("Database error: " . $e->getMessage());
-        }
-    }
-    
-    protected function handleLoginError($message, $contentType) {
-        if ($contentType === 'application/json') {
-            return $this->respondWithError($message);
+    /**
+     * Check if a user with the given email or username exists
+     * 
+     * @param string $email User email
+     * @param string|null $username User username (optional)
+     * @return bool True if user exists, false otherwise
+     */
+    protected function userExists(string $email, ?string $username = null): bool {
+        if ($username !== null) {
+            $result = $this->dbQuery(
+                "SELECT id FROM users WHERE email = ? OR username = ?",
+                [$email, $username],
+                "userExists"
+            );
         } else {
-            return $this->renderLogin(['error' => $message]);
+            $result = $this->dbQuery(
+                "SELECT id FROM users WHERE email = ?",
+                [$email],
+                "userExists"
+            );
         }
+        
+        return $result !== false;
     }
     
-    protected function handleRegisterError($message, $contentType) {
+    /**
+     * Create a new standard user account
+     * 
+     * @param string $name User's full name
+     * @param string $username User's username
+     * @param string $email User's email
+     * @param string $password User's password (will be hashed)
+     * @return int|false User ID on success, false on failure
+     * @throws Exception If database operation fails
+     */
+    protected function createUser(string $name, string $username, string $email, string $password): int|false {
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        
+        $userId = $this->dbExecute(
+            "INSERT INTO users (name, username, email, password, user_type) 
+             VALUES (?, ?, ?, ?, 'standard')",
+            [$name, $username, $email, $hashedPassword],
+            "createUser"
+        );
+        
+        if ($userId !== false) {
+            error_log("createUser: Successfully created user with ID: $userId");
+            return $userId;
+        }
+        
+        throw new Exception("Failed to create user account");
+    }
+    
+    /**
+     * Create a new super user account
+     * 
+     * @param string $name User's full name
+     * @param string $username User's username
+     * @param string $email User's email
+     * @param string $password User's password (will be hashed)
+     * @return int|false User ID on success, false on failure
+     * @throws Exception If database operation fails
+     */
+    protected function createSuperUserAccount(string $name, string $username, string $email, string $password): int|false {
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        
+        $userId = $this->dbExecute(
+            "INSERT INTO users (name, username, email, password, user_type) 
+             VALUES (?, ?, ?, ?, 'super')",
+            [$name, $username, $email, $hashedPassword],
+            "createSuperUserAccount"
+        );
+        
+        if ($userId !== false) {
+            error_log("createSuperUserAccount: Successfully created super user with ID: $userId");
+            return $userId;
+        }
+        
+        throw new Exception("Failed to create super user account");
+    }
+    
+    /**
+     * Handle login errors based on content type
+     * 
+     * @param string $message Error message
+     * @param string $contentType Request content type
+     * @return never Exits script execution
+     */
+    protected function handleLoginError(string $message, string $contentType): never {
         if ($contentType === 'application/json') {
-            return $this->respondWithError($message);
+            $this->respondWithError($message);
         } else {
-            $_SESSION['register_error'] = $message;
-            redirect('/auth');
+            $_SESSION['login_error'] = $message;
+            $this->redirectWithMessage('/auth', null);
         }
     }
     
-    protected function handleSuperUserError($message, $contentType) {
+    /**
+     * Handle registration errors based on content type
+     * 
+     * @param string $message Error message
+     * @param string $contentType Request content type
+     * @return never Exits script execution
+     */
+    protected function handleRegisterError(string $message, string $contentType): never {
         if ($contentType === 'application/json') {
-            return $this->respondWithError($message);
+            $this->respondWithError($message);
         } else {
-            $_SESSION['error_message'] = $message;
-            redirect('/create-superuser');
+            $this->redirectWithMessage('/auth', $message, 'error');
         }
-    }
-
-    protected function respondWithError($message) {
-        // Clear any potential output buffer to ensure clean JSON response
-        if (ob_get_level()) {
-            ob_clean();
-        }
-        
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $message
-        ]);
-        exit;
     }
     
-    protected function respondWithSuccess($data) {
-        // Clear any potential output buffer to ensure clean JSON response
-        if (ob_get_level()) {
-            ob_clean();
+    /**
+     * Handle superuser creation errors based on content type
+     * 
+     * @param string $message Error message
+     * @param string $contentType Request content type
+     * @return never Exits script execution
+     */
+    protected function handleSuperUserError(string $message, string $contentType): never {
+        if ($contentType === 'application/json') {
+            $this->respondWithError($message);
+        } else {
+            $this->redirectWithMessage('/create-superuser', $message, 'error');
         }
-        
-        header('Content-Type: application/json');
-        echo json_encode(array_merge([
-            'success' => true
-        ], $data));
-        exit;
-    }
-    
-    protected function renderLogin($data = []) {
-        if (isset($data['error'])) {
-            $_SESSION['login_error'] = $data['error'];
-        }
-        
-        header('Location: /auth');
-        exit;
     }
 
     /**
@@ -588,32 +561,31 @@ class AuthController {
         return null;
     }
 
-    private function getStandardSecret() {
-        if (!$this->db) {
-            error_log('getStandardSecret: No database connection available');
-            return null;
-        }
-
-        try {
-            $stmt = $this->db->query("SELECT key_value FROM reg_keys ORDER BY created_at DESC LIMIT 1");
-            $result = $stmt->fetch();
+    /**
+     * Get the standard registration key from database
+     * 
+     * @return string|null The standard registration key if valid, null otherwise
+     */
+    private function getStandardSecret(): ?string {
+        $result = $this->dbQuery(
+            "SELECT key_value FROM reg_keys ORDER BY created_at DESC LIMIT 1",
+            [],
+            "getStandardSecret"
+        );
+        
+        if ($result && !empty($result['key_value'])) {
+            $key = strtoupper($result['key_value']);
             
-            if ($result && !empty($result['key_value'])) {
-                $key = strtoupper($result['key_value']);
-                if (strlen($key) === 8) {
-                    return $key;
-                } else {
-                    error_log("getStandardSecret: Key length is not 8 characters: " . $key);
-                    return null;
-                }
+            if (strlen($key) === 8) {
+                return $key;
             } else {
-                error_log("getStandardSecret: No registration key found in database");
-                return null;
+                error_log("getStandardSecret: Key length is not 8 characters: " . $key);
             }
-        } catch (PDOException $e) {
-            error_log("getStandardSecret: Database error: " . $e->getMessage());
-            return null;
+        } else {
+            error_log("getStandardSecret: No registration key found in database");
         }
+        
+        return null;
     }
 
     /**
@@ -621,31 +593,19 @@ class AuthController {
      * 
      * @return string|null The current user's username or null if not found
      */
-    protected function getCurrentUserUsername() {
+    protected function getCurrentUserUsername(): ?string {
         // Check if user is logged in
         if (!isset($_SESSION['user_id'])) {
             return null;
         }
         
-        if (!$this->db) {
-            error_log("getCurrentUserUsername: No database connection available");
-            return null;
-        }
+        $result = $this->dbQuery(
+            "SELECT username FROM users WHERE id = ?",
+            [$_SESSION['user_id']],
+            "getCurrentUserUsername"
+        );
         
-        try {
-            $stmt = $this->db->prepare("SELECT username FROM users WHERE id = ?");
-            $stmt->execute([$_SESSION['user_id']]);
-            $result = $stmt->fetch();
-            
-            if ($result && isset($result['username'])) {
-                return $result['username'];
-            }
-            
-            return null;
-        } catch (PDOException $e) {
-            error_log("Database error in getCurrentUserUsername: " . $e->getMessage());
-            return null;
-        }
+        return $result['username'] ?? null;
     }
 
     /**
