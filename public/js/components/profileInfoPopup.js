@@ -181,7 +181,9 @@ function logout() {
     // Close the profile modal first
     closeProfileModal();
     
-    // Call the logout API
+    // Call the logout API which handles:
+    // - PHP session cookie destruction
+    // - Removal of all remember me tokens for the user from database by user id
     fetch('/api/logout', {
         method: 'POST',
         headers: {

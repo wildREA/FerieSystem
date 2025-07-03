@@ -270,13 +270,6 @@ $routes['POST']['/api/verify-key'] = function() {
     return $auth->verifyRegistrationKey();
 };
 
-// Simple test API endpoint
-$routes['GET']['/api/test'] = function() {
-    header('Content-Type: application/json');
-    echo json_encode(['status' => 'ok', 'message' => 'API is working']);
-    exit;
-};
-
 // API Auth Status Check route - for client-side authentication verification
 $routes['GET']['/api/auth-status'] = function() {
     header('Content-Type: application/json');

@@ -69,9 +69,26 @@ class AuthController {
 
     public function logout() {
         $this->sessionManager->logout();
+        session_destroy();
+        deleteRememberMeTokens($this->sessionManager->getUserId());
         redirect('/auth');
     }
-    
+
+    private function deleteRememberMeTokens($userId) {
+        if (!$this->db) {
+            error_log("deleteRememberMeTokens: No database connection available");
+            return;
+        }
+        
+        try {
+            $stmt = $this->db->prepare("DELETE FROM remember_tokens WHERE user_id = ?");
+            $stmt->execute([$userId]);
+            error_log("deleteRememberMeTokens: Successfully deleted tokens for user ID: $userId");
+        } catch (PDOException $e) {
+            error_log("deleteRememberMeTokens: Database error: " . $e->getMessage());
+        }
+    }
+
     public function register() {
         // Verify that a standard key was properly verified in the session
         if (!isset($_SESSION['verified_standard_key'])) {
@@ -687,8 +704,8 @@ class AuthController {
         header('Content-Type: application/json');
         
         try {
-            // Clear the session
-            $this->sessionManager->clearSession();
+            // Clear the session and remember me tokens
+            $this->sessionManager->logout();
             
             $response = [
                 'success' => true,
