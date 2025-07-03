@@ -134,5 +134,156 @@
         </div>
       </div>
     </div>
+
+    <!-- FF Hours Adjustment Modal -->
+    <div class="ff-hours-modal" id="ffHoursModal" style="display: none;">
+        <div class="modal-content">
+            <!-- Question mark icon -->
+            <div class="modal-icon">
+                <div class="question-circle">?</div>
+            </div>
+            
+            <!-- Title -->
+            <h2 class="modal-title">Adjust FF Hours</h2>
+            
+            <!-- Message -->
+            <p class="modal-message">Are you sure you want to modify FF hours for this student?</p>
+            
+            <!-- Reason input field -->
+            <div class="reason-field">
+                <label for="ffReason">Reason:</label>
+                <input type="text" id="ffReason" placeholder="Enter reason for adjustment..." required>
+            </div>
+            
+            <!-- Action buttons -->
+            <div class="modal-buttons">
+                <button class="btn-confirm" onclick="confirmFFAdjustment()">
+                    <span class="icon">✓</span>
+                    Yes, adjust it!
+                </button>
+                <button class="btn-cancel" onclick="closeFFModal()">
+                    <span class="icon">✕</span>
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        /* FF Hours Modal Styles */
+        .ff-hours-modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .ff-hours-modal .modal-content {
+            background-color: #2c3e50;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            text-align: center;
+            color: white;
+        }
+
+        .modal-icon .question-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #5dade2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 28px;
+            color: #5dade2;
+            font-weight: bold;
+        }
+
+        .ff-hours-modal .modal-title {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .ff-hours-modal .modal-message {
+            color: #bdc3c7;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .reason-field {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .reason-field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ecf0f1;
+            font-weight: 500;
+        }
+
+        .reason-field input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #34495e;
+            border-radius: 5px;
+            background-color: #34495e;
+            color: white;
+            font-size: 14px;
+        }
+
+        .reason-field input::placeholder {
+            color: #95a5a6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .btn-confirm {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-cancel {
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-confirm:hover {
+            background-color: #229954;
+        }
+
+        .btn-cancel:hover {
+            background-color: #6c7b7d;
+        }
+    </style>
   </body>
 </html>

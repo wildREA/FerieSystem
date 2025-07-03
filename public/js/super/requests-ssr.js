@@ -330,22 +330,36 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
         
+        // Get the actual total hours from the database (stored as data attribute)
+        const totalHours = parseFloat(requestCard.getAttribute('data-total-hours')) || 0;
         const numDays = parseInt(days) || 0;
-        const ffCost = numDays * 8;
+        const ffCost = totalHours; // Use actual hours from database, not numDays * 8
         
         let timePeriod = 'N/A';
-        let startTime = '09:00', endTime = '17:00';
+        let startTime = '08:00', endTime = '17:00';
+        let startDateOnly = startDate, endDateOnly = endDate;
         
         if (startDate !== 'N/A' && endDate !== 'N/A') {
             try {
-                const start = new Date(startDate);
-                const end = new Date(endDate);
+                // Extract time from date strings like "Jul 7, 2025 at 08:00"
+                const startTimeMatch = startDate.match(/at (\d{2}:\d{2})/);
+                const endTimeMatch = endDate.match(/at (\d{2}:\d{2})/);
+                
+                if (startTimeMatch) {
+                    startTime = startTimeMatch[1];
+                    startDateOnly = startDate.split(' at ')[0]; // Get just the date part
+                }
+                if (endTimeMatch) {
+                    endTime = endTimeMatch[1];
+                    endDateOnly = endDate.split(' at ')[0]; // Get just the date part
+                }
+                
+                // Calculate date difference for calendar days
+                const start = new Date(startDateOnly);
+                const end = new Date(endDateOnly);
                 const diffTime = Math.abs(end - start);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
                 timePeriod = `${diffDays} calendar days`;
-                
-                startTime = '09:00 AM';
-                endTime = '17:00 PM';
             } catch (e) {
                 timePeriod = 'Unable to calculate';
             }
@@ -371,16 +385,17 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
         
-        console.log('Extracted data:', { requestId, studentName, status, reason, startDate, endDate, days: numDays, ffCost, timePeriod, requestSubmitted, startTime, endTime, userId });
+        console.log('Extracted data:', { requestId, studentName, status, reason, startDate: startDateOnly, endDate: endDateOnly, days: numDays, totalHours, ffCost, timePeriod, requestSubmitted, startTime, endTime, userId });
         
         createDetailModal({
             requestId,
             studentName,
             status,
             reason,
-            startDate,
-            endDate,
+            startDate: startDateOnly,
+            endDate: endDateOnly,
             days: numDays,
+            totalHours,
             ffCost,
             timePeriod,
             requestSubmitted,
@@ -573,7 +588,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-bold d-block" style="color: #a0a7b5;">FF Cost</label>
                                                     <h6 style="color: #ffc107; margin-bottom: 2px;">${data.ffCost} FF</h6>
-                                                    <small style="color: #a0a7b5;">(${data.days} × 8 FF/day)</small>
+                                                    <small style="color: #a0a7b5;">(${data.totalHours} working hours)</small>
                                                 </div>
                                             </div>
                                         </div>

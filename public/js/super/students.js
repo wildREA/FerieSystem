@@ -462,6 +462,7 @@ window.loadStudentFFBalance = function(studentId) {
 };
 
 window.adjustStudentFF = function(studentId, action) {
+    closeStudentModal(); 
     const hoursInput = document.getElementById('ffHoursInput');
     const hours = parseInt(hoursInput.value);
     
@@ -470,12 +471,54 @@ window.adjustStudentFF = function(studentId, action) {
         return;
     }
     
-    const actionText = action === 'add' ? 'add' : 'remove';
-    const confirmMessage = `Are you sure you want to ${actionText} ${hours} hours ${action === 'add' ? 'to' : 'from'} this student's FF balance?`;
+    // Show the FF hours modal instead of confirm dialog
+    showFFModal(studentId, action, hours);
+};
+
+// Global functions for FF Hours modal
+window.showFFModal = function(studentId, action, hours) {
+    const modal = document.getElementById('ffHoursModal');
+    const title = document.querySelector('.ff-hours-modal .modal-title');
+    const message = document.querySelector('.ff-hours-modal .modal-message');
     
-    if (!confirm(confirmMessage)) {
+    // Update content based on add/remove action
+    if (action === 'add') {
+        title.textContent = 'Add FF Hours';
+        message.textContent = `Are you sure you want to add ${hours} hours to this student's FF balance?`;
+    } else {
+        title.textContent = 'Remove FF Hours';
+        message.textContent = `Are you sure you want to remove ${hours} hours from this student's FF balance?`;
+    }
+    
+    modal.style.display = 'block';
+    modal.dataset.studentId = studentId;
+    modal.dataset.action = action;
+    modal.dataset.hours = hours;
+    
+    // Focus on the reason input
+    document.getElementById('ffReason').focus();
+};
+
+window.closeFFModal = function() {
+    const modal = document.getElementById('ffHoursModal');
+    modal.style.display = 'none';
+    document.getElementById('ffReason').value = '';
+};
+
+window.confirmFFAdjustment = function() {
+    const modal = document.getElementById('ffHoursModal');
+    const reason = document.getElementById('ffReason').value.trim();
+    const studentId = modal.dataset.studentId;
+    const action = modal.dataset.action;
+    const hours = parseInt(modal.dataset.hours);
+    
+    if (!reason) {
+        showToast('Please provide a reason for the adjustment.', 'error');
         return;
     }
+    
+    // Close modal
+    closeFFModal();
     
     // Show loading state
     const addBtn = document.querySelector('button[onclick*="add"]');
@@ -491,7 +534,8 @@ window.adjustStudentFF = function(studentId, action) {
         body: JSON.stringify({
             student_id: studentId,
             action: action,
-            hours: hours
+            hours: hours,
+            reason: reason
         })
     })
     .then(response => response.json())
@@ -501,9 +545,10 @@ window.adjustStudentFF = function(studentId, action) {
             // Refresh the balance display
             window.loadStudentFFBalance(studentId);
             // Clear the input
-            hoursInput.value = '';
+            const hoursInput = document.getElementById('ffHoursInput');
+            if (hoursInput) hoursInput.value = '';
         } else {
-            showToast(data.message || `Failed to ${actionText} hours`, 'error');
+            showToast(data.message || `Failed to ${action === 'add' ? 'add' : 'remove'} hours`, 'error');
         }
     })
     .catch(error => {
@@ -515,6 +560,189 @@ window.adjustStudentFF = function(studentId, action) {
         if (addBtn) addBtn.disabled = false;
         if (removeBtn) removeBtn.disabled = false;
     });
+};
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('ffHoursModal');
+    if (event.target === modal) {
+        closeFFModal();
+    }
+});
+
+// Close modal with Escape key
+window.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('ffHoursModal');
+        if (modal.style.display === 'block') {
+            closeFFModal();
+        }
+    }
+});
+
+// Global functions for student modal
+window.closeStudentModal = function() {
+    if (window.currentStudentModal) {
+        document.body.removeChild(window.currentStudentModal);
+        window.currentStudentModal = null;
+    }
+    if (window.currentStudentModalBackdrop) {
+        document.body.removeChild(window.currentStudentModalBackdrop);
+        window.currentStudentModalBackdrop = null;
+    }
+};
+
+window.loadStudentFFBalance = function(studentId) {
+    fetch(`/api/student-balance?id=${studentId}`)
+        .then(response => response.json())
+        .then(data => {
+            const balanceElement = document.getElementById('studentFFBalance');
+            if (balanceElement) {
+                if (data.success) {
+                    balanceElement.innerHTML = `${data.balance} hours`;
+                } else {
+                    balanceElement.innerHTML = `<span class="text-warning">Error loading balance</span>`;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading student balance:', error);
+            const balanceElement = document.getElementById('studentFFBalance');
+            if (balanceElement) {
+                balanceElement.innerHTML = `<span class="text-danger">Failed to load</span>`;
+            }
+        });
+};
+
+window.adjustStudentFF = function(studentId, action) {
+    const hoursInput = document.getElementById('ffHoursInput');
+    const hours = parseInt(hoursInput.value);
+    
+    if (!hours || hours <= 0) {
+        showToast('Please enter a valid number of hours', 'error');
+        return;
+    }
+
+    window.closeStudentModal();
+    // Show the FF hours modal instead of confirm dialog
+    showFFModal(studentId, action, hours);
+};
+
+// Global functions for FF Hours modal
+window.showFFModal = function(studentId, action, hours) {
+    const modal = document.getElementById('ffHoursModal');
+    const title = document.querySelector('.ff-hours-modal .modal-title');
+    const message = document.querySelector('.ff-hours-modal .modal-message');
+    
+    // Update content based on add/remove action
+    if (action === 'add') {
+        title.textContent = 'Add FF Hours';
+        message.textContent = `Are you sure you want to add ${hours} hours to this student's FF balance?`;
+    } else {
+        title.textContent = 'Remove FF Hours';
+        message.textContent = `Are you sure you want to remove ${hours} hours from this student's FF balance?`;
+    }
+    
+    modal.style.display = 'block';
+    modal.dataset.studentId = studentId;
+    modal.dataset.action = action;
+    modal.dataset.hours = hours;
+    
+    // Focus on the reason input
+    document.getElementById('ffReason').focus();
+};
+
+window.closeFFModal = function() {
+    const modal = document.getElementById('ffHoursModal');
+    modal.style.display = 'none';
+    document.getElementById('ffReason').value = '';
+};
+
+window.confirmFFAdjustment = function() {
+    const modal = document.getElementById('ffHoursModal');
+    const reason = document.getElementById('ffReason').value.trim();
+    const studentId = modal.dataset.studentId;
+    const action = modal.dataset.action;
+    const hours = parseInt(modal.dataset.hours);
+    
+    if (!reason) {
+        showToast('Please provide a reason for the adjustment.', 'error');
+        return;
+    }
+    
+    // Close modal
+    closeFFModal();
+    
+    // Show loading state
+    const addBtn = document.querySelector('button[onclick*="add"]');
+    const removeBtn = document.querySelector('button[onclick*="subtract"]');
+    if (addBtn) addBtn.disabled = true;
+    if (removeBtn) removeBtn.disabled = true;
+    
+    fetch('/api/adjust-student-ff', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            student_id: studentId,
+            action: action,
+            hours: hours,
+            reason: reason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`Successfully ${action === 'add' ? 'added' : 'removed'} ${hours} hours`, 'success');
+            // Refresh the balance display
+            window.loadStudentFFBalance(studentId);
+            // Clear the input
+            const hoursInput = document.getElementById('ffHoursInput');
+            if (hoursInput) hoursInput.value = '';
+        } else {
+            showToast(data.message || `Failed to ${action === 'add' ? 'add' : 'remove'} hours`, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error adjusting FF hours:', error);
+        showToast(`Error ${action === 'add' ? 'adding' : 'removing'} hours`, 'error');
+    })
+    .finally(() => {
+        // Reset button states
+        if (addBtn) addBtn.disabled = false;
+        if (removeBtn) removeBtn.disabled = false;
+    });
+};
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('ffHoursModal');
+    if (event.target === modal) {
+        closeFFModal();
+    }
+});
+
+// Close modal with Escape key
+window.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('ffHoursModal');
+        if (modal.style.display === 'block') {
+            closeFFModal();
+        }
+    }
+});
+
+// Global functions for student modal
+window.closeStudentModal = function() {
+    if (window.currentStudentModal) {
+        document.body.removeChild(window.currentStudentModal);
+        window.currentStudentModal = null;
+    }
+    if (window.currentStudentModalBackdrop) {
+        document.body.removeChild(window.currentStudentModalBackdrop);
+        window.currentStudentModalBackdrop = null;
+    }
 };
 
 window.viewStudentRequests = function(studentId) {
@@ -530,29 +758,102 @@ window.sendStudentMessage = function(studentId) {
 };
 
 window.viewStudentHistory = function(studentId) {
-    showToast('History functionality not implemented yet', 'info');
-    // TODO: Implement student history functionality
-};
-
-// Copy to clipboard function (if not already defined)
-window.copyToClipboard = function(text) {
-    navigator.clipboard.writeText(text).then(function() {
-        showToast('Copied to clipboard: ' + text, 'success');
-    }).catch(function(err) {
-        console.error('Could not copy text: ', err);
-        showToast('Failed to copy to clipboard', 'error');
+    showToast('Loading transaction history...', 'info');
+    
+    // Fetch student transaction history
+    fetch(`/api/student-transactions?id=${studentId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showTransactionHistoryModal(data.transactions, data.student_name);
+        } else {
+            showToast('Could not load transaction history', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading transaction history:', error);
+        showToast('Error loading transaction history', 'error');
     });
 };
 
-// Close modal when clicking outside or pressing escape
-document.addEventListener('click', function(event) {
-    if (event.target.classList.contains('modal-backdrop')) {
-        closeStudentModal();
-    }
-});
+function showTransactionHistoryModal(transactions, studentName) {
+    const modalBackdrop = document.createElement("div");
+    modalBackdrop.className = "modal-backdrop fade show";
+    modalBackdrop.style.zIndex = "1040";
 
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape' && window.currentStudentModal) {
-        closeStudentModal();
+    const modal = document.createElement("div");
+    modal.className = "modal fade show";
+    modal.style.display = "block";
+    modal.style.zIndex = "1050";
+    modal.innerHTML = createTransactionHistoryModalHTML(transactions, studentName);
+
+    document.body.appendChild(modalBackdrop);
+    document.body.appendChild(modal);
+
+    // Store references for cleanup
+    window.currentTransactionModal = modal;
+    window.currentTransactionModalBackdrop = modalBackdrop;
+}
+
+function createTransactionHistoryModalHTML(transactions, studentName) {
+    let transactionRows = '';
+    
+    if (transactions && transactions.length > 0) {
+        // Reverse the order to show most recent transactions first
+        const reversedTransactions = [...transactions].reverse();
+        transactionRows = reversedTransactions.map(transaction => `
+            <div class="transaction-item d-flex justify-content-between align-items-center py-3 border-bottom">
+                <div class="transaction-info">
+                    <div class="transaction-date small text-muted">${formatDate(transaction.date)}</div>
+                    <div class="transaction-description">${escapeHtml(transaction.description)}</div>
+                </div>
+                <div class="transaction-amount ${transaction.amount > 0 ? 'text-success' : 'text-danger'}">
+                    ${transaction.amount > 0 ? '+' : ''}${transaction.amount}ff
+                </div>
+            </div>
+        `).join('');
+    } else {
+        transactionRows = '<div class="text-muted text-center py-4">No transactions found</div>';
     }
-});
+
+    return `
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background-color: #232838;">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clock-history me-2"></i>Transaction History - ${escapeHtml(studentName)}
+                    </h5>
+                    <button type="button" class="btn-close" onclick="closeTransactionModal()"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="transaction-history">
+                        ${transactionRows}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeTransactionModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.closeTransactionModal = function() {
+    if (window.currentTransactionModal) {
+        document.body.removeChild(window.currentTransactionModal);
+        window.currentTransactionModal = null;
+    }
+    if (window.currentTransactionModalBackdrop) {
+        document.body.removeChild(window.currentTransactionModalBackdrop);
+        window.currentTransactionModalBackdrop = null;
+    }
+};
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}

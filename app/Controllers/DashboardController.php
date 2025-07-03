@@ -122,7 +122,7 @@ class DashboardController {
             SELECT date, description, amount 
             FROM transactions 
             WHERE user_id = ? 
-            ORDER BY date DESC 
+            ORDER BY created_at DESC, date DESC 
             LIMIT 10
         ");
         $stmt->execute([$userId]);

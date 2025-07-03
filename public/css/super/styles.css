@@ -182,8 +182,10 @@ body {
   justify-content: space-between;
   padding: 0 30px;
   margin-left: 280px;
+  width: calc(100% - 280px);
   border-bottom: 1px solid #2c3142;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-sizing: border-box;
 }
 
 .search-container {
@@ -329,9 +331,11 @@ body {
 /* Main content area */
 .main-content {
   margin-left: 280px;
+  width: calc(100% - 280px);
   padding: 30px;
   min-height: calc(100vh - 70px);
   background-color: #1a1f2c;
+  box-sizing: border-box;
 }
 
 .content-header {
@@ -723,6 +727,7 @@ body {
   
   .main-content, .top-header {
     margin-left: 70px;
+    width: calc(100% - 70px);
   }
   
   .search-container {
