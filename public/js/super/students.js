@@ -115,12 +115,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     updateNotificationBadges();
                 } else {
                     console.error('Failed to fetch students:', data.message);
-                    showToast('Failed to load students data', 'error');
+                    showToast(__('failed_to_load_students'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Error fetching students:', error);
-                showToast('Error loading students data', 'error');
+                showToast(__('error_loading_students'), 'error');
             });
     }
 
@@ -167,8 +167,8 @@ document.addEventListener("DOMContentLoaded", function() {
             studentsGrid.innerHTML = `
                 <div class="no-students text-center py-5">
                     <i class="bi bi-people fs-1 text-muted"></i>
-                    <h4 class="mt-3 text-muted">No students found</h4>
-                    <p class="text-muted">No students match your search criteria</p>
+                    <h4 class="mt-3 text-muted">${__('no_students_found')}</h4>
+                    <p class="text-muted">${__('no_students_match_criteria')}</p>
                 </div>
             `;
             return;
@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         showStudentDetailModal(student);
                     } else {
                         console.error('Student data not found for ID:', studentId);
-                        showToast('Student data not available', 'error');
+                        showToast(__('student_data_not_available'), 'error');
                     }
                 } else {
                     console.log('Click was not on a student card');
@@ -313,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function() {
             <div class="modal-dialog modal-lg">
                 <div class="modal-content" style="background-color: #232838;">
                     <div class="modal-header">
-                        <h5 class="modal-title">Student Information</h5>
+                        <h5 class="modal-title">${__('student_information')}</h5>
                         <button type="button" class="btn-close" onclick="closeStudentModal()"></button>
                     </div>
                     <div class="modal-body">
@@ -325,15 +325,15 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <h4 class="mb-1 non-selectable">${escapeHtml(student.name)}</h4>
                                 <p class="text-muted mb-2 selectable-text">${escapeHtml(student.id || 'N/A')}</p>
                                 <div class="status-badge">
-                                    <span class="badge bg-success">Active</span>
+                                    <span class="badge bg-success">${__('active')}</span>
                                 </div>
                             </div>
                             <div class="col-md-8">
                                 <div class="mb-3">
-                                    <h6 class="text-primary mb-2"><i class="bi bi-person-circle me-2"></i>Contact Information</h6>
+                                    <h6 class="text-primary mb-2"><i class="bi bi-person-circle me-2"></i>${__('contact_information')}</h6>
                                     <div class="row">
                                         <div class="col-12">
-                                            <small class="text-muted">Email</small>
+                                            <small class="text-muted">${__('email')}</small>
                                             <div class="fw-medium selectable-text" style="cursor: pointer;" onclick="copyToClipboard('${escapeHtml(student.email)}')">
                                                 ${escapeHtml(student.email)}
                                                 <i class="bi bi-clipboard ms-1" style="font-size: 0.8rem; opacity: 0.7;"></i>
@@ -344,27 +344,27 @@ document.addEventListener("DOMContentLoaded", function() {
 
                                 <!-- FF Balance Management Section -->
                                 <div class="mb-3">
-                                    <h6 class="text-primary mb-2"><i class="bi bi-wallet2 me-2"></i>FF Hours Management</h6>
+                                    <h6 class="text-primary mb-2"><i class="bi bi-wallet2 me-2"></i>${__('ff_hours_management')}</h6>
                                     <div class="ff-balance-container p-3" style="border: 1px solid #007bff; border-radius: 8px;">
                                         <div class="text-center mb-2">
-                                            <small class="text-muted">Current FF Balance</small>
+                                            <small class="text-muted">${__('current_ff_balance')}</small>
                                             <h3 class="mb-0" id="studentFFBalance" style="color: #28a745;">
                                                 <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                                    <span class="visually-hidden">Loading...</span>
+                                                    <span class="visually-hidden">${__('loading')}</span>
                                                 </div>
                                             </h3>
                                         </div>
                                         <div class="ff-management-controls">
                                             <div class="input-group mb-2">
-                                                <input type="number" class="form-control" id="ffHoursInput" placeholder="Enter hours" min="1" max="1000" style="background-color: transparent; border-color: #007bff; color: white;">
-                                                <span class="input-group-text" style="background-color: transparent; border-color: #007bff; color: #a0a7b5;">hours</span>
+                                                <input type="number" class="form-control" id="ffHoursInput" placeholder="${__('enter_hours')}" min="1" max="1000" style="background-color: transparent; border-color: #007bff; color: white;">
+                                                <span class="input-group-text" style="background-color: transparent; border-color: #007bff; color: #a0a7b5;">${__('hours')}</span>
                                             </div>
                                             <div class="d-flex gap-2">
                                                 <button class="btn btn-outline-success btn-sm flex-fill" onclick="adjustStudentFF('${escapeHtml(student.id)}', 'add')">
-                                                    <i class="bi bi-plus-circle me-1"></i> Add Hours
+                                                    <i class="bi bi-plus-circle me-1"></i> ${__('add_hours')}
                                                 </button>
                                                 <button class="btn btn-outline-warning btn-sm flex-fill" onclick="adjustStudentFF('${escapeHtml(student.id)}', 'subtract')">
-                                                    <i class="bi bi-dash-circle me-1"></i> Remove Hours
+                                                    <i class="bi bi-dash-circle me-1"></i> ${__('remove_hours')}
                                                 </button>
                                             </div>
                                         </div>
@@ -373,16 +373,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
                                 <!-- Quick Actions Section -->
                                 <div class="mb-2">
-                                    <h6 class="text-primary mb-2"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+                                    <h6 class="text-primary mb-2"><i class="bi bi-lightning me-2"></i>${__('quick_actions')}</h6>
                                     <div class="d-flex gap-2 flex-wrap">
                                         <button class="btn btn-outline-light btn-sm" onclick="viewStudentRequests('${escapeHtml(student.id)}')">
-                                            <i class="bi bi-file-earmark-text me-1"></i> View Requests
+                                            <i class="bi bi-file-earmark-text me-1"></i> ${__('view_requests')}
                                         </button>
                                         <button class="btn btn-outline-info btn-sm" onclick="sendStudentMessage('${escapeHtml(student.id)}')">
-                                            <i class="bi bi-envelope me-1"></i> Send Message
+                                            <i class="bi bi-envelope me-1"></i> ${__('send_message')}
                                         </button>
                                         <button class="btn btn-outline-warning btn-sm" onclick="viewStudentHistory('${escapeHtml(student.id)}')">
-                                            <i class="bi bi-clock-history me-1"></i> View History
+                                            <i class="bi bi-clock-history me-1"></i> ${__('view_history')}
                                         </button>
                                     </div>
                                 </div>
@@ -390,7 +390,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" onclick="closeStudentModal()">Close</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeStudentModal()">${__('close')}</button>
                     </div>
                 </div>
             </div>
@@ -446,9 +446,9 @@ window.loadStudentFFBalance = function(studentId) {
             const balanceElement = document.getElementById('studentFFBalance');
             if (balanceElement) {
                 if (data.success) {
-                    balanceElement.innerHTML = `${data.balance} hours`;
+                    balanceElement.innerHTML = `${data.balance} ${__('hours')}`;
                 } else {
-                    balanceElement.innerHTML = `<span class="text-warning">Error loading balance</span>`;
+                    balanceElement.innerHTML = `<span class="text-warning">${__('error_loading_balance')}</span>`;
                 }
             }
         })
@@ -456,7 +456,7 @@ window.loadStudentFFBalance = function(studentId) {
             console.error('Error loading student balance:', error);
             const balanceElement = document.getElementById('studentFFBalance');
             if (balanceElement) {
-                balanceElement.innerHTML = `<span class="text-danger">Failed to load</span>`;
+                balanceElement.innerHTML = `<span class="text-danger">${__('failed_to_load')}</span>`;
             }
         });
 };
@@ -467,7 +467,7 @@ window.adjustStudentFF = function(studentId, action) {
     const hours = parseInt(hoursInput.value);
     
     if (!hours || hours <= 0) {
-        showToast('Please enter a valid number of hours', 'error');
+        showToast(__('please_enter_valid_hours'), 'error');
         return;
     }
     
@@ -753,12 +753,12 @@ window.viewStudentRequests = function(studentId) {
 };
 
 window.sendStudentMessage = function(studentId) {
-    showToast('Message functionality not implemented yet', 'info');
+    showToast(__('message_functionality_not_implemented'), 'info');
     // TODO: Implement student messaging functionality
 };
 
 window.viewStudentHistory = function(studentId) {
-    showToast('Loading transaction history...', 'info');
+    showToast(__('loading_transaction_history'), 'info');
     
     // Fetch student transaction history
     fetch(`/api/student-transactions?id=${studentId}`)
@@ -767,12 +767,12 @@ window.viewStudentHistory = function(studentId) {
         if (data.success) {
             showTransactionHistoryModal(data.transactions, data.student_name);
         } else {
-            showToast('Could not load transaction history', 'error');
+            showToast(__('could_not_load_transaction_history'), 'error');
         }
     })
     .catch(error => {
         console.error('Error loading transaction history:', error);
-        showToast('Error loading transaction history', 'error');
+        showToast(__('error_loading_transaction_history'), 'error');
     });
 };
 
@@ -813,7 +813,7 @@ function createTransactionHistoryModalHTML(transactions, studentName) {
             </div>
         `).join('');
     } else {
-        transactionRows = '<div class="text-muted text-center py-4">No transactions found</div>';
+        transactionRows = `<div class="text-muted text-center py-4">${__('no_transactions_found')}</div>`;
     }
 
     return `
@@ -821,7 +821,7 @@ function createTransactionHistoryModalHTML(transactions, studentName) {
             <div class="modal-content" style="background-color: #232838;">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-clock-history me-2"></i>Transaction History - ${escapeHtml(studentName)}
+                        <i class="bi bi-clock-history me-2"></i>${__('transaction_history')} - ${escapeHtml(studentName)}
                     </h5>
                     <button type="button" class="btn-close" onclick="closeTransactionModal()"></button>
                 </div>
@@ -831,7 +831,7 @@ function createTransactionHistoryModalHTML(transactions, studentName) {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeTransactionModal()">Close</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeTransactionModal()">${__('close')}</button>
                 </div>
             </div>
         </div>

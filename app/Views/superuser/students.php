@@ -3,7 +3,7 @@
   <head>
     <?php
     // Load language helper
-    require_once dirname(__DIR__, 2) . '/Helpers/LanguageHelper.php';
+
     require_once dirname(__DIR__) . '/components/header.php'; 
     ?>
     <meta name="description" content="<?= __('students_management') ?>" />
@@ -149,26 +149,26 @@
             </div>
             
             <!-- Title -->
-            <h2 class="modal-title">Adjust FF Hours</h2>
+            <h2 class="modal-title"><?php echo __('adjust_ff_hours'); ?></h2>
             
             <!-- Message -->
-            <p class="modal-message">Are you sure you want to modify FF hours for this student?</p>
+            <p class="modal-message"><?php echo __('modify_ff_hours_question'); ?></p>
             
             <!-- Reason input field -->
             <div class="reason-field">
-                <label for="ffReason">Reason:</label>
-                <input type="text" id="ffReason" placeholder="Enter reason for adjustment..." required>
+                <label for="ffReason"><?php echo __('reason'); ?>:</label>
+                <input type="text" id="ffReason" placeholder="<?php echo __('enter_reason_adjustment'); ?>" required>
             </div>
             
             <!-- Action buttons -->
             <div class="modal-buttons">
                 <button class="btn-confirm" onclick="confirmFFAdjustment()">
                     <span class="icon">✓</span>
-                    Yes, adjust it!
+                    <?php echo __('yes_adjust_it'); ?>
                 </button>
                 <button class="btn-cancel" onclick="closeFFModal()">
                     <span class="icon">✕</span>
-                    Cancel
+                    <?php echo __('cancel'); ?>
                 </button>
             </div>
         </div>

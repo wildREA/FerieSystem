@@ -74,7 +74,70 @@ const translations = {
     'missing_required_fields_ff': 'Manglende påkrævede felter: student_id, action, hours, reason',
     'only_superusers_adjust_ff': 'Kun undervisere kan justere ferie-timer',
     'api_endpoint_not_found': 'API-endpoint ikke fundet',
-    'calendar_file_not_found_simple': 'Kalenderfil ikke fundet'
+    'calendar_file_not_found_simple': 'Kalenderfil ikke fundet',
+    
+    // Student modal translations
+    'student_information': 'Studerendeoplysninger',
+    'contact_information': 'Kontaktoplysninger',
+    'ff_hours_management': 'Ferie-timer administration',
+    'current_ff_balance': 'Nuværende ferie-saldo',
+    'enter_hours': 'Indtast timer',
+    'add_hours': 'Tilføj timer',
+    'remove_hours': 'Fjern timer',
+    'quick_actions': 'Hurtige handlinger',
+    'view_requests': 'Se ansøgninger',
+    'send_message': 'Send besked',
+    'view_history': 'Se historik',
+    'close': 'Luk',
+    'active': 'Aktiv',
+    'error_loading_balance': 'Fejl ved indlæsning af saldo',
+    'failed_to_load': 'Kunne ikke indlæses',
+    'loading': 'Indlæser...',
+    'hours': 'timer',
+    'no_students_found': 'Ingen studerende fundet',
+    'no_students_match_criteria': 'Ingen studerende matcher dine søgekriterier',
+    'error_loading_students': 'Fejl ved indlæsning af studerende data',
+    'failed_to_load_students': 'Kunne ikke indlæse studerende data',
+    'student_data_not_available': 'Studerendedata ikke tilgængelig',
+    'successfully_added': 'Succesfuldt tilføjet',
+    'successfully_removed': 'Succesfuldt fjernet',
+    'failed_to_add': 'Kunne ikke tilføje',
+    'failed_to_remove': 'Kunne ikke fjerne',
+    'error_adding': 'Fejl ved tilføjelse',
+    'error_removing': 'Fejl ved fjernelse',
+    'message_functionality_not_implemented': 'Beskedfunktionalitet ikke implementeret endnu',
+    'loading_transaction_history': 'Indlæser transaktionshistorik...',
+    'could_not_load_transaction_history': 'Kunne ikke indlæse transaktionshistorik',
+    'error_loading_transaction_history': 'Fejl ved indlæsning af transaktionshistorik',
+    'transaction_history': 'Transaktionshistorik',
+    'no_transactions_found': 'Ingen transaktioner fundet',
+    
+    // FF Hours modal translations
+    'adjust_ff_hours': 'Juster ferie-timer',
+    'modify_ff_hours_question': 'Er du sikker på, at du vil ændre ferie-timer for denne studerende?',
+    'reason': 'Årsag',
+    'enter_reason_adjustment': 'Indtast årsag til justering...',
+    'yes_adjust_it': 'Ja, juster dem!',
+    'cancel': 'Annuller',
+    
+    // Preview and modal translations
+    'request_details': 'Ansøgningsdetaljer',
+    'preview_mode': 'Forhåndsvisningstilstand',
+    'modify_form_preview_again': 'Dette viser dine ansøgningsdetaljer. Du kan ændre formularen og forhåndsvise igen',
+    'close_preview': 'Luk forhåndsvisning',
+    
+    // Duration and calculation messages
+    'end_must_be_after_start': 'Slut skal være efter start',
+    'error_calculating_duration': 'Fejl ved beregning af varighed',
+    
+    // Modal titles
+    'request_preview': 'Ansøgningsforhåndsvisning',
+    'profile_information': 'Profiloplysninger',
+    
+    // Additional information labels
+    'balance_information_unavailable': 'Saldooplysninger ikke tilgængelige',
+    'student_information_header': 'Studerendeoplysninger',
+    'account_information': 'Kontooplysninger'
 };
 
 // Helper function to get translation

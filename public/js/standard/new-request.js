@@ -463,7 +463,7 @@ class NewRequestController {
             const { start, end } = this.createDateTimeObjects();
             
             if (end <= start) {
-                this.showDurationError('End must be after start');
+                this.showDurationError(__('end_must_be_after_start'));
                 return;
             }
             
@@ -472,7 +472,7 @@ class NewRequestController {
             this.checkAdvanceNotice();
         } catch (error) {
             console.error('Error calculating request duration:', error);
-            this.safeUpdateElement('requestDuration', 'Error calculating duration');
+            this.safeUpdateElement('requestDuration', __('error_calculating_duration'));
         }
     }
 
@@ -889,13 +889,13 @@ class NewRequestController {
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content bg-dark">
                         <div class="modal-header">
-                            <h5 class="modal-title text-white" id="requestPreviewModalLabel">Request Preview</h5>
+                            <h5 class="modal-title text-white" id="requestPreviewModalLabel">${__('request_preview')}</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <div class="alert alert-info">
                                 <i class="bi bi-info-circle me-2"></i>
-                                <strong>Preview Mode:</strong> This shows your request details. You can modify the form and preview again.
+                                <strong>${__('preview_mode')}:</strong> ${__('modify_form_preview_again')}
                             </div>
                             ${data.isShortNotice ? `
                                 <div class="alert alert-warning">
@@ -905,7 +905,7 @@ class NewRequestController {
                             ` : ''}
                             <div class="row">
                                 <div class="col-md-6">
-                                    <h6 class="text-primary">Request Details</h6>
+                                    <h6 class="text-primary">${__('request_details')}</h6>
                                     <div class="preview-detail">
                                         <strong>Type:</strong> Vacation Request
                                     </div>
@@ -936,7 +936,7 @@ class NewRequestController {
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close Preview</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${__('close_preview')}</button>
                             <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Continue Editing</button>
                         </div>
                     </div>

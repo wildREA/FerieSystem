@@ -13,7 +13,7 @@ class LanguageHelper {
      */
     private static function loadTranslations() {
         if (self::$translations === null) {
-            self::$translations = require_once __DIR__ . '/../config/language_da.php';
+            self::$translations = require_once __DIR__ . '/../../config/language_da.php';
         }
         return self::$translations;
     }

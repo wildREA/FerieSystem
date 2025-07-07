@@ -1,6 +1,6 @@
 <?php
 // Load language helper
-require_once dirname(__DIR__, 2) . '/Helpers/LanguageHelper.php';
+
 ?>
 
 <div class="key-container">

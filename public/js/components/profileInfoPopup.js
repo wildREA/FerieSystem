@@ -79,7 +79,7 @@ function createProfileModal(currentUser, modalBackdrop) {
         '<div class="modal-dialog modal-lg">' +
             '<div class="modal-content" style="background-color: #232838;">' +
                 '<div class="modal-header">' +
-                    '<h5 class="modal-title">Profile Information</h5>' +
+                    '<h5 class="modal-title">' + __('profile_information') + '</h5>' +
                     '<button type="button" class="btn-close" onclick="closeProfileModal()"></button>' +
                 '</div>' +
                 '<div class="modal-body">' +
@@ -96,7 +96,7 @@ function createProfileModal(currentUser, modalBackdrop) {
                         '</div>' +
                         '<div class="col-md-8">' +
                             '<div class="mb-4">' +
-                                '<h6 class="text-primary mb-3"><i class="bi bi-person-circle me-2"></i>Account Information</h6>' +
+                                '<h6 class="text-primary mb-3"><i class="bi bi-person-circle me-2"></i>' + __('account_information') + '</h6>' +
                                 '<div class="row">' +
                                     '<div class="col-6">' +
                                         '<small class="text-muted">Email</small>' +

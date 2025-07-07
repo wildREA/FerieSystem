@@ -1,4 +1,4 @@
-<?php require_once dirname(dirname(dirname(__DIR__))) . '/config/language_da.php'; ?>
+
 <!DOCTYPE html>
 <html>
   <head>

@@ -1,11 +1,7 @@
 <?php
 namespace App\Controllers;
 
-require_once dirname(__D        } catch (Exception $e) {
-            error_log("Error in getDashboardData: " . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['error' => __('internal_server_error')]);
-        } . '/Core/sessions.php';
+require_once dirname(__DIR__) . '/Core/sessions.php';
 require_once dirname(__DIR__) . '/Core/connection.php';
 
 class DashboardController {

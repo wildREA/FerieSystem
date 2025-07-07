@@ -1,10 +1,11 @@
 <?php
 
-// Production environment settings
-ini_set('display_errors', 0);
+// Temporary debug settings - REMOVE IN PRODUCTION
+ini_set('display_errors', 1);
 ini_set('log_errors', 1);
+error_reporting(E_ALL);
 // Optionally, set a log file path
-// ini_set('error_log', 'path/to/your/php-error.log');
+// ini_set('error_log', 'path/to/your/php-error.log')
 
 // Start session
 session_start();

@@ -2,6 +2,7 @@
 // Load helper functions
 require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
 require_once dirname(__DIR__, 2) . '/Helpers/LanguageHelper.php';
+
 ?>
 <!DOCTYPE html>
 <html lang="da">
@@ -169,7 +170,7 @@ require_once dirname(__DIR__, 2) . '/Helpers/LanguageHelper.php';
                         <div class="summary-content">
                             <div class="summary-item">
                                 <div class="summary-label">Duration</div>
-                                <div class="summary-value" id="requestDuration">Please select dates</div>
+                                <div class="summary-value" id="requestDuration"><?= __('please_select_dates') ?></div>
                             </div>
                             <div class="summary-item">
                                 <div class="summary-label">Working Hours</div>
@@ -191,7 +192,7 @@ require_once dirname(__DIR__, 2) . '/Helpers/LanguageHelper.php';
                             </div>
                             <div class="alert alert-danger mt-3" id="balanceError" style="display: none;">
                                 <i class="bi bi-x-circle me-2"></i>
-                                <strong><?= __('insufficient_balance_notice') ?>:</strong> <?= __('insufficient_balance_notice') ?>
+                                <strong><?= __('insufficient_balance_notice') ?></strong>
                             </div>
                         </div>
                     </div>

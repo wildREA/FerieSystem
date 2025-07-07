@@ -1,10 +1,9 @@
 <?php
+require_once dirname(__DIR__) . '/Helpers/LanguageHelper.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
-// Load language helper
-require_once __DIR__ . '/../Helpers/LanguageHelper.php';
 
 $error = $_SESSION['login_error'] ?? null;
 $regError = $_SESSION['registration_error'] ?? $_SESSION['register_error'] ?? null;

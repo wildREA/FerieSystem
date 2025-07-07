@@ -1,8 +1,9 @@
 <?php
 // Load helper functions
 require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
-require_once dirname(__DIR__, 2) . '/Controllers/DashboardController.php';
 require_once dirname(__DIR__, 2) . '/Helpers/LanguageHelper.php';
+require_once dirname(__DIR__, 2) . '/Controllers/DashboardController.php';
+
 
 // Instantiate the controller and get data
 $dashboardController = new App\Controllers\DashboardController();
@@ -208,9 +209,9 @@ if (function_exists('getCurrentUserName')) {
             <div class="modal-content bg-dark">
                 <div class="modal-header">
                     <h5 class="modal-title text-white" id="balanceModalLabel">
-                        <i class="bi bi-calendar-range me-2"></i>Vacation Balance & History
+                        <i class="bi bi-calendar-range me-2"></i><?= __('vacation_balance_and_history') ?>
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="<?= __('close') ?>"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -218,29 +219,29 @@ if (function_exists('getCurrentUserName')) {
                         <div class="col-md-8">
                             <div class="card">
                                 <div class="card-header">
-                                    <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Usage History</h6>
+                                    <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i><?= __('usage_history') ?></h6>
                                 </div>
                                 <div class="card-body">
                                     <!-- Current Balance Summary -->
                                     <div class="row mb-4">
                                         <div class="col-6">
-                                            <div class="mb-2 text-muted small">Total Allocated</div>
+                                            <div class="mb-2 text-muted small"><?= __('total_allocated') ?></div>
                                             <div class="h5">₣<?= htmlspecialchars($balanceData['totalAllocated']) ?></div>
                                         </div>
                                         <div class="col-6">
-                                            <div class="mb-2 text-muted small">Total Used</div>
+                                            <div class="mb-2 text-muted small"><?= __('total_used') ?></div>
                                             <div class="h5">₣<?= htmlspecialchars($balanceData['totalUsed']) ?></div>
                                         </div>
                                         <div class="col-6 mt-3">
-                                            <div class="mb-2 text-muted small">Pending Requests</div>
+                                            <div class="mb-2 text-muted small"><?= __('pending_requests') ?></div>
                                             <div class="h5">₣<?= htmlspecialchars($balanceData['pendingHours']) ?></div>
                                         </div>
                                         <div class="col-6 mt-3">
-                                            <div class="mb-2 text-muted small fw-bold">Current Available Balance</div>
+                                            <div class="mb-2 text-muted small fw-bold"><?= __('current_available_balance') ?></div>
                                             <div class="h5 fw-bold">₣<?= htmlspecialchars($balanceData['currentBalance']) ?></div>
                                         </div>
                                     </div>
-                                    <h6 class="mb-3">Transaction History</h6>
+                                    <h6 class="mb-3"><?= __('transaction_history') ?></h6>
                                     <!-- Transaction History (newest first) -->
                                     <div id="modalBalanceHistory">
                                         <?php foreach ($transactionHistory as $transaction) : ?>
@@ -255,7 +256,7 @@ if (function_exists('getCurrentUserName')) {
                                             </div>
                                         <?php endforeach; ?>
                                         <?php if (empty($transactionHistory)) : ?>
-                                            <div class="text-muted small">No transactions found.</div>
+                                            <div class="text-muted small"><?= __('no_transactions_found') ?></div>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -265,24 +266,24 @@ if (function_exists('getCurrentUserName')) {
                         <div class="col-md-4">
                             <div class="card">
                                 <div class="card-header">
-                                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Balance Information</h6>
+                                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i><?= __('balance_information') ?></h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <h6 class="text-muted">Annual Allocation</h6>
-                                        <p class="mb-0 small">You are allocated 200ff vacation hours per academic year.</p>
+                                        <h6 class="text-muted"><?= __('annual_allocation') ?></h6>
+                                        <p class="mb-0 small"><?= __('annual_allocation_text') ?></p>
                                     </div>
                                     <div class="mb-3">
-                                        <h6 class="text-muted">Current Period</h6>
-                                        <p class="mb-0 small">September 2024 - June 2025</p>
+                                        <h6 class="text-muted"><?= __('current_period') ?></h6>
+                                        <p class="mb-0 small"><?= __('current_academic_year') ?></p>
                                     </div>
                                     <div class="mb-3">
-                                        <h6 class="text-muted">Rollover Policy</h6>
-                                        <p class="mb-0 small">Unused hours do not carry over to the next academic year.</p>
+                                        <h6 class="text-muted"><?= __('rollover_policy') ?></h6>
+                                        <p class="mb-0 small"><?= __('rollover_policy_text') ?></p>
                                     </div>
                                     <div class="mb-3">
-                                        <h6 class="text-muted">Hour Calculation</h6>
-                                        <p class="mb-0 small">8 hours = 1 working day. Weekend hours are tracked separately.</p>
+                                        <h6 class="text-muted"><?= __('hour_calculation') ?></h6>
+                                        <p class="mb-0 small"><?= __('hour_calculation_text') ?></p>
                                     </div>
                                 </div>
                             </div>
@@ -290,7 +291,7 @@ if (function_exists('getCurrentUserName')) {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= __('close') ?></button>
                 </div>
             </div>
         </div>

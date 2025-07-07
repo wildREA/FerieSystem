@@ -3,9 +3,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Load language helper
-require_once __DIR__ . '/../Helpers/LanguageHelper.php';
-
 if (!isset($_SESSION['verified_admin_key'])) {
     $_SESSION['error_message'] = 'Access denied. Please verify admin key first.';
     header('Location: ' . url('/auth'));

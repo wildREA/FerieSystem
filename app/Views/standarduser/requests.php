@@ -1,27 +1,11 @@
 <?php
 // Load helper functions
 require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
-requ                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <h4><?= __('my_vacation_requests') ?></h4>
-                        <p class="text-muted mb-0"><?= __('track_status_requests') ?></p>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <select class="form-select" id="statusFilter">
-                            <option value="all"><?= __('all_requests') ?></option>
-                            <option value="pending"><?= __('pending') ?></option>
-                            <option value="approved"><?= __('approved') ?></option>
-                            <option value="denied"><?= __('denied') ?></option>
-                        </select>
-                        <a href="<?= url('/new-request') ?>" class="btn btn-success">
-                            <i class="bi bi-plus-circle me-2"></i><?= __('new_request') ?>
-                        </a>
-                    </div>
-                </div>__DIR__, 2) . '/Helpers/LanguageHelper.php';
+require_once dirname(__DIR__, 2) . '/Helpers/LanguageHelper.php';
 
 // Get requests data from route
 $requests = $requests ?? [];
-$userName = function_exists('getCurrentUserName') ? getCurrentUserName() : 'Student';
+$userName = function_exists('getCurrentUserName') ? getCurrentUserName() : __('student');
 $requestCount = count($requests);
 $pendingCount = count(array_filter($requests, function($r) { return $r['status'] === 'pending'; }));
 
@@ -52,8 +36,8 @@ function getStatusBadgeClass($status) {
     <title><?= __('my_requests') ?> - FerieSystem</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="/css/standard/styles.css">
-    <link rel="stylesheet" href="/css/standard/student-styles.css">
+    <link rel="stylesheet" href="<?= asset('public/css/standard/styles.css') ?>">
+    <link rel="stylesheet" href="<?= asset('public/css/standard/student-styles.css') ?>">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="<?= asset('public/js/translations.js') ?>" defer></script>
     <script src="<?= asset('public/js/components/profileInfoPopup.js') ?>" defer></script>
@@ -113,18 +97,18 @@ function getStatusBadgeClass($status) {
             <div class="content-section active">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div>
-                        <h4>My Vacation Requests</h4>
-                        <p class="text-muted mb-0">Track the status of your vacation requests</p>
+                        <h4></h4>
+                        <p class="text-muted mb-0"></p>
                     </div>
                     <div class="d-flex gap-2">
                         <select class="form-select" id="statusFilter" style="width: auto;">
-                            <option value="all">All Requests</option>
-                            <option value="pending">Pending</option>
-                            <option value="approved">Approved</option>
-                            <option value="denied">Denied</option>
+                            <option value="all"><?= __('all_requests') ?></option>
+                            <option value="pending"><?= __('pending') ?></option>
+                            <option value="approved"><?= __('approved') ?></option>
+                            <option value="denied"><?= __('denied') ?></option>
                         </select>
                         <a href="<?= url('/new-request') ?>" class="btn btn-success">
-                            <i class="bi bi-plus-circle me-2"></i>New Request
+                            <i class="bi bi-plus-circle me-2"></i><?= __('new_request') ?>
                         </a>
                     </div>
                 </div>

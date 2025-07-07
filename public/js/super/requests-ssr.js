@@ -475,7 +475,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <div class="text-center py-2">
                     <small class="text-muted">
                         <i class="bi bi-exclamation-triangle me-1"></i>
-                        Balance information unavailable
+                        ${__('balance_information_unavailable')}
                     </small>
                 </div>
             `;
@@ -500,7 +500,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         <div class="modal-header" style="background-color: #222941; border-bottom: 1px solid #2c3142;">
                             <h5 class="modal-title" style="color: #ffffff;" id="requestDetailModalLabel">
                                 <i class="bi bi-calendar-check me-2" style="color: #007bff;"></i>
-                                Request Details
+                                ${__('request_details')}
                             </h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -509,7 +509,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <div class="col-md-6 mb-4">
                                     <div class="card h-100" style="background-color: #222941; border: 1px solid #2c3142;">
                                         <div class="card-header" style="background-color: #302241; border-bottom: 1px solid #2c3142;">
-                                            <h6 class="mb-0" style="color: #ffffff;"><i class="bi bi-person-fill me-2"></i>Student Information</h6>
+                                            <h6 class="mb-0" style="color: #ffffff;"><i class="bi bi-person-fill me-2"></i>${__('student_information_header')}</h6>
                                         </div>
                                         <div class="card-body">
                                             <div class="mb-3">
@@ -531,7 +531,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <div class="col-md-6 mb-4">
                                     <div class="card h-100" style="background-color: #222941; border: 1px solid #2c3142;">
                                         <div class="card-header" style="background-color: #302241; border-bottom: 1px solid #2c3142;">
-                                            <h6 class="mb-0" style="color: #ffffff;"><i class="bi bi-wallet2 me-2"></i>Vacation Balance</h6>
+                                            <h6 class="mb-0" style="color: #ffffff;"><i class="bi bi-wallet2 me-2"></i>${__('vacation_balance')}</h6>
                                         </div>
                                         <div class="card-body" id="modalBalanceContainer">
                                             ${isLoading ? `
@@ -551,7 +551,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <div class="col-12 mb-4">
                                     <div class="card" style="background-color: #222941; border: 1px solid #2c3142;">
                                         <div class="card-header" style="background-color: #302241; border-bottom: 1px solid #2c3142;">
-                                            <h6 class="mb-0" style="color: #ffffff;"><i class="bi bi-clock-history me-2"></i>Timeline</h6>
+                                            <h6 class="mb-0" style="color: #ffffff;"><i class="bi bi-clock-history me-2"></i>${__('transaction_history')}</h6>
                                         </div>
                                         <div class="card-body">
                                             <div class="text-center py-2">
@@ -617,7 +617,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 Last updated: ${new Date().toLocaleString()}
                             </small>
                             <button type="button" class="btn" style="background-color: #2c3142; border: 1px solid #007bff; color: #ffffff;" data-bs-dismiss="modal">
-                                <i class="bi bi-x-lg me-1"></i>Close
+                                <i class="bi bi-x-lg me-1"></i>${__('close')}
                             </button>
                         </div>
                     </div>
