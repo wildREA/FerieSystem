@@ -61,7 +61,7 @@
 }
 
 .upload-section .form-control[type="file"]:invalid::before {
-  content: "No file selected";
+  content: "Ingen fil valgt";
 }
 
 .upload-section .form-control[type="file"]:valid {

@@ -1,13 +1,14 @@
 <?php
 // Load helper functions
 require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
+require_once dirname(__DIR__, 2) . '/Helpers/LanguageHelper.php';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <?php require_once dirname(__DIR__) . '/components/header.php'; ?>
-    <meta name="description" content="Submit new vacation request" />
-    <title>New Request - FerieSystem</title>
+    <meta name="description" content="<?= __('submit_new_request') ?>" />
+    <title><?= __('new_request') ?> - FerieSystem</title>
     <!-- Frameworks & Tools -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <!-- Stylesheets -->
@@ -17,6 +18,7 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
     <!-- Scripts (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
+    <script src="<?= asset('public/js/translations.js') ?>" defer></script>
     <script src="<?= asset('public/js/standard/new-request.js') ?>" defer></script>
     <script src="<?= asset('public/js/components/profileInfoPopup.js') ?>" defer></script>
 </head>
@@ -29,26 +31,26 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
                 <div class="user-avatar">
                     <i class="bi bi-person-circle"></i>
                 </div>
-                <div class="user-role">Student</div>
+                <div class="user-role"><?= __('student') ?></div>
                 <div class="user-name" id="studentName"><?= getCurrentUserName() ?></div>
             </div>
             <ul class="nav-menu">
                 <li class="nav-section">
                     <a href="<?= url('/dashboard') ?>" class="section-header">
                         <i class="bi bi-house-door text-primary"></i>
-                        <span>Dashboard</span>
+                        <span><?= __('dashboard') ?></span>
                     </a>
                 </li>
                 <li class="nav-section active">
                     <a href="<?= url('/new-request') ?>" class="section-header">
                         <i class="bi bi-plus-circle text-success"></i>
-                        <span>New Request</span>
+                        <span><?= __('new_request') ?></span>
                     </a>
                 </li>
                 <li class="nav-section">
                     <a href="<?= url('/requests') ?>" class="section-header">
                         <i class="bi bi-clock-history text-warning"></i>
-                        <span>My Requests</span>
+                        <span><?= __('my_requests') ?></span>
                         <?php if (isset($notifications['pendingRequests']) && $notifications['pendingRequests'] > 0): ?>
                         <span class="notification-badge" id="requestsBadge"><?= $notifications['pendingRequests'] ?></span>
                         <?php endif; ?>
@@ -60,8 +62,8 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
         <!-- Top Header -->
         <div class="top-header">
             <div class="header-left">
-                <h1 class="page-title" id="pageTitle">New Request</h1>
-                <p class="page-subtitle" id="pageSubtitle">Submit a new vacation request</p>
+                <h1 class="page-title" id="pageTitle"><?= __('new_request') ?></h1>
+                <p class="page-subtitle" id="pageSubtitle"><?= __('submit_new_request') ?></p>
             </div>
             <div class="user-actions d-flex align-items-center" id="profileInfo" style="cursor: pointer;">
                 <div class="d-flex align-items-center">
@@ -84,18 +86,18 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
                             <div class="date-time-section">
                                 <div class="section-title">
                                     <i class="bi bi-calendar-week"></i>
-                                    Select Vacation Period
+                                    <?= __('select_vacation_period') ?>
                                 </div>
                                         
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="date-input-group">
                                                     <label for="startDate" class="form-label">
-                                                        <i class="bi bi-calendar-event"></i>Start Date & Time
+                                                        <i class="bi bi-calendar-event"></i><?= __('start_date_time') ?>
                                                     </label>
                                                     <input type="date" class="form-control date-input" id="startDate" required>
                                                     <div class="invalid-feedback" id="startDateFeedback">
-                                                        Please select a valid start date.
+                                                        <?= __('select_valid_start_date') ?>
                                                     </div>
                                                     <div class="time-selection">
                                                         <div class="time-input-wrapper">
@@ -174,22 +176,22 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
                                 <div class="summary-value" id="workingDays">0ff</div>
                             </div>
                             <div class="summary-item">
-                                <div class="summary-label">Current Balance</div>
-                                <div class="summary-value" id="currentBalance">Loading...</div>
+                                <div class="summary-label"><?= __('vacation_balance') ?></div>
+                                <div class="summary-value" id="currentBalance"><?= __('loading') ?></div>
                             </div>
                             <div class="summary-item">
-                                <div class="summary-label">Balance After Request</div>
-                                <div class="summary-value" id="balanceAfterRequest">Loading...</div>
+                                <div class="summary-label"><?= __('balance_after_request') ?></div>
+                                <div class="summary-value" id="balanceAfterRequest"><?= __('loading') ?></div>
                             </div>
                             
                             <!-- Warnings -->
                             <div class="alert alert-warning mt-3" id="balanceWarning" style="display: none;">
                                 <i class="bi bi-exclamation-triangle me-2"></i>
-                                <strong>Low Balance:</strong> This request will leave you with less than 3 days of vacation time.
+                                <strong><?= __('low_balance_warning') ?>:</strong> <?= __('low_balance_notice') ?>
                             </div>
                             <div class="alert alert-danger mt-3" id="balanceError" style="display: none;">
                                 <i class="bi bi-x-circle me-2"></i>
-                                <strong>Insufficient Balance:</strong> This request exceeds your available vacation hours.
+                                <strong><?= __('insufficient_balance_notice') ?>:</strong> <?= __('insufficient_balance_notice') ?>
                             </div>
                         </div>
                     </div>
@@ -197,25 +199,25 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
                     <!-- Reason -->
                                     <div class="mb-4">
                                         <label for="requestReason" class="form-label">
-                                            <i class="bi bi-chat-text me-1"></i>Reason for Request
+                                            <i class="bi bi-chat-text me-1"></i><?= __('reason_for_request') ?>
                                         </label>
                                         <textarea class="form-control" id="requestReason" rows="4" 
-                                                placeholder="Optional message"></textarea>
+                                                placeholder="<?= __('request_reason_placeholder') ?>"></textarea>
                                         <div class="form-text">
-                                            <small class="text-muted">Be specific about your request to help ensure quick approval.</small>
+                                            <small class="text-muted"><?= __('be_specific_help') ?></small>
                                         </div>
                                     </div>
                                     
                                     <!-- Form Actions -->
                                     <div class="btn-group-custom">
                                         <button type="submit" class="btn btn-success">
-                                            <i class="bi bi-send me-2"></i>Submit Request
+                                            <i class="bi bi-send me-2"></i><?= __('submit_request') ?>
                                         </button>
                                         <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                                            <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                                            <i class="bi bi-arrow-clockwise me-2"></i><?= __('cancel') ?>
                                         </button>
                                         <button type="button" class="btn btn-outline-primary" onclick="previewRequest()">
-                                            <i class="bi bi-eye me-2"></i>Preview
+                                            <i class="bi bi-eye me-2"></i><?= __('view') ?>
                                         </button>
                                     </div>
                                 </form>
@@ -226,14 +228,14 @@ require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
                         <!-- Quick Tips -->
                         <div class="card mt-3">
                             <div class="card-header">
-                                <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Quick Tips</h6>
+                                <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i><?= __('important_notes') ?></h6>
                             </div>
                             <div class="card-body">
                                 <ul class="tips-list">
-                                    <li>Submit requests at least 48 hours in advance</li>
-                                    <li>Weekend hours don't count toward your balance</li>
-                                    <li>Approved requests cannot be modified</li>
-                                    <li>Check your balance before submitting</li>
+                                    <li><?= __('submit_48_hours_advance') ?></li>
+                                    <li><?= __('emergency_requests_contact') ?></li>
+                                    <li><?= __('approved_requests_cannot_modify') ?></li>
+                                    <li><?= __('check_balance_before_submit') ?></li>
                                 </ul>
                             </div>
                         </div>

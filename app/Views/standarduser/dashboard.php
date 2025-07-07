@@ -2,6 +2,7 @@
 // Load helper functions
 require_once dirname(__DIR__, 2) . '/Helpers/UrlHelper.php';
 require_once dirname(__DIR__, 2) . '/Controllers/DashboardController.php';
+require_once dirname(__DIR__, 2) . '/Helpers/LanguageHelper.php';
 
 // Instantiate the controller and get data
 $dashboardController = new App\Controllers\DashboardController();
@@ -20,10 +21,10 @@ function formatDate($datetime) {
 // Helper function to get status badge class and text
 function getStatusInfo($status) {
     $statusMap = [
-        'pending' => ['class' => 'status-pending', 'text' => 'Pending'],
-        'approved' => ['class' => 'status-approved', 'text' => 'Approved'],
-        'rejected' => ['class' => 'status-rejected', 'text' => 'Rejected'],
-        'cancelled' => ['class' => 'status-cancelled', 'text' => 'Cancelled']
+        'pending' => ['class' => 'status-pending', 'text' => __('pending')],
+        'approved' => ['class' => 'status-approved', 'text' => __('approved')],
+        'rejected' => ['class' => 'status-rejected', 'text' => __('rejected')],
+        'cancelled' => ['class' => 'status-cancelled', 'text' => __('cancelled')]
     ];
     
     return $statusMap[$status] ?? ['class' => 'status-pending', 'text' => ucfirst($status)];
@@ -39,11 +40,11 @@ if (function_exists('getCurrentUserName')) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <?php require_once dirname(__DIR__) . '/components/header.php'; ?>
-    <meta name="description" content="Student vacation request management system" />
-    <title>Dashboard - FerieSystem</title>
+    <meta name="description" content="<?= __('manage_vacation_requests') ?>" />
+    <title><?= __('dashboard') ?> - FerieSystem</title>
     <!-- Frameworks & Tools -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <!-- Stylesheets -->
@@ -54,6 +55,7 @@ if (function_exists('getCurrentUserName')) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
     <script src="<?= asset('public/js/components/profileInfoPopup.js') ?>" defer></script>
+    <script src="<?= asset('public/js/translations.js') ?>" defer></script>
     <script src="<?= asset('public/js/standard/dashboard.js') ?>" defer></script>
 </head>
 <body>
@@ -65,12 +67,12 @@ if (function_exists('getCurrentUserName')) {
                 <div class="user-avatar">
                     <i class="bi bi-person-circle"></i>
                 </div>
-                <div class="user-role">Student</div>
+                <div class="user-role"><?= __('student') ?></div>
                 <div class="user-name" id="studentName"><?php 
                     if (function_exists('getCurrentUserName')) {
                         echo getCurrentUserName();
                     } else {
-                        echo 'User';
+                        echo __('student');
                     }
                 ?></div>
             </div>
@@ -78,19 +80,19 @@ if (function_exists('getCurrentUserName')) {
                 <li class="nav-section active">
                     <a href="<?= url('/dashboard') ?>" class="section-header">
                         <i class="bi bi-house-door text-primary"></i>
-                        <span>Dashboard</span>
+                        <span><?= __('dashboard') ?></span>
                     </a>
                 </li>
                 <li class="nav-section">
                     <a href="<?= url('/new-request') ?>" class="section-header">
                         <i class="bi bi-plus-circle text-success"></i>
-                        <span>New Request</span>
+                        <span><?= __('new_request') ?></span>
                     </a>
                 </li>
                 <li class="nav-section">
                     <a href="<?= url('/requests') ?>" class="section-header">
                         <i class="bi bi-clock-history text-warning"></i>
-                        <span>My Requests</span>
+                        <span><?= __('my_requests') ?></span>
                         <?php if (isset($notifications['pendingRequests']) && $notifications['pendingRequests'] > 0): ?>
                         <span class="notification-badge" id="requestsBadge"><?= $notifications['pendingRequests'] ?></span>
                         <?php endif; ?>
@@ -102,8 +104,8 @@ if (function_exists('getCurrentUserName')) {
         <!-- Top Header -->
         <div class="top-header">
             <div class="header-left">
-                <h1 class="page-title" id="pageTitle">Dashboard</h1>
-                <p class="page-subtitle" id="pageSubtitle">Welcome back, manage your vacation requests</p>
+                <h1 class="page-title" id="pageTitle"><?= __('dashboard') ?></h1>
+                <p class="page-subtitle" id="pageSubtitle"><?= __('welcome_back') ?>, <?= __('manage_vacation_requests') ?></p>
             </div>
             <div class="user-actions d-flex align-items-center" id="profileInfo" style="cursor: pointer;">
                 <div class="d-flex align-items-center">
@@ -111,7 +113,7 @@ if (function_exists('getCurrentUserName')) {
                         if (function_exists('getCurrentUserName')) {
                             echo strtoupper(getCurrentUserName());
                         } else {
-                            echo 'USER';
+                            echo __('student')|upper;
                         }
                     ?></span>
                     <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
@@ -130,8 +132,8 @@ if (function_exists('getCurrentUserName')) {
                     <div class="col-auto mb-3">
                         <div class="stat-card blue clickable" id="balanceCard" data-bs-toggle="modal" data-bs-target="#balanceModal">
                             <div>
-                                <div class="value"><?= htmlspecialchars($balanceData['currentBalance']) ?> timer</div>
-                                <div class="label">Vacation Balance <small>(Click for details)</small></div>
+                                <div class="value"><?= htmlspecialchars($balanceData['currentBalance']) ?> <?= __('hours') ?></div>
+                                <div class="label"><?= __('vacation_balance') ?> <small><?= __('click_for_details') ?></small></div>
                             </div>
                             <div class="icon">
                                 <i class="bi bi-wallet2"></i>
@@ -144,9 +146,9 @@ if (function_exists('getCurrentUserName')) {
                 <!-- Recent Requests -->
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Requests</h5>
+                        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i><?= __('recent_requests') ?></h5>
                         <a href="<?= url('/requests') ?>" class="btn btn-outline-primary btn-sm">
-                            View All
+                            <?= __('view_all') ?>
                         </a>
                     </div>
                     <div class="card-body">
@@ -154,7 +156,7 @@ if (function_exists('getCurrentUserName')) {
                             <?php if (empty($recentRequests)): ?>
                                 <div class="no-requests">
                                     <i class="bi bi-calendar-x"></i>
-                                    <p>No recent requests</p>
+                                    <p><?= __('no_recent_requests') ?></p>
                                 </div>
                             <?php else: ?>
                                 <?php foreach (array_slice($recentRequests, 0, 3) as $request): ?>
@@ -177,20 +179,20 @@ if (function_exists('getCurrentUserName')) {
                 <!-- Quick Actions -->
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Quick Actions</h5>
+                        <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i><?= __('quick_actions') ?></h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <a href="<?= url('/new-request') ?>" class="btn btn-success w-100">
                                     <i class="bi bi-plus-circle me-2"></i>
-                                    New Request
+                                    <?= __('new_request') ?>
                                 </a>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <a href="<?= url('/requests') ?>" class="btn btn-warning w-100">
                                     <i class="bi bi-list-ul me-2"></i>
-                                    My Requests
+                                    <?= __('my_requests') ?>
                                 </a>
                             </div>
                         </div>

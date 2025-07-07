@@ -1,9 +1,10 @@
+<?php require_once dirname(dirname(dirname(__DIR__))) . '/config/language_da.php'; ?>
 <!DOCTYPE html>
 <html>
   <head>
     <?php require_once dirname(__DIR__) . '/components/header.php'; ?>
     <meta name="description" content="Graphic designer personnel management website" />
-    <title>Requests Management - Ferie System</title>
+    <title><?= __('calendar') ?> - Ferie System</title>
     <!-- Frameworks & Tools -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <!-- Stylesheets -->
@@ -28,33 +29,33 @@
           <div class="user-avatar">
             <i class="bi bi-person-circle"></i>
           </div>
-          <div class="user-role">user</div>
+          <div class="user-role"><?= __('student') ?></div>
         </div>
         <ul class="nav-menu">
+          <li class="nav-section">
+            <a href="<?= url('/dashboard') ?>" class="section-link">
+              <div class="section-header dashboard-background">
+                <i class="bi bi-speedometer2 text-info"></i>
+                <span><?= __('dashboard') ?></span>
+              </div>
+            </a>
+          </li>
           <li class="nav-section">
             <a href="<?= url('/requests') ?>" class="section-link">
               <div class="section-header requests-background">
                 <i class="bi bi-file-earmark-text text-danger"></i>
-                <span>Requests</span>
+                <span><?= __('requests') ?></span>
                 <?php if (isset($notifications['pendingRequests']) && $notifications['pendingRequests'] > 0): ?>
                 <span class="notification-badge"><?= $notifications['pendingRequests'] ?></span>
                 <?php endif; ?>
               </div>
             </a>
           </li>
-          <li class="nav-section">
-            <a href="<?= url('/students') ?>" class="section-link">
-              <div class="section-header students-background">
-                <i class="bi bi-people text-primary"></i>
-                <span>Students</span>
-              </div>
-            </a>
-          </li>
           <li class="nav-section active">
             <a href="<?= url('/calendar') ?>" class="section-link">
               <div class="section-header bounties-background">
-                <i class="bi bi-cash-coin text-success"></i>
-                <span>Calendar</span>
+                <i class="bi bi-calendar text-success"></i>
+                <span><?= __('calendar') ?></span>
               </div>
             </a>
           </li>
@@ -67,7 +68,7 @@
         <div class="search-container">
           <div class="search-wrapper">
             <i class="bi bi-search search-icon"></i>
-            <input type="text" id="studentSearch" placeholder="Search requests..." class="form-control search-input">
+            <input type="text" id="studentSearch" placeholder="<?= __('search_requests') ?>..." class="form-control search-input">
             <div id="searchResults" class="search-results"></div>
           </div>
         </div>
@@ -76,7 +77,7 @@
             <span class="notification-dot"></span>
           </i></div>
           <div class="d-flex align-items-center">
-            <span class="me-2">SUPER USER</span>
+            <span class="me-2"><?= strtoupper(__('student')) ?></span>
             <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
               <i class="bi bi-person text-white"></i>
             </div>
@@ -87,8 +88,8 @@
       <!-- Main Content -->
       <div class="main-content">
         <div class="content-header">
-          <h2>Calendar</h2>
-          <p class="text-muted">This page allows instructors to upload a PDF version of the calendar for students to plan their requests accordingly</p>
+          <h2><?= __('calendar') ?></h2>
+          <p class="text-muted"><?= __('view_calendar_for_planning') ?></p>
         </div>
         
         <div class="calendar-container">          
@@ -97,7 +98,7 @@
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title d-flex justify-content-between align-items-center">
-                  <span>Calendar Preview</span>
+                  <span><?= __('calendar_preview') ?></span>
                 </h5>
                 
                 <!-- PDF viewer container -->
@@ -105,8 +106,8 @@
                   <!-- Default message when no PDF is uploaded -->
                   <div class="text-center py-5" id="noPdfMessage">
                     <i class="bi bi-file-earmark-pdf fs-1 text-muted"></i>
-                    <h4 class="mt-3 text-muted">No Calendar PDF Uploaded</h4>
-                    <p class="text-muted">Upload a PDF to see the preview here</p>
+                    <h4 class="mt-3 text-muted"><?= __('no_calendar_uploaded') ?></h4>
+                    <p class="text-muted"><?= __('ask_teacher_for_calendar') ?></p>
                   </div>
                   
                   <!-- PDF embed will be shown here when a file is uploaded -->
@@ -122,6 +123,7 @@
     </div>
     
     <!-- Add JavaScript for PDF handling -->
-    <script src="js/calendar.js" defer></script>
+    <script src="<?= asset('public/js/translations.js') ?>" defer></script>
+    <script src="<?= asset('public/js/super/calendar.js') ?>" defer></script>
   </body>
 </html>

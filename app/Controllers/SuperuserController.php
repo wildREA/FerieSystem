@@ -25,12 +25,12 @@ class SuperuserController {
     public function getAllRequestsData() {
         try {
             if (!$this->sessionManager->isAuthenticated()) {
-                throw new \Exception('User not authenticated');
+                throw new \Exception(__('user_not_authenticated'));
             }
             
             $userType = $this->sessionManager->getUserType();
             if ($userType !== 'super') {
-                throw new \Exception('Only superusers can access this data');
+                throw new \Exception(__('only_superusers_access_data'));
             }
             
             // Get all requests with user information
@@ -183,14 +183,14 @@ class SuperuserController {
             }
             
             $this->db->commit();
-            return ['success' => true, 'message' => 'Request approved successfully'];
+            return ['success' => true, 'message' => __('request_approved_successfully')];
             
         } catch (\Exception $e) {
             if ($this->db->inTransaction()) {
                 $this->db->rollback();
             }
             error_log("Error approving request: " . $e->getMessage());
-            return ['success' => false, 'message' => 'Error approving request'];
+            return ['success' => false, 'message' => __('error_approving_request')];
         }
     }
     
@@ -241,7 +241,7 @@ class SuperuserController {
             }
             
             $this->db->commit();
-            return ['success' => true, 'message' => 'Request denied successfully'];
+            return ['success' => true, 'message' => __('request_denied_successfully')];
             
         } catch (\Exception $e) {
             if ($this->db->inTransaction()) {
@@ -269,7 +269,7 @@ class SuperuserController {
             
             if (!$requestId) {
                 http_response_code(400);
-                echo json_encode(['error' => 'Request ID is required']);
+                echo json_encode(['error' => __('request_id_required')]);
                 return;
             }
             
@@ -285,7 +285,7 @@ class SuperuserController {
         } catch (\Exception $e) {
             error_log("Error in approveRequestAPI: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => 'Internal server error']);
+            echo json_encode(['error' => __('internal_server_error')]);
         }
     }
     
@@ -303,7 +303,7 @@ class SuperuserController {
         try {
             if (!$this->sessionManager->isAuthenticated() || $this->sessionManager->getUserType() !== 'super') {
                 http_response_code(403);
-                echo json_encode(['success' => false, 'message' => 'Only superusers can deny requests']);
+                echo json_encode(['success' => false, 'message' => __('only_superusers_deny_requests')]);
                 return;
             }
 
@@ -312,7 +312,7 @@ class SuperuserController {
             
             if (!$requestId) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'Request ID is required']);
+                echo json_encode(['success' => false, 'message' => __('request_id_required')]);
                 return;
             }
             
@@ -328,7 +328,7 @@ class SuperuserController {
         } catch (\Exception $e) {
             error_log("Error in denyRequestAPI: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Internal server error']);
+            echo json_encode(['success' => false, 'message' => __('internal_server_error')]);
         }
     }
     
@@ -376,7 +376,7 @@ class SuperuserController {
         try {
             if (!$this->sessionManager->isAuthenticated() || $this->sessionManager->getUserType() !== 'super') {
                 http_response_code(403);
-                echo json_encode(['error' => 'Only superusers can access this data']);
+                echo json_encode(['error' => __('only_superusers_access_data')]);
                 return;
             }
             
@@ -384,7 +384,7 @@ class SuperuserController {
             
             if (!$userId) {
                 http_response_code(400);
-                echo json_encode(['error' => 'User ID is required']);
+                echo json_encode(['error' => __('user_id_required')]);
                 return;
             }
             
@@ -398,7 +398,7 @@ class SuperuserController {
         } catch (\Exception $e) {
             error_log("Error in getUserBalanceAPI: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => 'Internal server error']);
+            echo json_encode(['error' => __('internal_server_error')]);
         }
     }
     
@@ -416,7 +416,7 @@ class SuperuserController {
         try {
             if (!$this->sessionManager->isAuthenticated() || $this->sessionManager->getUserType() !== 'super') {
                 http_response_code(403);
-                echo json_encode(['error' => 'Only superusers can access this data']);
+                echo json_encode(['error' => __('only_superusers_access_data')]);
                 return;
             }
             
@@ -424,7 +424,7 @@ class SuperuserController {
             
             if (!$userId) {
                 http_response_code(400);
-                echo json_encode(['error' => 'User ID is required']);
+                echo json_encode(['error' => __('user_id_required')]);
                 return;
             }
             
@@ -438,7 +438,7 @@ class SuperuserController {
         } catch (\Exception $e) {
             error_log("Error in getUserAbsoluteBalanceAPI: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => 'Internal server error']);
+            echo json_encode(['error' => __('internal_server_error')]);
         }
     }
 
@@ -571,12 +571,12 @@ class SuperuserController {
     public function getAllStudents() {
         try {
             if (!$this->sessionManager->isAuthenticated()) {
-                throw new \Exception('User not authenticated');
+                throw new \Exception(__('user_not_authenticated'));
             }
             
             $userType = $this->sessionManager->getUserType();
             if ($userType !== 'super') {
-                throw new \Exception('Only superusers can access this data');
+                throw new \Exception(__('only_superusers_access_data'));
             }
             
             // Get all standard users (students) with their latest request info
@@ -687,14 +687,14 @@ class SuperuserController {
             
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                echo json_encode(['success' => false, 'message' => __('user_not_authenticated')]);
                 return;
             }
             
             $userType = $this->sessionManager->getUserType();
             if ($userType !== 'super') {
                 http_response_code(403);
-                echo json_encode(['success' => false, 'message' => 'Only superusers can access this data']);
+                echo json_encode(['success' => false, 'message' => __('only_superusers_access_data')]);
                 return;
             }
             
@@ -709,7 +709,7 @@ class SuperuserController {
         } catch (\Exception $e) {
             error_log("Error in getStudentsAPI: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Internal server error']);
+            echo json_encode(['success' => false, 'message' => __('internal_server_error')]);
         }
     }
 
@@ -722,14 +722,14 @@ class SuperuserController {
             
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                echo json_encode(['success' => false, 'message' => __('user_not_authenticated')]);
                 return;
             }
             
             $userType = $this->sessionManager->getUserType();
             if ($userType !== 'super') {
                 http_response_code(403);
-                echo json_encode(['success' => false, 'message' => 'Only superusers can access this data']);
+                echo json_encode(['success' => false, 'message' => __('only_superusers_access_data')]);
                 return;
             }
             
@@ -745,7 +745,7 @@ class SuperuserController {
         } catch (\Exception $e) {
             error_log("Error in getStudentBalance: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Internal server error']);
+            echo json_encode(['success' => false, 'message' => __('internal_server_error')]);
         }
     }
 
@@ -758,14 +758,14 @@ class SuperuserController {
             
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                echo json_encode(['success' => false, 'message' => __('user_not_authenticated')]);
                 return;
             }
             
             $userType = $this->sessionManager->getUserType();
             if ($userType !== 'super') {
                 http_response_code(403);
-                echo json_encode(['success' => false, 'message' => 'Only superusers can adjust FF hours']);
+                echo json_encode(['success' => false, 'message' => __('only_superusers_adjust_ff')]);
                 return;
             }
             
@@ -774,7 +774,7 @@ class SuperuserController {
             
             if (!$input) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'Invalid JSON input']);
+                echo json_encode(['success' => false, 'message' => __('invalid_json_input')]);
                 return;
             }
             
@@ -785,19 +785,19 @@ class SuperuserController {
             
             if (!$studentId || !$action || !$hours || !$reason) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'Missing required fields: student_id, action, hours, reason']);
+                echo json_encode(['success' => false, 'message' => __('missing_required_fields_ff')]);
                 return;
             }
             
             if (!in_array($action, ['add', 'subtract'])) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'Invalid action. Must be "add" or "subtract"']);
+                echo json_encode(['success' => false, 'message' => __('invalid_action_add_subtract')]);
                 return;
             }
             
             if (!is_numeric($hours) || $hours <= 0) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'Hours must be a positive number']);
+                echo json_encode(['success' => false, 'message' => __('hours_must_be_positive')]);
                 return;
             }
             
@@ -864,7 +864,7 @@ class SuperuserController {
         } catch (\Exception $e) {
             error_log("Error in adjustStudentFF: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Internal server error']);
+            echo json_encode(['success' => false, 'message' => __('internal_server_error')]);
         }
     }
 
@@ -877,14 +877,14 @@ class SuperuserController {
             
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                echo json_encode(['success' => false, 'message' => __('user_not_authenticated')]);
                 return;
             }
             
             $userType = $this->sessionManager->getUserType();
             if ($userType !== 'super') {
                 http_response_code(403);
-                echo json_encode(['success' => false, 'message' => 'Only superusers can access this data']);
+                echo json_encode(['success' => false, 'message' => __('only_superusers_access_data')]);
                 return;
             }
             
@@ -926,7 +926,7 @@ class SuperuserController {
         } catch (\Exception $e) {
             error_log("Error in getStudentTransactions: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Internal server error']);
+            echo json_encode(['success' => false, 'message' => __('internal_server_error')]);
         }
     }
 }

@@ -483,11 +483,11 @@ window.showFFModal = function(studentId, action, hours) {
     
     // Update content based on add/remove action
     if (action === 'add') {
-        title.textContent = 'Add FF Hours';
-        message.textContent = `Are you sure you want to add ${hours} hours to this student's FF balance?`;
+        title.textContent = __('add_ff_hours');
+        message.textContent = __('add_hours_confirmation').replace('%s', hours);
     } else {
-        title.textContent = 'Remove FF Hours';
-        message.textContent = `Are you sure you want to remove ${hours} hours from this student's FF balance?`;
+        title.textContent = __('remove_ff_hours');
+        message.textContent = __('remove_hours_confirmation').replace('%s', hours);
     }
     
     modal.style.display = 'block';
@@ -636,11 +636,11 @@ window.showFFModal = function(studentId, action, hours) {
     
     // Update content based on add/remove action
     if (action === 'add') {
-        title.textContent = 'Add FF Hours';
-        message.textContent = `Are you sure you want to add ${hours} hours to this student's FF balance?`;
+        title.textContent = __('add_ff_hours');
+        message.textContent = __('add_hours_confirmation').replace('%s', hours);
     } else {
-        title.textContent = 'Remove FF Hours';
-        message.textContent = `Are you sure you want to remove ${hours} hours from this student's FF balance?`;
+        title.textContent = __('remove_ff_hours');
+        message.textContent = __('remove_hours_confirmation').replace('%s', hours);
     }
     
     modal.style.display = 'block';

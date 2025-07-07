@@ -57,7 +57,7 @@ class AuthRedirectManager {
         if (loginForm && !this.loadingElement) {
             this.loadingElement = document.createElement('div');
             this.loadingElement.className = 'auth-check-loading';
-            this.loadingElement.innerHTML = '<div style="text-align: center; padding: 10px; opacity: 0.7;">Checking authentication status...</div>';
+            this.loadingElement.innerHTML = '<div style="text-align: center; padding: 10px; opacity: 0.7;">' + __('checking_auth_status') + '</div>';
             loginForm.style.opacity = '0.6';
             loginForm.parentNode.insertBefore(this.loadingElement, loginForm);
         }

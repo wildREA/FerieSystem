@@ -27,16 +27,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const file = fileInput.files[0];
 
     if (!file) {
-      showUploadStatus("Please select a PDF file first", "danger");
+      showUploadStatus(translations.select_pdf_first, "danger");
       return;
     }
 
     if (file.type !== "application/pdf") {
-      showUploadStatus("Only PDF files are supported", "danger");
+      showUploadStatus(translations.only_pdf_supported, "danger");
       return;
     }
 
-    showUploadStatus("Uploading calendar...", "info");
+    showUploadStatus(translations.uploading_calendar, "info");
     uploadButton.disabled = true;
 
     const formData = new FormData();
@@ -55,18 +55,18 @@ document.addEventListener("DOMContentLoaded", function () {
     .then(data => {
       if (data.success) {
         createPdfIframe(data.url);
-        showUploadStatus("Calendar uploaded successfully", "success");
+        showUploadStatus(translations.calendar_uploaded_successfully, "success");
         
         if (removeButton) {
           removeButton.style.display = 'inline-block';
         }
       } else {
-        showUploadStatus(data.message || "Upload failed", "danger");
+        showUploadStatus(data.message || translations.upload_failed, "danger");
       }
     })
     .catch(error => {
       console.error('Upload error:', error);
-      showUploadStatus("Upload failed: " + error.message, "danger");
+      showUploadStatus(translations.upload_failed + ": " + error.message, "danger");
     })
     .finally(() => {
       uploadButton.disabled = false;
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function removePdf() {
     // Show removing status
-    showUploadStatus("Removing calendar...", "info");
+    showUploadStatus(translations.removing_calendar, "info");
     removeButton.disabled = true;
 
     // Call delete API
@@ -147,19 +147,19 @@ document.addEventListener("DOMContentLoaded", function () {
           pdfObjectUrl = null;
         }
 
-        showUploadStatus("Calendar has been removed", "success");
+        showUploadStatus(translations.calendar_removed, "success");
 
         // Hide remove button
         if (removeButton) {
           removeButton.style.display = 'none';
         }
       } else {
-        showUploadStatus(data.message || "Failed to remove calendar", "danger");
+        showUploadStatus(data.message || translations.failed_to_remove_calendar, "danger");
       }
     })
     .catch(error => {
       console.error('Delete error:', error);
-      showUploadStatus("Failed to remove calendar: " + error.message, "danger");
+      showUploadStatus(translations.failed_to_remove_calendar + ": " + error.message, "danger");
     })
     .finally(() => {
       removeButton.disabled = false;
@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (data.success && data.exists) {
         // Display the existing PDF from server
         createPdfIframe(data.url);
-        showUploadStatus(`Calendar loaded (uploaded: ${data.uploadTime})`, "success");
+        showUploadStatus(translations.calendar_loaded.replace('%s', data.uploadTime), "success");
         
         // Show remove button
         if (removeButton) {
@@ -227,7 +227,7 @@ document.addEventListener("DOMContentLoaded", function () {
       
       // Only show error message if it's not a common "no file" scenario
       if (!error.message.includes('404') && !error.message.includes('Empty response')) {
-        showUploadStatus("Could not check for existing calendar: " + error.message, "warning");
+        showUploadStatus(translations.could_not_check_calendar.replace('%s', error.message), "warning");
       }
     });
   }

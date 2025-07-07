@@ -1,2 +1,0 @@
-hardcoded -> iteration
-for amount of ... count when inside and outside page

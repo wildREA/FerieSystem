@@ -25,7 +25,7 @@ class RequestController {
     public function getUserRequestsForView() {
         try {
             if (!$this->sessionManager->isAuthenticated()) {
-                throw new \Exception('User not authenticated');
+                throw new \Exception(__('user_not_authenticated'));
             }
             
             $userId = $this->sessionManager->getUserId();
@@ -103,7 +103,7 @@ class RequestController {
         try {
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                echo json_encode(['success' => false, 'message' => __('user_not_authenticated')]);
                 return;
             }
             
@@ -112,7 +112,7 @@ class RequestController {
             
             if (!$input) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'Invalid input data']);
+                echo json_encode(['success' => false, 'message' => __('invalid_input_data')]);
                 return;
             }
             
@@ -123,7 +123,7 @@ class RequestController {
             
             if (!$startDate || !$endDate || $totalHours <= 0) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+                echo json_encode(['success' => false, 'message' => __('missing_required_fields')]);
                 return;
             }
             
@@ -177,7 +177,7 @@ class RequestController {
                 
                 echo json_encode([
                     'success' => true,
-                    'message' => 'Request submitted successfully',
+                    'message' => __('request_submitted_successfully'),
                     'requestId' => $requestId
                 ]);
                 
@@ -189,7 +189,7 @@ class RequestController {
         } catch (\Exception $e) {
             error_log("Error in submitRequest: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Internal server error']);
+            echo json_encode(['success' => false, 'message' => __('internal_server_error')]);
         }
     }
 }

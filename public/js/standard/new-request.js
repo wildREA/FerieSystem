@@ -679,7 +679,7 @@ class NewRequestController {
         e.preventDefault();
         
         if (!this.validateForm()) {
-            UIUtilities.showNotification('Please fill in all required fields correctly', 'warning');
+            UIUtilities.showNotification(__('please_fill_required_fields'), 'warning');
             return;
         }
 
@@ -758,9 +758,9 @@ class NewRequestController {
             await RequestApiService.submitRequest(requestData);
             this.resetForm();
             
-            let successMessage = 'Request submitted successfully!';
+            let successMessage = __('request_submitted_successfully');
             if (requestData.isShortNotice) {
-                successMessage += ' (Short notice - may take longer to approve)';
+                successMessage += ' ' + __('short_notice_warning');
             }
             UIUtilities.showNotification(successMessage, 'success');
             
@@ -783,7 +783,7 @@ class NewRequestController {
         if (isLoading) {
             submitButton.disabled = true;
             submitButton.setAttribute('data-original-text', submitButton.textContent);
-            submitButton.textContent = 'Submitting...';
+            submitButton.textContent = __('submitting');
         } else {
             submitButton.disabled = false;
             const originalText = submitButton.getAttribute('data-original-text');
@@ -845,7 +845,7 @@ class NewRequestController {
         const { startDate, endDate, startHour, startMinute, endHour, endMinute, requestReason } = this.elements;
         
         if (!startDate?.value || !endDate?.value) {
-            UIUtilities.showNotification('Please select start and end dates to preview', 'info');
+            UIUtilities.showNotification(__('please_select_start_end_dates'), 'info');
             return;
         }
         

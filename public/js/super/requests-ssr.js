@@ -2,7 +2,7 @@ function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(function() {
         console.log('Copied to clipboard: ' + text);
         if (typeof window.showNotification === 'function') {
-            window.showNotification('Copied to clipboard', 'success');
+            window.showNotification(__('copied_to_clipboard'), 'success');
         }
     }).catch(function(err) {
         console.error('Could not copy text: ', err);
@@ -762,8 +762,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
 window.approveRequest = function(requestId) {
     Swal.fire({
-        title: 'Approve Request',
-        text: 'Are you sure you want to approve this vacation request?',
+        title: __('approve_request'),
+        text: __('confirm_approve_request'),
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#28a745',
@@ -787,8 +787,8 @@ window.approveRequest = function(requestId) {
 
 function performApproveRequest(requestId) {
     Swal.fire({
-        title: 'Processing...',
-        text: 'Approving the request, please wait.',
+        title: __('processing'),
+        text: __('approving_request_please_wait'),
         icon: 'info',
         allowOutsideClick: false,
         showConfirmButton: false,
@@ -836,8 +836,8 @@ function performApproveRequest(requestId) {
 
 window.denyRequest = function(requestId) {
     Swal.fire({
-        title: 'Deny Request',
-        text: 'Are you sure you want to deny this vacation request?',
+        title: __('deny_request'),
+        text: __('confirm_deny_request'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
@@ -861,8 +861,8 @@ window.denyRequest = function(requestId) {
 
 function performDenyRequest(requestId) {
     Swal.fire({
-        title: 'Processing...',
-        text: 'Denying the request, please wait.',
+        title: __('processing'),
+        text: __('denying_request_please_wait'),
         icon: 'info',
         allowOutsideClick: false,
         showConfirmButton: false,

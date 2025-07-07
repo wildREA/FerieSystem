@@ -373,7 +373,7 @@ $routes['GET']['/uploads/calendar/calendar.pdf'] = function() {
         exit;
     } else {
         http_response_code(404);
-        echo 'Calendar file not found';
+        echo __('calendar_file_not_found_simple');
         exit;
     }
 };
@@ -443,7 +443,7 @@ $routes['GET']['/api/notifications'] = function() {
         error_log("Error in notifications route: " . $e->getMessage());
         header('Content-Type: application/json; charset=UTF-8');
         http_response_code(500);
-        echo json_encode(['error' => 'Internal server error', 'success' => false]);
+        echo json_encode(['error' => __('internal_server_error'), 'success' => false]);
     }
     exit; // Ensure absolutely no additional output
 };

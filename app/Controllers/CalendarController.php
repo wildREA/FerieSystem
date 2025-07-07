@@ -31,20 +31,20 @@ class CalendarController {
         try {
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                echo json_encode(['success' => false, 'message' => __('user_not_authenticated')]);
                 exit;
             }
             
             $userType = $this->sessionManager->getUserType();
             if ($userType !== 'super') {
                 http_response_code(403);
-                echo json_encode(['success' => false, 'message' => 'Only superusers can upload calendar files']);
+                echo json_encode(['success' => false, 'message' => __('only_superusers_upload_calendar')]);
                 exit;
             }
             
             if (!isset($_FILES['calendar']) || $_FILES['calendar']['error'] !== UPLOAD_ERR_OK) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'No file uploaded or upload error occurred']);
+                echo json_encode(['success' => false, 'message' => __('no_file_uploaded')]);
                 exit;
             }
             
@@ -54,7 +54,7 @@ class CalendarController {
             $fileType = mime_content_type($uploadedFile['tmp_name']);
             if ($fileType !== 'application/pdf') {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'Only PDF files are allowed']);
+                echo json_encode(['success' => false, 'message' => __('only_pdf_files_allowed')]);
                 exit;
             }
             
@@ -62,7 +62,7 @@ class CalendarController {
             $maxSize = 10 * 1024 * 1024; // 10MB in bytes
             if ($uploadedFile['size'] > $maxSize) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'File size cannot exceed 10MB']);
+                echo json_encode(['success' => false, 'message' => __('file_size_limit_10mb')]);
                 exit;
             }
             
@@ -79,21 +79,21 @@ class CalendarController {
             if (move_uploaded_file($uploadedFile['tmp_name'], $targetPath)) {
                 echo json_encode([
                     'success' => true,
-                    'message' => 'Calendar uploaded successfully',
+                    'message' => __('calendar_uploaded_successfully'),
                     'filename' => $targetFilename,
                     'url' => '/uploads/calendar/' . $targetFilename
                 ]);
                 exit;
             } else {
                 http_response_code(500);
-                echo json_encode(['success' => false, 'message' => 'Failed to save uploaded file']);
+                echo json_encode(['success' => false, 'message' => __('failed_to_save_file')]);
                 exit;
             }
             
         } catch (\Exception $e) {
             error_log("Error in CalendarController::uploadCalendar: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'An unexpected error occurred']);
+            echo json_encode(['success' => false, 'message' => __('unexpected_error_occurred')]);
             exit;
         }
     }
@@ -111,7 +111,7 @@ class CalendarController {
         try {
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                echo json_encode(['success' => false, 'message' => __('user_not_authenticated')]);
                 exit;
             }
             
@@ -143,7 +143,7 @@ class CalendarController {
         } catch (\Exception $e) {
             error_log("Error in CalendarController::getCalendarInfo: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'An unexpected error occurred']);
+            echo json_encode(['success' => false, 'message' => __('unexpected_error_occurred')]);
             exit;
         }
     }
@@ -161,14 +161,14 @@ class CalendarController {
         try {
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                echo json_encode(['success' => false, 'message' => __('user_not_authenticated')]);
                 exit;
             }
             
             $userType = $this->sessionManager->getUserType();
             if ($userType !== 'super') {
                 http_response_code(403);
-                echo json_encode(['success' => false, 'message' => 'Only superusers can delete calendar files']);
+                echo json_encode(['success' => false, 'message' => __('only_superusers_delete_calendar')]);
                 exit;
             }
             
@@ -179,18 +179,18 @@ class CalendarController {
                 if (unlink($filePath)) {
                     echo json_encode([
                         'success' => true,
-                        'message' => 'Calendar file deleted successfully'
+                        'message' => __('calendar_deleted_successfully')
                     ]);
                     exit;
                 } else {
                     http_response_code(500);
-                    echo json_encode(['success' => false, 'message' => 'Failed to delete calendar file']);
+                    echo json_encode(['success' => false, 'message' => __('failed_to_delete_calendar')]);
                     exit;
                 }
             } else {
                 echo json_encode([
                     'success' => true,
-                    'message' => 'No calendar file to delete'
+                    'message' => __('calendar_file_not_found')
                 ]);
                 exit;
             }
@@ -198,7 +198,7 @@ class CalendarController {
         } catch (\Exception $e) {
             error_log("Error in CalendarController::deleteCalendar: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'An unexpected error occurred']);
+            echo json_encode(['success' => false, 'message' => __('unexpected_error_occurred')]);
             exit;
         }
     }

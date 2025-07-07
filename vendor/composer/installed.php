@@ -3,7 +3,7 @@
         'name' => 'feriesystem/feriesystem',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'c9b62a4d68b1368771b7623ad8552f7602a68dd9',
+        'reference' => '0ca8f7ce277894d2c10da0ca447f07c846a4c93a',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'feriesystem/feriesystem' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'c9b62a4d68b1368771b7623ad8552f7602a68dd9',
+            'reference' => '0ca8f7ce277894d2c10da0ca447f07c846a4c93a',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

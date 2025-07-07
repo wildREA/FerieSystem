@@ -1,4 +1,7 @@
 <?php
+// Load language helper
+require_once dirname(__DIR__, 2) . '/Helpers/LanguageHelper.php';
+
 // Helper functions for request formatting
 function formatDateTimeForDisplay($dateTimeString) {
     $dateTime = new DateTime($dateTimeString);
@@ -37,11 +40,11 @@ $pendingRequests = $pendingRequests ?? [];
 $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="da">
   <head>
     <?php require_once dirname(__DIR__) . '/components/header.php'; ?>
-    <meta name="description" content="Graphic designer personnel management website" />
-    <title>Requests Management - Ferie System</title>
+    <meta name="description" content="<?= __('requests_management') ?>" />
+    <title><?= __('requests_management') ?> - FerieSystem</title>
     <!-- Frameworks & Tools -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <!-- Stylesheets -->
@@ -52,6 +55,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<?= asset('public/js/translations.js') ?>" defer></script>
     <script src="<?= asset('public/js/components/profileInfoPopup.js') ?>" defer></script>
     <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
     <script src="<?= asset('public/js/super/requests-ssr.js') ?>" defer></script>
@@ -67,14 +71,14 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
           <div class="user-avatar">
             <i class="bi bi-person-circle"></i>
           </div>
-          <div class="user-role user-select-none">Super user</div>
+          <div class="user-role user-select-none"><?= __('superuser') ?></div>
         </div>
         <ul class="nav-menu">
           <li class="nav-section active">
             <a href="<?= url('/requests') ?>" class="section-link">
               <div class="section-header requests-background">
                 <i class="bi bi-file-earmark-text text-danger"></i>
-                <span class="user-select-none">Requests</span>
+                <span class="user-select-none"><?= __('requests') ?></span>
                 <?php if (isset($notifications['pendingRequests']) && $notifications['pendingRequests'] > 0): ?>
                 <span class="notification-badge user-select-none"><?= $notifications['pendingRequests'] ?></span>
                 <?php endif; ?>
@@ -85,7 +89,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
             <a href="<?= url('/students') ?>" class="section-link">
               <div class="section-header students-background">
                 <i class="bi bi-people text-primary"></i>
-                <span class="user-select-none">Students</span>
+                <span class="user-select-none"><?= __('students') ?></span>
               </div>
             </a>
           </li>
@@ -93,7 +97,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
             <a href="<?= url('/calendar') ?>" class="section-link">
               <div class="section-header bounties-background">
                 <i class="bi bi-cash-coin text-success"></i>
-                <span class="user-select-none">Calendar</span>
+                <span class="user-select-none"><?= __('calendar') ?></span>
               </div>
             </a>
           </li>
@@ -106,7 +110,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
         <div class="search-container">
           <div class="search-wrapper">
             <i class="bi bi-search search-icon"></i>
-            <input type="text" id="studentSearch" placeholder="Search requests..." class="form-control search-input">
+            <input type="text" id="studentSearch" placeholder="<?= __('search_requests_placeholder') ?>" class="form-control search-input">
             <div id="searchResults" class="search-results"></div>
           </div>
         </div>
@@ -115,7 +119,7 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
             <span class="notification-dot"></span>
           </i></div>
           <div class="d-flex align-items-center">
-            <span class="me-2 user-select-none">SUPER USER</span>
+            <span class="me-2 user-select-none"><?= strtoupper(__('superuser')) ?></span>
             <div id="profileInfo" class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
               <i class="bi bi-person text-white"></i>
             </div>
@@ -126,8 +130,8 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
       <!-- Main Content -->
       <div class="main-content">
         <div class="content-header">
-          <h2 class="user-select-none">Requests</h2>
-          <p class="text-muted user-select-none">Manage pending and recent vacation requests</p>
+          <h2 class="user-select-none"><?= __('requests') ?></h2>
+          <p class="text-muted user-select-none"><?= __('requests_management') ?></p>
         </div>
         
         <div class="students-grid" id="studentsGrid">
@@ -135,8 +139,8 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
             <div class="no-results" style="display: block;">
               <div class="text-center py-5">
                 <i class="bi bi-search fs-1 text-muted"></i>
-                <h4 class="mt-3 text-muted user-select-none">No pending requests</h4>
-                <p class="text-muted user-select-none">All requests have been processed</p>
+                <h4 class="mt-3 text-muted user-select-none"><?= __('no_pending_requests') ?></h4>
+                <p class="text-muted user-select-none"><?= __('all_requests_processed') ?></p>
               </div>
             </div>
           <?php else: ?>
@@ -155,34 +159,34 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
                 
                 <div class="request-dates mt-3">
                   <div class="date-block">
-                    <div class="date-label">Start Date</div>
+                    <div class="date-label"><?= __('start_date') ?></div>
                     <div class="date-value"><?= formatDateTimeForDisplay($request['requestDate']) ?></div>
                   </div>
                   <div class="date-block">
-                    <div class="date-label">End Date</div>
+                    <div class="date-label"><?= __('end_date') ?></div>
                     <div class="date-value"><?= formatDateTimeForDisplay($request['requestEndDate']) ?></div>
                   </div>
                   <div class="date-block">
-                    <div class="date-label">Days</div>
+                    <div class="date-label"><?= __('days') ?></div>
                     <div class="date-value"><?= htmlspecialchars($request['requestDays']) ?></div>
                   </div>
                 </div>
                 
                 <div class="mt-3">
-                  <div class="detail-label">Reason:</div>
+                  <div class="detail-label"><?= __('reason') ?>:</div>
                   <div class="detail-value"><?= htmlspecialchars($request['requestReason']) ?></div>
                 </div>
                 
                 <div class="student-card-footer">
                   <div class="action-buttons">
                     <button class="btn btn-success btn-sm me-2" onclick="approveRequest('<?= htmlspecialchars($request['request_id']) ?>')">
-                      <i class="bi bi-check-circle"></i> Approve
+                      <i class="bi bi-check-circle"></i> <?= __('approve') ?>
                     </button>
                     <button class="btn btn-danger btn-sm me-2" onclick="denyRequest('<?= htmlspecialchars($request['request_id']) ?>')">
-                      <i class="bi bi-x-circle"></i> Deny
+                      <i class="bi bi-x-circle"></i> <?= __('deny') ?>
                     </button>
                     <button class="btn btn-outline-primary btn-sm" onclick="viewDetails('<?= htmlspecialchars($request['request_id']) ?>')">
-                      <i class="bi bi-eye"></i> Details
+                      <i class="bi bi-eye"></i> <?= __('details') ?>
                     </button>
                   </div>
                 </div>
@@ -195,8 +199,8 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
         <div class="no-results" id="noResults" style="display: none;">
           <div class="text-center py-5">
             <i class="bi bi-search fs-1 text-muted"></i>
-            <h4 class="mt-3 text-muted user-select-none">No requests found</h4>
-            <p class="text-muted user-select-none">Try adjusting your search criteria</p>
+            <h4 class="mt-3 text-muted user-select-none"><?= __('no_requests_found') ?></h4>
+            <p class="text-muted user-select-none"><?= __('try_adjusting_search') ?></p>
           </div>
         </div>
         
@@ -206,16 +210,16 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
         <!-- Approved Requests Section -->
         <div class="content-header mt-4">
           <div class="d-flex justify-content-between align-items-center">
-            <h3 class="user-select-none">Approved Requests</h3>
+            <h3 class="user-select-none"><?= __('approved_requests_section') ?></h3>
             <div class="toggle-container">
-              <span class="toggle-label me-2 user-select-none">Show:</span>
+              <span class="toggle-label me-2 user-select-none"><?= __('show_label') ?>:</span>
               <div class="btn-group" role="group" aria-label="Request status toggle">
-                <button type="button" class="btn btn-sm btn-primary active user-select-none" id="activeRequestsBtn">Active</button>
-                <button type="button" class="btn btn-sm btn-outline-primary user-select-none" id="inactiveRequestsBtn">Completed</button>
+                <button type="button" class="btn btn-sm btn-primary active user-select-none" id="activeRequestsBtn"><?= __('active_button') ?></button>
+                <button type="button" class="btn btn-sm btn-outline-primary user-select-none" id="inactiveRequestsBtn"><?= __('completed_button') ?></button>
               </div>
             </div>
           </div>
-          <p class="text-muted user-select-none">View and manage approved vacation requests</p>
+          <p class="text-muted user-select-none"><?= __('view_manage_approved') ?></p>
         </div>
         
         <!-- Approved requests container -->

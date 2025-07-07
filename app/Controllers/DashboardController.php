@@ -1,7 +1,11 @@
 <?php
 namespace App\Controllers;
 
-require_once dirname(__DIR__) . '/Core/sessions.php';
+require_once dirname(__D        } catch (Exception $e) {
+            error_log("Error in getDashboardData: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['error' => __('internal_server_error')]);
+        } . '/Core/sessions.php';
 require_once dirname(__DIR__) . '/Core/connection.php';
 
 class DashboardController {
@@ -30,14 +34,14 @@ class DashboardController {
         try {
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
-                echo json_encode(['error' => 'User not authenticated']);
+                echo json_encode(['error' => __('user_not_authenticated')]);
                 return;
             }
             
             $userType = $this->sessionManager->getUserType();
             if ($userType !== 'standard') {
                 http_response_code(403);
-                echo json_encode(['error' => 'Only students can access dashboard data']);
+                echo json_encode(['error' => __('only_students_access_dashboard')]);
                 return;
             }
             
@@ -59,7 +63,7 @@ class DashboardController {
         } catch (\Exception $e) {
             error_log("Error in getDashboardData: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => 'Internal server error']);
+            echo json_encode(['error' => __('internal_server_error')]);
         }
     }
     
@@ -142,14 +146,14 @@ class DashboardController {
             if ($this->db === null) {
                 error_log("Database connection not available in getBalanceAPI");
                 http_response_code(500);
-                echo json_encode(['error' => 'Database connection failed']);
+                echo json_encode(['error' => __('database_connection_failed')]);
                 return;
             }
             
             if (!$this->sessionManager->isAuthenticated()) {
                 error_log("User not authenticated in getBalanceAPI");
                 http_response_code(401);
-                echo json_encode(['error' => 'User not authenticated']);
+                echo json_encode(['error' => __('user_not_authenticated')]);
                 return;
             }
             
@@ -157,7 +161,7 @@ class DashboardController {
             if ($userType !== 'standard') {
                 error_log("Non-standard user trying to access balance API: " . $userType);
                 http_response_code(403);
-                echo json_encode(['error' => 'Only students can access balance data']);
+                echo json_encode(['error' => __('only_students_access_balance')]);
                 return;
             }
             
@@ -165,7 +169,7 @@ class DashboardController {
             if (!$userId) {
                 error_log("No user ID available in getBalanceAPI");
                 http_response_code(400);
-                echo json_encode(['error' => 'User ID not available']);
+                echo json_encode(['error' => __('user_id_not_available')]);
                 return;
             }
             
@@ -180,7 +184,7 @@ class DashboardController {
             error_log("Error in getBalanceAPI: " . $e->getMessage());
             error_log("Stack trace: " . $e->getTraceAsString());
             http_response_code(500);
-            echo json_encode(['error' => 'Internal server error']);
+            echo json_encode(['error' => __('internal_server_error')]);
         }
     }
 }

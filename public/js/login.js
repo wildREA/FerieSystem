@@ -31,13 +31,13 @@ function showForm(formToShow) {
         }, 50);
         
         if (formToShow === loginForm) {
-            headerTitle.textContent = 'FerieSystem Login';
+            headerTitle.textContent = __('auth_title');
         } else if (formToShow === keyVerificationForm) {
-            headerTitle.textContent = 'FerieSystem Registration';
+            headerTitle.textContent = __('registration_title');
             // Focus first key box
             keyBoxes[0].focus();
         } else if (formToShow === registrationForm) {
-            headerTitle.textContent = 'FerieSystem Registration';
+            headerTitle.textContent = __('registration_title');
             // Focus first input
             document.getElementById('registerName').focus();
         }
@@ -89,10 +89,10 @@ keyVerificationForm.addEventListener('submit', function(e) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while verifying the key. Please try again.');
+            alert(__('key_verification_error'));
         });
     } else {
-        alert('Please enter a complete 8-character registration key.');
+        alert(__('please_enter_complete_key'));
     }
 });
 
@@ -195,7 +195,7 @@ registrationForm.addEventListener('submit', function(e) {
     
     // Validation
     if (!name || !username || !email || !password || !confirmPassword) {
-        alert('Please fill in all fields.');
+        alert(__('please_fill_all_fields'));
         return;
     }
     
@@ -212,12 +212,12 @@ registrationForm.addEventListener('submit', function(e) {
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        alert('Please enter a valid email address.');
+        alert(__('please_enter_valid_email'));
         return;
     }
     
     if (registrationKey.length !== 8) {
-        alert('Please enter a valid 8-character registration key.');
+        alert(__('please_enter_valid_key'));
         return;
     }
     
@@ -225,7 +225,7 @@ registrationForm.addEventListener('submit', function(e) {
     const submitButton = this.querySelector('button[type="submit"]');
     const originalText = submitButton.textContent;
     submitButton.disabled = true;
-    submitButton.textContent = 'Creating Account...';
+    submitButton.textContent = __('creating_account');
     
     // Send AJAX request
     fetch(window.APP_URLS.register, {
@@ -258,12 +258,12 @@ registrationForm.addEventListener('submit', function(e) {
             document.getElementById('registrationKey').value = '';
         } else {
             // Show error message
-            alert(data.message || 'Registration failed. Please try again.');
+            alert(data.message || __('registration_failed_try_again'));
         }
     })
     .catch(error => {
         console.error('Registration error:', error);
-        alert('An error occurred during registration. Please try again.');
+        alert(__('registration_error'));
     })
     .finally(() => {
         // Re-enable submit button
@@ -282,7 +282,7 @@ loginForm.addEventListener('submit', function(e) {
     
     // Basic client-side validation
     if (!email || !password) {
-        alert('Please enter both email and password.');
+        alert(__('please_enter_email_password'));
         return false;
     }
     
@@ -290,7 +290,7 @@ loginForm.addEventListener('submit', function(e) {
     const submitButton = this.querySelector('button[type="submit"]');
     const originalText = submitButton.textContent;
     submitButton.disabled = true;
-    submitButton.textContent = 'Signing in...';
+    submitButton.textContent = __('signing_in');
     
     // Send AJAX request
     fetch(window.APP_URLS.login, {
@@ -311,12 +311,12 @@ loginForm.addEventListener('submit', function(e) {
             window.location.href = data.redirect;
         } else {
             // Show error message
-            alert(data.message || 'Login failed. Please try again.');
+            alert(data.message || __('login_failed_try_again'));
         }
     })
     .catch(error => {
         console.error('Login error:', error);
-        alert('An error occurred during login. Please try again.');
+        alert(__('login_error'));
     })
     .finally(() => {
         // Re-enable submit button

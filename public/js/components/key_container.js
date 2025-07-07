@@ -125,7 +125,7 @@ class KeyContainer {
       }
     }
 
-    this.textWrapper.textContent = key || "No key generated";
+    this.textWrapper.textContent = key || __('no_key_generated');
   }
 
   toggleVisibility() {
@@ -147,7 +147,7 @@ class KeyContainer {
   }
 
   showCannotHideNotification() {
-    this.showToast("Cannot hide without a key", "error");
+    this.showToast(__('cannot_hide_without_key'), "error");
   }
 
   updateVisibilityIcon(className, color, title) {
@@ -182,27 +182,27 @@ class KeyContainer {
     } catch (error) {
       console.error("Error generating new key:", error);
       if (this.textWrapper) {
-        this.textWrapper.textContent = "Error generating key";
+        this.textWrapper.textContent = __('error_generating_key');
       }
     }
   }
 
   async copyToClipboard() {
     if (!this.currentKey) {
-      this.showToast("No key available to copy", "warning");
+      this.showToast(__('no_key_available_copy'), "warning");
       return;
     }
 
     try {
       await navigator.clipboard.writeText(this.currentKey);
-      this.showToast("Registration key copied to clipboard", "success");
+      this.showToast(__('registration_key_copied'), "success");
     } catch (err) {
       try {
         this.fallbackCopyToClipboard(this.currentKey);
-        this.showToast("Registration key copied to clipboard", "success");
+        this.showToast(__('registration_key_copied'), "success");
       } catch (fallbackErr) {
         console.error("Failed to copy to clipboard:", fallbackErr);
-        this.showToast("Failed to copy key to clipboard", "error");
+        this.showToast(__('failed_copy_clipboard'), "error");
       }
     }
   }

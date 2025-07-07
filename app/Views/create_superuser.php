@@ -3,6 +3,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Load language helper
+require_once __DIR__ . '/../Helpers/LanguageHelper.php';
+
 if (!isset($_SESSION['verified_admin_key'])) {
     $_SESSION['error_message'] = 'Access denied. Please verify admin key first.';
     header('Location: ' . url('/auth'));
@@ -17,10 +20,10 @@ $success = $_SESSION['success_message'] ?? null;
 unset($_SESSION['error_message'], $_SESSION['success_message']);
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <?php require_once __DIR__ . '/components/header.php'; ?>
-    <title>Create Super User - FerieSystem</title>
+    <title><?= __('create_superuser_title') ?> - FerieSystem</title>
     <link rel="stylesheet" href="public/css/login.css">
     <script>
         window.APP_URLS = {
@@ -34,7 +37,7 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
     <div class="login-form">
         <div class="container">
             <header style="text-align: center;">
-                <h1 id="headerTitle">FerieSystem Registration</h1>
+                <h1 id="headerTitle"><?= __('registration_title') ?></h1>
             </header>
 
             <div class="content">
@@ -51,20 +54,20 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
                 <?php endif; ?>
 
                 <form action="<?= url('/api/create-superuser') ?>" method="post" id="superUserForm">
-                    <h2 style="text-align: center;">Create Super Account</h2>
-                    <p class="form-description">Fill in your details to create super user</p>
+                    <h2 style="text-align: center;"><?= __('create_superuser_title') ?></h2>
+                    <p class="form-description"><?= __('create_superuser_description') ?></p>
                     
                     <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" name="name" placeholder="Full name" required>
+                        <label for="name"><?= __('name') ?></label>
+                        <input type="text" id="name" name="name" placeholder="<?= __('full_name_placeholder') ?>" required>
                     </div>
                     <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" placeholder="Username" required>
+                        <label for="username"><?= __('username') ?></label>
+                        <input type="text" id="username" name="username" placeholder="<?= __('username_placeholder') ?>" required>
                     </div>
                     <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" placeholder="Email address" required>
+                        <label for="email"><?= __('email') ?></label>
+                        <input type="email" id="email" name="email" placeholder="<?= __('email_address') ?>" required>
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
@@ -99,10 +102,10 @@ unset($_SESSION['error_message'], $_SESSION['success_message']);
                         </div>
                     </div>
                     <div class="form-group">
-                        <button type="submit" class="btn">Create Super User</button>
+                        <button type="submit" class="btn"><?= __('create_super_user_button') ?></button>
                     </div>
                     <div class="register-link">
-                        <a href="<?= url('/auth') ?>">← Back to Login</a>
+                        <a href="<?= url('/auth') ?>"><?= __('back_to_login') ?></a>
                     </div>
                 </form>
             </div>

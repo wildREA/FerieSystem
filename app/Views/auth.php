@@ -3,6 +3,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Load language helper
+require_once __DIR__ . '/../Helpers/LanguageHelper.php';
+
 $error = $_SESSION['login_error'] ?? null;
 $regError = $_SESSION['registration_error'] ?? $_SESSION['register_error'] ?? null;
 $regSuccess = $_SESSION['registration_success'] ?? $_SESSION['success_message'] ?? null;
@@ -10,10 +13,10 @@ $regSuccess = $_SESSION['registration_success'] ?? $_SESSION['success_message'] 
 unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['registration_success'], $_SESSION['register_error'], $_SESSION['success_message']);
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <?php require_once __DIR__ . '/components/header.php'; ?>
-    <title>Login - FerieSystem</title>
+    <title><?= __('auth_title') ?> - FerieSystem</title>
     <link rel="stylesheet" href="public/css/login.css">
     <script>
         window.APP_URLS = {
@@ -24,13 +27,14 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
         };
     </script>
     <script src="public/js/auth-redirect.js" defer></script>
+    <script src="public/js/translations.js" defer></script>
     <script src="public/js/login.js" defer></script>
 </head>
 <body>
     <div class="login-form">
         <div class="container">
             <header>
-                <h1 id="headerTitle">FerieSystem Login</h1>
+                <h1 id="headerTitle"><?= __('auth_title') ?></h1>
             </header>
 
             <div class="content">
@@ -54,14 +58,14 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
                 
                 <form action="<?= url('/login') ?>" method="post" id="loginForm">
                     <div class="form-group">
-                        <label for="email">User</label>
-                        <input type="text" id="email" name="email" placeholder="Email or username" required>
+                        <label for="email"><?= __('user_label') ?></label>
+                        <input type="text" id="email" name="email" placeholder="<?= __('email_placeholder') ?>" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="password">Password</label>
+                        <label for="password"><?= __('password') ?></label>
                         <div class="password-input-container">
-                            <input type="password" id="password" name="password" placeholder="Password" required>
+                            <input type="password" id="password" name="password" placeholder="<?= __('password_placeholder') ?>" required>
                             <button type="button" class="password-toggle" data-target="password">
                                 <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -79,26 +83,26 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
                         <div class="forgot-password">
                             <label for="remember">
                                 <input type="checkbox" id="remember" name="remember" value="1">
-                                Remember me
+                                <?= __('remember_me') ?>
                             </label>
-                            <div onclick="alert('Construction in progress 🚧')">
-                                <a>Forgot password?</a>
+                            <div onclick="alert('<?= __('construction_in_progress') ?>')">
+                                <a><?= __('forgot_password') ?></a>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <button type="submit" class="btn">Sign In</button>
+                        <button type="submit" class="btn"><?= __('sign_in') ?></button>
                     </div>
 
                     <div class="register-link">
-                        Don't have an account? <a href="#" id="showRegisterKey">Register here</a>
+                        <?= __('no_account') ?> <a href="#" id="showRegisterKey"><?= __('register_here') ?></a>
                     </div>
                 </form>
 
                 <form id="keyVerificationForm" style="display: none;">
-                    <h2>Registration Key</h2>
-                    <p class="form-description">Please enter your registration key to continue</p>
+                    <h2><?= __('registration_key') ?></h2>
+                    <p class="form-description"><?= __('registration_key_description') ?></p>
                     <div class="form-group">
                         
                         <div class="key-input-container">
@@ -114,33 +118,33 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
                         <input type="hidden" id="registrationKey" name="registrationKey">
                     </div>
                     <div class="form-group">
-                        <button type="submit" class="btn">Continue</button>
+                        <button type="submit" class="btn"><?= __('continue') ?></button>
                     </div>
                     <div class="register-link">
-                        <a href="#" id="showLogin">← Back to Login</a>
+                        <a href="#" id="showLogin"><?= __('back_to_login') ?></a>
                     </div>
                 </form>
 
                 <form action="<?= url('/register') ?>" method="post" id="registrationForm" style="display: none;">
-                    <h2>Create Account</h2>
-                    <p class="form-description">Fill in your details to register</p>
+                    <h2><?= __('create_account') ?></h2>
+                    <p class="form-description"><?= __('registration_description') ?></p>
                     <input type="hidden" id="regRegistrationKey" name="registrationKey" value="">
                     <div class="form-group">
-                        <label for="registerName">Name</label>
-                        <input type="text" id="registerName" name="name" placeholder="Full name" required>
+                        <label for="registerName"><?= __('name') ?></label>
+                        <input type="text" id="registerName" name="name" placeholder="<?= __('full_name_placeholder') ?>" required>
                     </div>
                     <div class="form-group">
-                        <label for="registerUsername">Username</label>
-                        <input type="text" id="registerUsername" name="username" placeholder="Choose a username" required>
+                        <label for="registerUsername"><?= __('username') ?></label>
+                        <input type="text" id="registerUsername" name="username" placeholder="<?= __('username_placeholder') ?>" required>
                     </div>
                     <div class="form-group">
-                        <label for="registerEmail">Email</label>
-                        <input type="email" id="registerEmail" name="email" placeholder="Email address" required>
+                        <label for="registerEmail"><?= __('email') ?></label>
+                        <input type="email" id="registerEmail" name="email" placeholder="<?= __('email') ?>" required>
                     </div>
                     <div class="form-group">
-                        <label for="registerPassword">Password</label>
+                        <label for="registerPassword"><?= __('password') ?></label>
                         <div class="password-input-container">
-                            <input type="password" id="registerPassword" name="password" placeholder="Create password" required>
+                            <input type="password" id="registerPassword" name="password" placeholder="<?= __('create_password_placeholder') ?>" required>
                             <button type="button" class="password-toggle" data-target="registerPassword">
                                 <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -154,9 +158,9 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="confirmPassword">Confirm Password</label>
+                        <label for="confirmPassword"><?= __('confirm_password') ?></label>
                         <div class="password-input-container">
-                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm password" required>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="<?= __('confirm_password_placeholder') ?>" required>
                             <button type="button" class="password-toggle" data-target="confirmPassword">
                                 <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -170,10 +174,10 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
                         </div>
                     </div>
                     <div class="form-group">
-                        <button type="submit" class="btn">Create Account</button>
+                        <button type="submit" class="btn"><?= __('create_account') ?></button>
                     </div>
                     <div class="register-link">
-                        <a href="#" id="showLoginFromRegister">← Back to Login</a>
+                        <a href="#" id="showLoginFromRegister"><?= __('back_to_login') ?></a>
                     </div>
                 </form>
             </div>
@@ -181,7 +185,7 @@ unset($_SESSION['login_error'], $_SESSION['registration_error'], $_SESSION['regi
     </div>
 
     <footer>
-        <p>&copy; 2025 FerieSystem. All rights reserved. Developed by Thunderclaw Industries™</p>
+        <p>&copy; 2025 FerieSystem. <?= __('all_rights_reserved') ?>. <?= __('developed_by') ?> Thunderclaw Industries™</p>
     </footer>
     <script>
         // Handle Escape key to redirect to auth page

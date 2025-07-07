@@ -140,7 +140,7 @@ class Router
             }
             
             header('Content-Type: application/json');
-            echo json_encode(['error' => 'API endpoint not found']);
+            echo json_encode(['error' => __('api_endpoint_not_found')]);
             return null;
         }
         

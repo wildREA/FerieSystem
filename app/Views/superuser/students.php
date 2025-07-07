@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="da">
   <head>
-    <?php require_once dirname(__DIR__) . '/components/header.php'; ?>
-    <meta name="description" content="Graphic designer personnel management website" />
-    <title>Personnel Management Dashboard</title>
+    <?php
+    // Load language helper
+    require_once dirname(__DIR__, 2) . '/Helpers/LanguageHelper.php';
+    require_once dirname(__DIR__) . '/components/header.php'; 
+    ?>
+    <meta name="description" content="<?= __('students_management') ?>" />
+    <title><?= __('students_management') ?> - FerieSystem</title>
     <!-- Frameworks & Tools -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <!-- Stylesheets -->
@@ -14,6 +18,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script src="<?= asset('public/js/components/NotificationManager.js') ?>" defer></script>
+    <script src="<?= asset('public/js/translations.js') ?>" defer></script>
     <script src="<?= asset('public/js/components/profileInfoPopup.js') ?>" defer></script>
     <script src="<?= asset('public/js/super/students.js') ?>" defer></script>
     <!-- Hidden input to identify current page -->
@@ -28,14 +33,14 @@
           <div class="user-avatar">
             <i class="bi bi-person-circle"></i>
           </div>
-          <div class="user-role">Super user</div>
+          <div class="user-role"><?= __('superuser') ?></div>
         </div>
         <ul class="nav-menu">
           <li class="nav-section">
             <a href="<?= url('/requests') ?>" class="section-link">
               <div class="section-header requests-background">
                 <i class="bi bi-file-earmark-text text-danger"></i>
-                <span>Requests</span>
+                <span><?= __('requests') ?></span>
                 <?php if (isset($notifications['pendingRequests']) && $notifications['pendingRequests'] > 0): ?>
                 <span class="notification-badge"><?= $notifications['pendingRequests'] ?></span>
                 <?php endif; ?>
@@ -46,7 +51,7 @@
             <a href="<?= url('/students') ?>" class="section-link">
               <div class="section-header students-background">
                 <i class="bi bi-people text-primary"></i>
-                <span>Students</span>
+                <span><?= __('students') ?></span>
               </div>
             </a>
           </li>
@@ -54,7 +59,7 @@
             <a href="<?= url('/calendar') ?>" class="section-link">
               <div class="section-header bounties-background">
                 <i class="bi bi-cash-coin text-success"></i>
-                <span>Calendar</span>
+                <span><?= __('calendar') ?></span>
               </div>
             </a>
           </li>
@@ -67,7 +72,7 @@
         <div class="search-container">
           <div class="search-wrapper">
             <i class="bi bi-search search-icon"></i>
-            <input type="text" id="studentSearch" placeholder="Search students..." class="form-control search-input">
+            <input type="text" id="studentSearch" placeholder="<?= __('search_students_placeholder') ?>" class="form-control search-input">
             <div id="searchResults" class="search-results"></div>
           </div>
         </div>
@@ -76,7 +81,7 @@
             <span class="notification-dot"></span>
           </i></div>
           <div class="d-flex align-items-center">
-            <span class="me-2">SUPER USER</span>
+            <span class="me-2"><?= strtoupper(__('superuser')) ?></span>
             <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
               <i class="bi bi-person text-white"></i>
             </div>
@@ -87,8 +92,8 @@
       <!-- Main Content -->
       <div class="main-content">
         <div class="content-header">
-          <h2>Students Management</h2>
-          <p class="text-muted">Manage student vacation requests and information</p>
+          <h2><?= __('students_management') ?></h2>
+          <p class="text-muted"><?= __('students_management') ?></p>
         </div>
         
         

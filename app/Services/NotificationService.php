@@ -120,7 +120,7 @@ class NotificationService {
         try {
             if (!$this->sessionManager->isAuthenticated()) {
                 http_response_code(401);
-                $response = ['error' => 'User not authenticated', 'success' => false];
+                $response = ['error' => __('user_not_authenticated'), 'success' => false];
                 echo json_encode($response);
                 return;
             }
@@ -143,7 +143,7 @@ class NotificationService {
             error_log("Error in getNotificationCountsAPI: " . $e->getMessage());
             
             http_response_code(500);
-            $response = ['error' => 'Internal server error', 'success' => false];
+            $response = ['error' => __('internal_server_error'), 'success' => false];
             echo json_encode($response);
         }
     }

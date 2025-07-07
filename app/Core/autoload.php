@@ -33,6 +33,9 @@ if (!defined('BASE_PATH')) {
     define('BASE_PATH', dirname(__DIR__, 2));
 }
 
+// Load language helper
+require_once BASE_PATH . '/app/Helpers/LanguageHelper.php';
+
 // Initialize database (for development - ensures tables exist and test data is available)
 // Note: In production, this should be moved to a proper migration/setup system
 // Skip database initialization for API requests to avoid output interference
