@@ -305,6 +305,24 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
+  min-height: 300px; /* Ensure minimum height for proper centering */
+}
+
+/* Style for no pending results message */
+.students-grid .no-results {
+  grid-column: 1 / -1; /* Span all columns in the grid */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px; /* Match the grid minimum height */
+  width: 100%;
+}
+
+.students-grid .no-results .text-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .student-card {
