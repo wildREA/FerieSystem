@@ -229,8 +229,8 @@ $approvedRequests = $approvedRequests ?? ['active' => [], 'completed' => []];
               <div class="no-approved-results" id="noApprovedResults" style="display: block;">
                 <div class="text-center py-4">
                   <i class="bi bi-clipboard-check fs-1 text-muted"></i>
-                  <h4 class="mt-3 text-muted user-select-none">No active approved requests</h4>
-                  <p class="text-muted user-select-none">There are currently no active approved requests to display</p>
+                  <h4 class="mt-3 text-muted user-select-none"><?= __('no_active_approved_requests') ?></h4>
+                  <p class="text-muted user-select-none"><?= __('no_active_approved_requests_message') ?></p>
                 </div>
               </div>
             <?php else: ?>

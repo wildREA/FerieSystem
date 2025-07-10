@@ -519,10 +519,40 @@ body {
   padding: 60px 20px;
 }
 
-.no-results .text-muted,
-.no-results h4,
-.no-results p {
-  color: #a0a7b5 !important;
+/* Approved requests section styles */
+.toggle-container {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-label {
+  color: #a0a7b5;
+  font-size: 14px;
+}
+
+.approved-requests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+  min-height: 300px; /* Ensure minimum height for proper centering */
+}
+
+/* Style for no approved results message */
+.no-approved-results {
+  grid-column: 1 / -1; /* Span all columns in the grid */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px; /* Match the grid minimum height */
+  width: 100%;
+}
+
+.no-approved-results .text-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Stat cards styles */
@@ -768,111 +798,6 @@ body {
   height: 1px;
   background: linear-gradient(to right, rgba(44, 49, 66, 0), rgba(44, 49, 66, 1), rgba(44, 49, 66, 0));
   margin: 30px 0;
-}
-
-/* Approved requests section styles */
-.toggle-container {
-  display: flex;
-  align-items: center;
-}
-
-.toggle-label {
-  color: #a0a7b5;
-  font-size: 14px;
-}
-
-.approved-requests-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-}
-
-/* Style for the approved request cards */
-.request-card {
-  background-color: #222941;
-  border-radius: 10px;
-  padding: 20px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-
-.request-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.request-status-badge {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  padding: 4px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 12px;
-  text-transform: uppercase;
-}
-
-.request-status-badge.active {
-  background-color: #d1edff;
-  color: #0c5460;
-}
-
-.request-status-badge.inactive {
-  background-color: #e9ecef;
-  color: #495057;
-}
-
-.request-dates {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
-}
-
-.date-block {
-  text-align: center;
-  flex: 1;
-}
-
-.date-label {
-  font-size: 12px;
-  color: #a0a7b5;
-}
-
-.date-value {
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.alert-light {
-  --bs-alert-border-color: #425183 !important;
-}
-
-.selectable-text {
-  color: #6f7580;
-} 
-
-.non-selectable {
-  color: #a0a7b5 !important;
-}
-
-/* Specialz classes for text selection control */
-.selectable-text {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
-  cursor: text;
-}
-
-.non-selectable {
-  user-select: none !important;
-  -webkit-user-select: none !important;
-  -moz-user-select: none !important;
-  -ms-user-select: none !important;
 }
 
 /* Search result status badges */

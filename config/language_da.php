@@ -323,6 +323,8 @@ return [
     'active_button' => 'Aktive',
     'completed_button' => 'Afsluttede',
     'view_manage_approved' => 'Se og håndter godkendte ferieansøgninger',
+    'no_active_approved_requests' => 'Ingen aktive godkendte ansøgninger',
+    'no_active_approved_requests_message' => 'Der er i øjeblikket ingen aktive godkendte ansøgninger at vise',
     'passwords_do_not_match' => 'Adgangskoderne matcher ikke!',
     'password_min_length' => 'Adgangskode skal være mindst 8 tegn lang!',
     'view_track_requests' => 'Se og følg dine ferieansøgninger',
