@@ -130,6 +130,30 @@ const translations = {
     'end_must_be_after_start': 'Slut skal være efter start',
     'error_calculating_duration': 'Fejl ved beregning af varighed',
     
+    // Time units
+    'days': 'dage',
+    'day': 'dag',
+    'calendar_day': 'kalenderdag',
+    'calendar_days': 'kalenderdage',
+    'hours': 'timer',
+    'hour': 'time',
+    'minutes': 'minutter',
+    'minute': 'minut',
+    'year': 'År',
+    'days_ago': 'dage siden',
+    
+    // Common values
+    'na': 'N/A',
+    'not_available': 'Ikke tilgængelig',
+    
+    // Date labels for parsing
+    'start_date': 'Startdato',
+    'end_date': 'Slutdato',
+    'start_date_colon': 'Startdato:',
+    'end_date_colon': 'Slutdato:',
+    'days_label': 'Dage',
+    'requested_label': 'Anmodet:',
+    
     // Modal titles
     'request_preview': 'Ansøgningsforhåndsvisning',
     'profile_information': 'Profiloplysninger',
@@ -137,7 +161,21 @@ const translations = {
     // Additional information labels
     'balance_information_unavailable': 'Saldooplysninger ikke tilgængelige',
     'student_information_header': 'Studerendeoplysninger',
-    'account_information': 'Kontooplysninger'
+    'account_information': 'Kontooplysninger',
+    
+    // Profile popup specific translations
+    'logout': 'Log ud',
+    'email': 'E-mail',
+    'role': 'Rolle',
+    'access_level': 'Adgangsniveau',
+    'status': 'Status',
+    'last_login': 'Sidste login',
+    'online': 'Online',
+    'today': 'I dag',
+    'settings': 'Indstillinger',
+    'notifications': 'Notifikationer',
+    'friends_list': 'Venneliste',
+    'quick_actions': 'Hurtige handlinger'
 };
 
 // Helper function to get translation

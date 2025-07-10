@@ -302,16 +302,16 @@ document.addEventListener("DOMContentLoaded", function() {
                        requestCard.getAttribute('data-request-id');
         
         const dateBlocks = requestCard.querySelectorAll('.date-block');
-        let startDate = 'N/A', endDate = 'N/A', days = 'N/A';
+        let startDate = __('na'), endDate = __('na'), days = __('na');
         
         if (dateBlocks.length > 0) {
             dateBlocks.forEach(block => {
                 const label = block.querySelector('.date-label')?.textContent;
                 const value = block.querySelector('.date-value')?.textContent;
                 
-                if (label === 'Start Date') startDate = value;
-                if (label === 'End Date') endDate = value;
-                if (label === 'Days') days = value;
+                if (label === __('start_date')) startDate = value;
+                if (label === __('end_date')) endDate = value;
+                if (label === __('days_label')) days = value;
             });
         } else {
             const detailRows = requestCard.querySelectorAll('.detail-row');
@@ -319,12 +319,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 const label = row.querySelector('.detail-label')?.textContent;
                 const value = row.querySelector('.detail-value')?.textContent;
                 
-                if (label === 'Start Date:' || label?.includes('Start')) startDate = value;
-                if (label === 'End Date:' || label?.includes('End')) endDate = value;
-                if (label === 'Requested:' || label?.includes('Requested')) days = value;
+                if (label === __('start_date_colon') || label?.includes('Start')) startDate = value;
+                if (label === __('end_date_colon') || label?.includes('End')) endDate = value;
+                if (label === __('requested_label') || label?.includes('Anmodet')) days = value;
             });
             
-            if (reason === 'N/A') {
+            if (reason === __('na')) {
                 const reasonElement = requestCard.querySelector('.student-details .detail-value');
                 if (reasonElement) reason = reasonElement.textContent;
             }
@@ -335,11 +335,11 @@ document.addEventListener("DOMContentLoaded", function() {
         const numDays = parseInt(days) || 0;
         const ffCost = totalHours; // Use actual hours from database, not numDays * 8
         
-        let timePeriod = 'N/A';
+        let timePeriod = __('na');
         let startTime = '08:00', endTime = '17:00';
         let startDateOnly = startDate, endDateOnly = endDate;
         
-        if (startDate !== 'N/A' && endDate !== 'N/A') {
+        if (startDate !== __('na') && endDate !== __('na')) {
             try {
                 // Extract time from date strings like "Jul 7, 2025 at 08:00"
                 const startTimeMatch = startDate.match(/at (\d{2}:\d{2})/);
@@ -359,16 +359,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 const end = new Date(endDateOnly);
                 const diffTime = Math.abs(end - start);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                timePeriod = `${diffDays} calendar days`;
+                timePeriod = `${diffDays} ${__('calendar_days')}`;
             } catch (e) {
                 timePeriod = 'Unable to calculate';
             }
         }
         
-        let requestSubmitted = 'N/A';
+        let requestSubmitted = __('na');
         const daysRemainingText = requestCard.querySelector('.days-remaining')?.textContent;
-        if (daysRemainingText && daysRemainingText.includes('days ago')) {
-            const daysAgo = daysRemainingText.match(/(\d+) days ago/);
+        if (daysRemainingText && daysRemainingText.includes(__('days_ago'))) {
+            const daysAgo = daysRemainingText.match(/(\d+) dage siden/);
             if (daysAgo) {
                 const submissionDate = new Date();
                 submissionDate.setDate(submissionDate.getDate() - parseInt(daysAgo[1]));

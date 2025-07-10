@@ -102,7 +102,6 @@ return [
     'view_all' => 'Se alle',
     'no_recent_requests' => 'Ingen seneste ansøgninger',
     'quick_actions' => 'Hurtige handlinger',
-    'hours' => 'timer',
     
     // Vacation requests
     'vacation_request' => 'Ferieansøgning',
@@ -113,12 +112,35 @@ return [
     'end_date' => 'Slutdato',
     'end_date_time' => 'Slutdato og tid',
     'reason' => 'Begrundelse',
-    'days' => 'Dage',
     'duration' => 'Varighed',
     'status' => 'Status',
     'select_dates' => 'Vælg datoer',
     'please_select_dates' => 'Vælg venligst datoer',
     'request_reason_placeholder' => 'Beskriv årsagen til din ferieansøgning...',
+    
+    // Time units
+    'days' => 'dage',
+    'day' => 'dag',
+    'calendar_day' => 'kalenderdag',
+    'calendar_days' => 'kalenderdage',
+    'hours' => 'timer',
+    'hour' => 'time',
+    'minutes' => 'minutter',
+    'minute' => 'minut',
+    'year' => 'År',
+    'days_ago' => 'dage siden',
+    
+    // Common values
+    'na' => 'N/A',
+    'not_available' => 'Ikke tilgængelig',
+    
+    // Date labels for parsing
+    'start_date' => 'Startdato',
+    'end_date' => 'Slutdato',
+    'start_date_colon' => 'Startdato:',
+    'end_date_colon' => 'Slutdato:',
+    'days_label' => 'Dage',
+    'requested_label' => 'Anmodet:',
     
     // Request statuses
     'pending' => 'Afventer',
@@ -322,7 +344,7 @@ return [
     'close' => 'Luk',
     'active' => 'Aktiv',
     'error_loading_balance' => 'Fejl ved indlæsning af saldo',
-    'failed_to_load' => 'Kunne ikke indlæses',
+    'failed_to_load' => 'Kunne ikke indlæse',
     'loading' => 'Indlæser...',
     'hours' => 'timer',
     'no_students_found' => 'Ingen studerende fundet',
@@ -386,4 +408,37 @@ return [
     'hour_calculation' => 'Timeberegning',
     'hour_calculation_text' => '8 timer = 1 arbejdsdag. Weekendtimer spores separat',
     'no_transactions_found' => 'Ingen transaktioner fundet',
+    
+    // JavaScript modal and popup translations
+    'please_provide_reason' => 'Angiv venligst en begrundelse for justeringen',
+    'please_enter_valid_hours' => 'Angiv venligst et gyldigt antal timer',
+    'ff_adjustment_success' => 'Succesfuldt %s %d timer',
+    'ff_adjustment_failed' => 'Kunne ikke %s timer',
+    'ff_adjustment_error' => 'Fejl ved %s timer',
+    'added' => 'tilføjet',
+    'removed' => 'fjernet',
+    'add' => 'tilføje',
+    'remove' => 'fjerne',
+    'adding' => 'tilføjelse af',
+    'removing' => 'fjernelse af',
+    'error_loading_balance' => 'Fejl ved indlæsning af saldo',
+    'failed_to_load' => 'Kunne ikke indlæse',
+    'unknown' => 'Ukendt',
+    'no_email' => 'Ingen email',
+    'student_data_not_available' => 'Studerende data ikke tilgængelig',
+    
+    // Additional request details translations
+    'ff' => 'FF',
+    'cost' => 'Omkostning',
+    'time_period' => 'Tidsperiode',
+    'start' => 'Start',
+    'end' => 'Slut',
+    'submitted' => 'Indsendt',
+    'request_id' => 'Ansøgnings-ID',
+    'no_reason_provided' => 'Ingen begrundelse angivet',
+    'request_was_not_approved' => 'Ansøgningen blev ikke godkendt',
+    'failed_to_submit_request' => 'Kunne ikke indsende ansøgning',
+    'failed_to_initialize_application' => 'Kunne ikke initialisere applikation',
+    'calendar_days' => 'kalenderdage',
+    'total_calendar_days' => 'Samlede kalenderdage',
 ];

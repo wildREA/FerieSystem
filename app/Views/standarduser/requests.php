@@ -159,25 +159,25 @@ function getStatusBadgeClass($status) {
                                     $ffCost = $request['ffCost'] ?? 0;
                                     $timePeriod = $request['timePeriod'] ?? 'N/A';
                                     ?>
-                                    <p><strong>FF (<?= htmlspecialchars($requestDays) ?> days)</strong></p>
-                                    <p>Cost: <?= htmlspecialchars($ffCost) ?> hours</p>
-                                    <p>Time Period: <?= htmlspecialchars($timePeriod) ?></p>
+                                    <p><strong><?= __('ff') ?> (<?= htmlspecialchars($requestDays) ?> <?= __('days') ?>)</strong></p>
+                                    <p><?= __('cost') ?>: <?= htmlspecialchars($ffCost) ?> <?= __('hours') ?></p>
+                                    <p><?= __('time_period') ?>: <?= htmlspecialchars($timePeriod) ?></p>
                                 </div>
                                 <div class="request-details">
                                     <div class="request-info">
-                                        <p><strong>Start:</strong> <?= htmlspecialchars($request['startDate'] ?? 'N/A') ?></p>
-                                        <p><strong>End:</strong> <?= htmlspecialchars($request['endDate'] ?? 'N/A') ?></p>
-                                        <p><strong>Submitted:</strong> <?= htmlspecialchars($request['requestSubmitted'] ?? 'N/A') ?></p>
-                                        <p><strong>Request ID:</strong> #<?= str_pad($request['requestId'] ?? 0, 6, '0', STR_PAD_LEFT) ?></p>
+                                        <p><strong><?= __('start') ?>:</strong> <?= htmlspecialchars($request['startDate'] ?? 'N/A') ?></p>
+                                        <p><strong><?= __('end') ?>:</strong> <?= htmlspecialchars($request['endDate'] ?? 'N/A') ?></p>
+                                        <p><strong><?= __('submitted') ?>:</strong> <?= htmlspecialchars($request['requestSubmitted'] ?? 'N/A') ?></p>
+                                        <p><strong><?= __('request_id') ?>:</strong> #<?= str_pad($request['requestId'] ?? 0, 6, '0', STR_PAD_LEFT) ?></p>
                                     </div>
                                     <div class="request-reason">
-                                        <p><strong>Reason:</strong></p>
-                                        <p><?= htmlspecialchars($request['reason'] ?? 'No reason provided') ?></p>
+                                        <p><strong><?= __('reason') ?>:</strong></p>
+                                        <p><?= htmlspecialchars($request['reason'] ?? __('no_reason_provided')) ?></p>
                                     </div>
                                 </div>
                                 <?php if ($request['status'] === 'denied'): ?>
                                     <div class="alert alert-danger mt-2">
-                                        <strong>Denied:</strong> Request was not approved
+                                        <strong><?= __('denied') ?>:</strong> <?= __('request_was_not_approved') ?>
                                     </div>
                                 <?php endif; ?>
                             </div>

@@ -212,23 +212,23 @@ class UIUtilities {
     }
 
     static formatHoursToDays(hours) {
-        if (hours === 0) return '0ff (0 days)';
+        if (hours === 0) return `0ff (0 ${__('days')})`;
         
         const days = hours / 8;
         
         if (hours < 1) {
-            return `${hours.toFixed(2)}ff (${Math.round(hours * 60)} minutes)`;
+            return `${hours.toFixed(2)}ff (${Math.round(hours * 60)} ${__('minutes')})`;
         }
         
         if (hours < 4) {
-            return `${hours.toFixed(2)}ff (${days.toFixed(2)} days)`;
+            return `${hours.toFixed(2)}ff (${days.toFixed(2)} ${__('days')})`;
         }
         
         if (days < 1) {
-            return `${hours.toFixed(1)}ff (${days.toFixed(2)} days)`;
+            return `${hours.toFixed(1)}ff (${days.toFixed(2)} ${__('days')})`;
         }
         
-        return `${hours.toFixed(1)}ff (${days.toFixed(1)} days)`;
+        return `${hours.toFixed(1)}ff (${days.toFixed(1)} ${__('days')})`;
     }
 }
 
@@ -512,7 +512,7 @@ class NewRequestController {
         const totalHours = WorkingHoursCalculator.calculate(start, end);
         const totalCalendarDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         
-        this.safeUpdateElement('requestDuration', `${totalCalendarDays} calendar day${totalCalendarDays !== 1 ? 's' : ''}`);
+        this.safeUpdateElement('requestDuration', `${totalCalendarDays} ${totalCalendarDays !== 1 ? __('calendar_days') : __('calendar_day')}`);
         this.resetDurationColor();
         this.safeUpdateElement('workingDays', UIUtilities.formatHoursToDays(totalHours));
         
@@ -695,7 +695,7 @@ class NewRequestController {
             
         } catch (error) {
             console.error('Error submitting request:', error);
-            UIUtilities.showNotification('Failed to submit request: ' + error.message, 'danger');
+            UIUtilities.showNotification(__('failed_to_submit_request') + ': ' + error.message, 'danger');
         }
     }
 
@@ -924,7 +924,7 @@ class NewRequestController {
                                 <div class="col-md-6">
                                     <h6 class="text-primary">Duration Breakdown</h6>
                                     <div class="preview-detail">
-                                        <strong>Total Calendar Days:</strong> ${data.totalDays}
+                                        <strong>${__('total_calendar_days')}:</strong> ${data.totalDays}
                                     </div>
                                     <div class="preview-detail">
                                         <strong>Working Hours:</strong> ${UIUtilities.formatHoursToDays(data.workingHours)}
@@ -967,7 +967,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const controller = new NewRequestController();
     controller.init().catch(error => {
         console.error('Failed to initialize new request controller:', error);
-        UIUtilities.showNotification('Failed to initialize application', 'danger');
+        UIUtilities.showNotification(__('failed_to_initialize_application'), 'danger');
     });
     
     // Expose reset and preview functions globally for backward compatibility

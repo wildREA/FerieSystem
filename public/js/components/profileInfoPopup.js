@@ -39,8 +39,8 @@ function showProfileModal() {
                     username: data.username || "No username",
                     role: data.userType === 'super' ? "Administrator" : "Student",
                     accessLevel: data.userType === 'super' ? "Super User" : "Standard User",
-                    status: "Online",
-                    lastLogin: "Today"
+                    status: __('online'),
+                    lastLogin: __('today')
                 };
                 
                 
@@ -61,8 +61,8 @@ function showProfileModal() {
                 username: "No username",
                 role: "User",
                 accessLevel: "Standard User",
-                status: "Online",
-                lastLogin: "Today"
+                status: __('online'),
+                lastLogin: __('today')
             };
             createProfileModal(currentUser, modalBackdrop);
         });
@@ -91,7 +91,7 @@ function createProfileModal(currentUser, modalBackdrop) {
                             '<h4 class="mb-1 non-selectable">' + currentUser.name + '</h4>' +
                             '<p class="text-muted mb-2 selectable-text">ID: ' + currentUser.id + '</p>' +
                             '<button class="btn btn-outline-danger btn-sm" onclick="logout()">' +
-                                '<i class="bi bi-box-arrow-right me-1"></i> Logout' +
+                                '<i class="bi bi-box-arrow-right me-1"></i> ' + __('logout') +
                             '</button>' +
                         '</div>' +
                         '<div class="col-md-8">' +
@@ -99,45 +99,45 @@ function createProfileModal(currentUser, modalBackdrop) {
                                 '<h6 class="text-primary mb-3"><i class="bi bi-person-circle me-2"></i>' + __('account_information') + '</h6>' +
                                 '<div class="row">' +
                                     '<div class="col-6">' +
-                                        '<small class="text-muted">Email</small>' +
+                                        '<small class="text-muted">' + __('email') + '</small>' +
                                         '<div class="fw-medium selectable-text" style="cursor: pointer;" onclick="copyToClipboard(\'' + currentUser.email + '\')">' +
                                             currentUser.email +
                                             '<i class="bi bi-clipboard ms-1" style="font-size: 0.8rem; opacity: 0.7;"></i>' +
                                         '</div>' +
                                     '</div>' +
                                     '<div class="col-3">' +
-                                        '<small class="text-muted">Role</small>' +
+                                        '<small class="text-muted">' + __('role') + '</small>' +
                                         '<div class="fw-medium selectable-text">' + currentUser.role + '</div>' +
                                     '</div>' +
                                     '<div class="col-3">' +
-                                        '<small class="text-muted">Access Level</small>' +
+                                        '<small class="text-muted">' + __('access_level') + '</small>' +
                                         '<div class="fw-medium selectable-text">' + currentUser.accessLevel + '</div>' +
                                     '</div>' +
                                 '</div>' +
                                 '<div class="row mt-3">' +
                                     '<div class="col-6">' +
-                                        '<small class="text-muted">Status</small>' +
+                                        '<small class="text-muted">' + __('status') + '</small>' +
                                         '<div class="fw-medium">' +
                                             '<span class="badge bg-success">' + currentUser.status + '</span>' +
                                         '</div>' +
                                     '</div>' +
                                     '<div class="col-6">' +
-                                        '<small class="text-muted">Last Login</small>' +
+                                        '<small class="text-muted">' + __('last_login') + '</small>' +
                                         '<div class="fw-medium selectable-text">' + currentUser.lastLogin + '</div>' +
                                     '</div>' +
                                 '</div>' +
                             '</div>' +
                             '<div class="mb-4">' +
-                                '<h6 class="text-primary mb-3"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>' +
+                                '<h6 class="text-primary mb-3"><i class="bi bi-lightning me-2"></i>' + __('quick_actions') + '</h6>' +
                                 '<div class="d-flex gap-2 flex-wrap">' +
                                     '<button class="btn btn-outline-light btn-sm" onclick="showFriendsList()">' +
-                                        '<i class="bi bi-people me-1"></i> Friends List' +
+                                        '<i class="bi bi-people me-1"></i> ' + __('friends_list') +
                                     '</button>' +
                                     '<button class="btn btn-outline-info btn-sm" onclick="showSettings()">' +
-                                        '<i class="bi bi-gear me-1"></i> Settings' +
+                                        '<i class="bi bi-gear me-1"></i> ' + __('settings') +
                                     '</button>' +
                                     '<button class="btn btn-outline-warning btn-sm" onclick="showNotifications()">' +
-                                        '<i class="bi bi-bell me-1"></i> Notifications' +
+                                        '<i class="bi bi-bell me-1"></i> ' + __('notifications') +
                                     '</button>' +
                                 '</div>' +
                             '</div>' +
@@ -145,7 +145,7 @@ function createProfileModal(currentUser, modalBackdrop) {
                     '</div>' +
                 '</div>' +
                 '<div class="modal-footer">' +
-                    '<button type="button" class="btn btn-secondary" onclick="closeProfileModal()">Close</button>' +
+                    '<button type="button" class="btn btn-secondary" onclick="closeProfileModal()">' + __('close') + '</button>' +
                 '</div>' +
             '</div>' +
         '</div>';
@@ -184,7 +184,7 @@ function logout() {
     // Call the logout API which handles:
     // - PHP session cookie destruction
     // - Removal of all remember me tokens for the user from database by user id
-    fetch('/api/logout', {
+    fetch('/api/logout', {  
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

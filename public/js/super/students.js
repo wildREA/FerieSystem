@@ -79,8 +79,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 id: card.dataset.studentId,
                 name: card.querySelector('.student-name')?.textContent || '',
                 email: card.querySelector('.student-email')?.textContent || '',
-                course: card.querySelector('.course')?.textContent || 'N/A',
-                year: card.querySelector('.year')?.textContent?.replace('Year ', '') || 'N/A',
+                course: card.querySelector('.course')?.textContent || __('na'),
+                year: card.querySelector('.year')?.textContent?.replace(__('year') + ' ', '') || __('na'),
                 vacationDays: parseInt(card.querySelector('.stat-value')?.textContent || '0'),
                 avatar: card.querySelector('.student-avatar')?.textContent || 'U'
             };
@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         <p class="student-email">${escapeHtml(student.email)}</p>
                         <div class="student-meta">
                             <span class="course">${escapeHtml(student.course)}</span>
-                            ${student.year !== 'N/A' ? `<span class="year">Year ${escapeHtml(student.year)}</span>` : ''}
+                            ${student.year !== __('na') ? `<span class="year">${__('year')} ${escapeHtml(student.year)}</span>` : ''}
                         </div>
                     </div>
                 </div>
@@ -274,10 +274,10 @@ document.addEventListener("DOMContentLoaded", function() {
         try {
             return {
                 id: card.dataset.studentId,
-                name: card.querySelector('.student-name')?.textContent?.trim() || 'Unknown',
-                email: card.querySelector('.student-email')?.textContent?.trim() || 'No email',
-                course: card.querySelector('.course')?.textContent?.trim() || 'N/A',
-                year: card.querySelector('.year')?.textContent?.replace('Year ', '')?.trim() || 'N/A',
+                name: card.querySelector('.student-name')?.textContent?.trim() || __('unknown'),
+                email: card.querySelector('.student-email')?.textContent?.trim() || __('no_email'),
+                course: card.querySelector('.course')?.textContent?.trim() || __('na'),
+                year: card.querySelector('.year')?.textContent?.replace(__('year') + ' ', '')?.trim() || __('na'),
                 avatar: card.querySelector('.student-avatar')?.textContent?.trim() || 'U'
             };
         } catch (error) {
@@ -323,7 +323,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     ${escapeHtml(student.avatar)}
                                 </div>
                                 <h4 class="mb-1 non-selectable">${escapeHtml(student.name)}</h4>
-                                <p class="text-muted mb-2 selectable-text">${escapeHtml(student.id || 'N/A')}</p>
+                                <p class="text-muted mb-2 selectable-text">${escapeHtml(student.id || __('na'))}</p>
                                 <div class="status-badge">
                                     <span class="badge bg-success">${__('active')}</span>
                                 </div>
@@ -541,14 +541,14 @@ window.confirmFFAdjustment = function() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast(`Successfully ${action === 'add' ? 'added' : 'removed'} ${hours} hours`, 'success');
+            showToast(__('ff_adjustment_success').replace('%s', action === 'add' ? __('added') : __('removed')).replace('%d', hours), 'success');
             // Refresh the balance display
             window.loadStudentFFBalance(studentId);
             // Clear the input
             const hoursInput = document.getElementById('ffHoursInput');
             if (hoursInput) hoursInput.value = '';
         } else {
-            showToast(data.message || `Failed to ${action === 'add' ? 'add' : 'remove'} hours`, 'error');
+            showToast(data.message || __('ff_adjustment_failed').replace('%s', action === 'add' ? __('add') : __('remove')), 'error');
         }
     })
     .catch(error => {
@@ -599,9 +599,9 @@ window.loadStudentFFBalance = function(studentId) {
             const balanceElement = document.getElementById('studentFFBalance');
             if (balanceElement) {
                 if (data.success) {
-                    balanceElement.innerHTML = `${data.balance} hours`;
+                    balanceElement.innerHTML = `${data.balance} ${__('hours')}`;
                 } else {
-                    balanceElement.innerHTML = `<span class="text-warning">Error loading balance</span>`;
+                    balanceElement.innerHTML = `<span class="text-warning">${__('error_loading_balance')}</span>`;
                 }
             }
         })
@@ -609,7 +609,7 @@ window.loadStudentFFBalance = function(studentId) {
             console.error('Error loading student balance:', error);
             const balanceElement = document.getElementById('studentFFBalance');
             if (balanceElement) {
-                balanceElement.innerHTML = `<span class="text-danger">Failed to load</span>`;
+                balanceElement.innerHTML = `<span class="text-danger">${__('failed_to_load')}</span>`;
             }
         });
 };
@@ -619,7 +619,7 @@ window.adjustStudentFF = function(studentId, action) {
     const hours = parseInt(hoursInput.value);
     
     if (!hours || hours <= 0) {
-        showToast('Please enter a valid number of hours', 'error');
+        showToast(__('please_enter_valid_hours'), 'error');
         return;
     }
 
@@ -666,7 +666,7 @@ window.confirmFFAdjustment = function() {
     const hours = parseInt(modal.dataset.hours);
     
     if (!reason) {
-        showToast('Please provide a reason for the adjustment.', 'error');
+        showToast(__('please_provide_reason'), 'error');
         return;
     }
     
@@ -694,19 +694,19 @@ window.confirmFFAdjustment = function() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast(`Successfully ${action === 'add' ? 'added' : 'removed'} ${hours} hours`, 'success');
+            showToast(__('ff_adjustment_success').replace('%s', action === 'add' ? __('added') : __('removed')).replace('%d', hours), 'success');
             // Refresh the balance display
             window.loadStudentFFBalance(studentId);
             // Clear the input
             const hoursInput = document.getElementById('ffHoursInput');
             if (hoursInput) hoursInput.value = '';
         } else {
-            showToast(data.message || `Failed to ${action === 'add' ? 'add' : 'remove'} hours`, 'error');
+            showToast(data.message || __('ff_adjustment_failed').replace('%s', action === 'add' ? __('add') : __('remove')), 'error');
         }
     })
     .catch(error => {
         console.error('Error adjusting FF hours:', error);
-        showToast(`Error ${action === 'add' ? 'adding' : 'removing'} hours`, 'error');
+        showToast(__('ff_adjustment_error').replace('%s', action === 'add' ? __('adding') : __('removing')), 'error');
     })
     .finally(() => {
         // Reset button states
