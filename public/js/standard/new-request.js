@@ -755,13 +755,28 @@ class NewRequestController {
         this.setSubmitButtonLoading(true);
         
         try {
-            await RequestApiService.submitRequest(requestData);
+            const result = await RequestApiService.submitRequest(requestData);
             this.resetForm();
             
             let successMessage = __('request_submitted_successfully');
             if (requestData.isShortNotice) {
                 successMessage += ' ' + __('short_notice_warning');
             }
+            
+            // Check for email status and display additional info
+            if (result && result.email_status) {
+                if (result.email_error) {
+                    // Email failed - show warning but still success for request
+                    UIUtilities.showNotification(successMessage, 'success');
+                    setTimeout(() => {
+                        UIUtilities.showNotification('⚠️ Email notification failed: ' + result.email_error, 'warning', 8000);
+                    }, 1500);
+                } else {
+                    // Email sent successfully
+                    successMessage += ' 📧 Email notification sent to instructor.';
+                }
+            }
+            
             UIUtilities.showNotification(successMessage, 'success');
             
             // Refresh notifications after successful submission

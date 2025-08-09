@@ -3,10 +3,12 @@ namespace App\Controllers;
 
 require_once dirname(__DIR__) . '/Core/sessions.php';
 require_once dirname(__DIR__) . '/Core/connection.php';
+require_once dirname(__DIR__) . '/Services/EmailService.php';
 
 class RequestController {
     private $sessionManager;
     private $db;
+    private $emailService;
     
     public function __construct() {
         $this->sessionManager = new \SessionManager();
@@ -17,6 +19,9 @@ class RequestController {
             error_log("Database connection failed in RequestController: " . $e->getMessage());
             $this->db = null;
         }
+        
+        // Initialize EmailService
+        $this->emailService = new \App\Services\EmailService();
     }
 
     /**
@@ -175,11 +180,24 @@ class RequestController {
                 
                 $this->db->commit();
                 
-                echo json_encode([
+                // Send email notification to instructor
+                $emailResult = $this->sendRequestNotification($userId, $requestId, $startDate, $endDate, $reason, $totalHours);
+                
+                $response = [
                     'success' => true,
                     'message' => __('request_submitted_successfully'),
                     'requestId' => $requestId
-                ]);
+                ];
+                
+                // Add email status to response for debugging
+                if ($emailResult['success']) {
+                    $response['email_status'] = 'Email sent successfully to instructor';
+                } else {
+                    $response['email_status'] = 'Request submitted but email failed: ' . $emailResult['error'];
+                    $response['email_error'] = $emailResult['error'];
+                }
+                
+                echo json_encode($response);
                 
             } catch (\Exception $e) {
                 $this->db->rollback();
@@ -190,6 +208,54 @@ class RequestController {
             error_log("Error in submitRequest: " . $e->getMessage());
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => __('internal_server_error')]);
+        }
+    }
+    
+    /**
+     * Send email notification to instructor when a request is submitted
+     * Returns array with success status and error message if failed
+     */
+    private function sendRequestNotification($userId, $requestId, $startDate, $endDate, $reason, $totalHours) {
+        try {
+            // Get student information
+            $stmt = $this->db->prepare("SELECT name, email FROM users WHERE id = ?");
+            $stmt->execute([$userId]);
+            $student = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if (!$student) {
+                $error = "Could not find student information for user ID: $userId";
+                error_log($error);
+                return ['success' => false, 'error' => $error];
+            }
+            
+            // Prepare email data
+            $emailData = [
+                'student_name' => $student['name'] ?? 'Unknown Student',
+                'student_email' => $student['email'] ?? '',
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'reason' => $reason,
+                'total_hours' => $totalHours,
+                'submitted_at' => date('Y-m-d H:i:s'),
+                'request_id' => $requestId
+            ];
+            
+            // Send the email
+            $emailSent = $this->emailService->sendVacationRequestNotification($emailData);
+            
+            if ($emailSent) {
+                error_log("Email notification sent successfully for request ID: $requestId");
+                return ['success' => true, 'error' => null];
+            } else {
+                $error = "Email service returned false - check EmailService logs for details";
+                error_log("Failed to send email notification for request ID: $requestId - $error");
+                return ['success' => false, 'error' => $error];
+            }
+            
+        } catch (\Exception $e) {
+            $error = "Exception in sendRequestNotification: " . $e->getMessage();
+            error_log($error);
+            return ['success' => false, 'error' => $error];
         }
     }
 }
