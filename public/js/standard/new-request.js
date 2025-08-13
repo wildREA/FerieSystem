@@ -196,7 +196,18 @@ class UIUtilities {
     static updateRequestsBadge() {
         const badgeElement = document.querySelector('.notification-badge');
         if (badgeElement) {
-            badgeElement.style.display = 'none';
+            let pendingCount = 0;
+            if (window.notifications && typeof window.notifications.pendingRequests === 'number') {
+                pendingCount = window.notifications.pendingRequests;
+            } else if (!isNaN(parseInt(badgeElement.textContent))) {
+                pendingCount = parseInt(badgeElement.textContent);
+            }
+            if (pendingCount > 0) {
+                badgeElement.style.display = 'inline-block';
+                badgeElement.textContent = pendingCount;
+            } else {
+                badgeElement.style.display = 'none';
+            }
         }
     }
 
