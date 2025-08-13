@@ -212,23 +212,23 @@ class UIUtilities {
     }
 
     static formatHoursToDays(hours) {
-        if (hours === 0) return `0ff (0 ${__('days')})`;
+        if (hours === 0) return `0FF (0 ${__('days')})`;
         
         const days = hours / 8;
         
         if (hours < 1) {
-            return `${hours.toFixed(2)}ff (${Math.round(hours * 60)} ${__('minutes')})`;
+            return `${hours.toFixed(2)}FF (${Math.round(hours * 60)} ${__('minutes')})`;
         }
         
         if (hours < 4) {
-            return `${hours.toFixed(2)}ff (${days.toFixed(2)} ${__('days')})`;
+            return `${hours.toFixed(2)}FF (${days.toFixed(2)} ${__('days')})`;
         }
         
         if (days < 1) {
-            return `${hours.toFixed(1)}ff (${days.toFixed(2)} ${__('days')})`;
+            return `${hours.toFixed(1)}FF (${days.toFixed(2)} ${__('days')})`;
         }
-        
-        return `${hours.toFixed(1)}ff (${days.toFixed(1)} ${__('days')})`;
+
+        return `${hours.toFixed(1)}FF (${days.toFixed(1)} ${__('days')})`;
     }
 }
 
@@ -312,7 +312,7 @@ class NewRequestController {
             const vacationHours = await this.balanceService.calculateVacationHours();
             
             this.safeUpdateElement('currentBalance', UIUtilities.formatHoursToDays(vacationHours.remainingHours));
-            this.safeUpdateElement('balanceAfterRequest', `${vacationHours.remainingHours}ff`);
+            this.safeUpdateElement('balanceAfterRequest', `${vacationHours.remainingHours}FF`);
         } catch (error) {
             console.error('Error updating balance display:', error);
             UIUtilities.showNotification('Error loading balance data', 'warning');
@@ -478,8 +478,8 @@ class NewRequestController {
 
     resetDurationDisplay(vacationHours) {
         this.safeUpdateElement('requestDuration', 'Please select dates');
-        this.safeUpdateElement('workingDays', '0ff');
-        this.safeUpdateElement('balanceAfterRequest', vacationHours.remainingHours + 'ff');
+        this.safeUpdateElement('workingDays', '0FF');
+        this.safeUpdateElement('balanceAfterRequest', vacationHours.remainingHours + 'FF');
         this.hideBalanceWarnings();
     }
 
@@ -772,8 +772,8 @@ class NewRequestController {
                         UIUtilities.showNotification('⚠️ Email notification failed: ' + result.email_error, 'warning', 8000);
                     }, 1500);
                 } else {
-                    // Email sent successfully
-                    successMessage += ' 📧 Email notification sent to instructor.';
+                    // Email sent successfully (unnecessary to send)
+                    print( __('email_sent_successfully'));
                 }
             }
             
@@ -844,8 +844,8 @@ class NewRequestController {
         const vacationHours = await this.balanceService.calculateVacationHours();
         
         this.safeUpdateElement('requestDuration', 'Please select dates');
-        this.safeUpdateElement('workingDays', '0ff');
-        this.safeUpdateElement('balanceAfterRequest', vacationHours.remainingHours + 'ff');
+        this.safeUpdateElement('workingDays', '0FF');
+        this.safeUpdateElement('balanceAfterRequest', vacationHours.remainingHours + 'FF');
         
         const balanceElement = this.elements.balanceAfterRequest || document.getElementById('balanceAfterRequest');
         if (balanceElement) {
