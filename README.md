@@ -12,7 +12,7 @@ This will take you to the home page of the FerieSystem application.
 
 The application uses URL rewriting through the `.htaccess` file to route all requests to the `public/index.php` file, which then handles the routing based on the requested URL.
 
-The main routes are defined in the `routes/web.php` file, which includes:
+The main routes are defined in the `routes/web.php` file, which includes as an example:
 
 - Home page: `/`
 - About page: `/about`
